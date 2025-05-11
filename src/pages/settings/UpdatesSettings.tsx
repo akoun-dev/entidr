@@ -3,7 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
-import { ArrowUp, Check, RefreshCw, Download } from 'lucide-react';
+import { ArrowUp, Check, RefreshCw, Download, AlertTriangle, Loader2 } from 'lucide-react';
+import { useToast } from '../../components/ui/use-toast';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 interface Update {
   id: string;
@@ -48,18 +50,64 @@ const UpdatesSettings: React.FC = () => {
   ]);
 
   const [isChecking, setIsChecking] = useState(false);
+  const { toast } = useToast();
+
+  // États pour la confirmation d'installation
+  const [updateToInstall, setUpdateToInstall] = useState<Update | null>(null);
+  const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
 
   const handleCheckUpdates = () => {
     setIsChecking(true);
     // Simuler une vérification des mises à jour
     setTimeout(() => {
       setIsChecking(false);
+      toast({
+        title: "Vérification terminée",
+        description: "Toutes les mises à jour disponibles ont été trouvées.",
+        variant: "default",
+      });
     }, 2000);
   };
 
-  const handleInstallUpdate = (id: string) => {
-    // TODO: Implémenter la logique d'installation
-    console.log('Install update:', id);
+  // Ouvrir la boîte de dialogue de confirmation d'installation
+  const openInstallDialog = (update: Update) => {
+    setUpdateToInstall(update);
+    setIsInstallDialogOpen(true);
+  };
+
+  // Installer une mise à jour
+  const handleInstallUpdate = async () => {
+    if (!updateToInstall) return;
+
+    setIsInstalling(true);
+
+    try {
+      // Simuler une installation
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Mettre à jour l'état local
+      setUpdates(updates.filter(u => u.id !== updateToInstall.id));
+
+      toast({
+        title: "Mise à jour installée",
+        description: `${updateToInstall.name} a été mis à jour vers la version ${updateToInstall.newVersion}.`,
+        variant: "default",
+      });
+
+      // Fermer la boîte de dialogue
+      setIsInstallDialogOpen(false);
+      setUpdateToInstall(null);
+    } catch (error) {
+      console.error('Erreur lors de l\'installation de la mise à jour:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'installer la mise à jour.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsInstalling(false);
+    }
   };
 
   return (
@@ -75,8 +123,8 @@ const UpdatesSettings: React.FC = () => {
 
       {/* Bouton de vérification */}
       <div className="mb-6">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={handleCheckUpdates}
           disabled={isChecking}
         >
@@ -145,9 +193,9 @@ const UpdatesSettings: React.FC = () => {
                   </div>
 
                   <div className="flex justify-end">
-                    <Button 
+                    <Button
                       className="bg-ivory-orange hover:bg-ivory-orange/90"
-                      onClick={() => handleInstallUpdate(update.id)}
+                      onClick={() => openInstallDialog(update)}
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Installer la mise à jour
@@ -159,6 +207,39 @@ const UpdatesSettings: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Boîte de dialogue de confirmation d'installation */}
+      <ConfirmationDialog
+        open={isInstallDialogOpen}
+        onOpenChange={setIsInstallDialogOpen}
+        title="Installer la mise à jour"
+        description="Êtes-vous sûr de vouloir installer cette mise à jour ? Le système pourrait redémarrer pendant le processus."
+        actionLabel="Installer"
+        variant="default"
+        isProcessing={isInstalling}
+        icon={<Download className="h-4 w-4 mr-2" />}
+        onConfirm={handleInstallUpdate}
+      >
+        {updateToInstall && (
+          <div>
+            <p className="font-medium">{updateToInstall.name}</p>
+            <p className="text-sm text-muted-foreground">
+              Version {updateToInstall.currentVersion} → {updateToInstall.newVersion}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Taille: {updateToInstall.size}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Date de sortie: {updateToInstall.releaseDate}
+            </p>
+            {updateToInstall.security && (
+              <p className="text-sm font-medium text-destructive mt-2">
+                Cette mise à jour contient des correctifs de sécurité importants.
+              </p>
+            )}
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };
