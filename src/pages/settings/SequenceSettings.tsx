@@ -4,7 +4,9 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Label } from '../../components/ui/label';
-import { Hash, FileText, Calendar, Plus, Loader2 } from 'lucide-react';
+import { Hash, FileText, Calendar, Plus, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { useToast } from '../../components/ui/use-toast';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import axios from 'axios';
 
 interface Sequence {
@@ -39,10 +41,19 @@ interface SequenceConfig {
 }
 
 const SequenceSettings: React.FC = () => {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [sequences, setSequences] = useState<Sequence[]>([]);
   const [sequenceConfig, setSequenceConfig] = useState<SequenceConfig | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // États pour la confirmation de réinitialisation
+  const [sequenceToReset, setSequenceToReset] = useState<Sequence | null>(null);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  // États pour la sauvegarde
+  const [isSaving, setIsSaving] = useState(false);
 
   // Charger les données depuis l'API
   useEffect(() => {
@@ -76,41 +87,67 @@ const SequenceSettings: React.FC = () => {
   // Fonction pour sauvegarder la configuration des séquences
   const saveSequenceConfig = async () => {
     try {
-      setLoading(true);
+      setIsSaving(true);
 
       if (!sequenceConfig) return;
 
       await axios.put('http://localhost:3001/api/sequenceconfig', sequenceConfig);
 
-      setLoading(false);
-      alert('Configuration des séquences enregistrée avec succès');
+      toast({
+        title: "Configuration sauvegardée",
+        description: "Configuration des séquences enregistrée avec succès",
+        variant: "default",
+      });
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la configuration:', error);
-      setLoading(false);
-      alert('Erreur lors de la sauvegarde de la configuration');
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la sauvegarde de la configuration",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  // Ouvrir la boîte de dialogue de confirmation de réinitialisation
+  const openResetDialog = (sequence: Sequence) => {
+    setSequenceToReset(sequence);
+    setIsResetDialogOpen(true);
+  };
+
   // Fonction pour réinitialiser une séquence
-  const resetSequence = async (id: string) => {
+  const resetSequence = async () => {
+    if (!sequenceToReset) return;
+
+    setIsResetting(true);
+
     try {
-      if (confirm('Êtes-vous sûr de vouloir réinitialiser cette séquence ? Le prochain numéro sera 1.')) {
-        setLoading(true);
+      const response = await axios.post(`http://localhost:3001/api/sequences/${sequenceToReset.id}/reset`);
 
-        const response = await axios.post(`http://localhost:3001/api/sequences/${id}/reset`);
+      // Mettre à jour la séquence dans le tableau
+      setSequences(sequences.map(seq =>
+        seq.id === sequenceToReset.id ? response.data : seq
+      ));
 
-        // Mettre à jour la séquence dans le tableau
-        setSequences(sequences.map(seq =>
-          seq.id === id ? response.data : seq
-        ));
+      toast({
+        title: "Séquence réinitialisée",
+        description: "La séquence a été réinitialisée avec succès",
+        variant: "default",
+      });
 
-        setLoading(false);
-        alert('Séquence réinitialisée avec succès');
-      }
+      // Fermer la boîte de dialogue
+      setIsResetDialogOpen(false);
+      setSequenceToReset(null);
     } catch (error) {
       console.error('Erreur lors de la réinitialisation de la séquence:', error);
-      setLoading(false);
-      alert('Erreur lors de la réinitialisation de la séquence');
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la réinitialisation de la séquence",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -325,8 +362,10 @@ const SequenceSettings: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => resetSequence(sequence.id)}
+                          onClick={() => openResetDialog(sequence)}
+                          disabled={isResetting && sequenceToReset?.id === sequence.id}
                         >
+                          <RefreshCw className="h-4 w-4 mr-2" />
                           Réinitialiser
                         </Button>
                       </div>
@@ -343,9 +382,9 @@ const SequenceSettings: React.FC = () => {
           <Button
             className="bg-ivory-orange hover:bg-ivory-orange/90"
             onClick={saveSequenceConfig}
-            disabled={loading}
+            disabled={loading || isSaving}
           >
-            {loading ? (
+            {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Enregistrement...
@@ -357,6 +396,38 @@ const SequenceSettings: React.FC = () => {
         </div>
       </div>
       )}
+
+      {/* Boîte de dialogue de confirmation de réinitialisation */}
+      <ConfirmationDialog
+        open={isResetDialogOpen}
+        onOpenChange={setIsResetDialogOpen}
+        title="Réinitialiser la séquence"
+        description="Êtes-vous sûr de vouloir réinitialiser cette séquence ? Le prochain numéro sera 1."
+        actionLabel="Réinitialiser"
+        variant="destructive"
+        isProcessing={isResetting}
+        icon={<RefreshCw className="h-4 w-4 mr-2" />}
+        onConfirm={resetSequence}
+      >
+        {sequenceToReset && (
+          <div>
+            <p className="font-medium">{sequenceToReset.name}</p>
+            <p className="text-sm text-muted-foreground">
+              Préfixe: <span className="font-mono">{sequenceToReset.prefix}</span>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Prochain numéro actuel: <span className="font-mono">{sequenceToReset.nextNumber}</span>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Suffixe: <span className="font-mono">{sequenceToReset.suffix}</span>
+            </p>
+            <p className="text-sm font-medium text-amber-500 mt-2">
+              <AlertTriangle className="h-4 w-4 inline-block mr-1" />
+              Cette action est irréversible et peut affecter la numérotation des documents.
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

@@ -8,10 +8,11 @@ import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Calendar, Search, Plus, Pencil, Trash2, Check, Info, Loader2 } from 'lucide-react';
+import { Calendar, Search, Plus, Pencil, Trash2, Check, Info, Loader2, AlertTriangle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
 import { useToast } from '../../components/ui/use-toast';
 import { dateFormatService, DateFormat as ApiDateFormat } from '../../services/api';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Types pour les formats de date
 interface DateFormat {
@@ -122,6 +123,11 @@ const DateFormatsSettings: React.FC = () => {
   // État pour le format de date en cours d'édition
   const [editingDateFormat, setEditingDateFormat] = useState<DateFormat | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // États pour la confirmation de suppression
+  const [dateFormatToDelete, setDateFormatToDelete] = useState<DateFormat | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Filtrer les formats de date en fonction du terme de recherche et du filtre de type
   const filteredDateFormats = dateFormats.filter(dateFormat => {
@@ -306,12 +312,10 @@ const DateFormatsSettings: React.FC = () => {
     }
   };
 
-  // Gérer la suppression d'un format de date
-  const handleDeleteDateFormat = async (id: string) => {
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (dateFormat: DateFormat) => {
     // Vérifier si le format à supprimer est le format par défaut
-    const formatToDelete = dateFormats.find(format => format.id === id);
-
-    if (formatToDelete?.is_default) {
+    if (dateFormat.is_default) {
       toast({
         title: 'Action impossible',
         description: 'Vous ne pouvez pas supprimer le format par défaut. Veuillez d\'abord définir un autre format comme format par défaut.',
@@ -320,33 +324,47 @@ const DateFormatsSettings: React.FC = () => {
       return;
     }
 
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce format de date ?')) {
-      try {
-        await dateFormatService.delete(id);
+    setDateFormatToDelete(dateFormat);
+    setIsDeleteDialogOpen(true);
+  };
 
-        setDateFormats(dateFormats.filter(format => format.id !== id));
+  // Gérer la suppression d'un format de date
+  const handleDeleteDateFormat = async () => {
+    if (!dateFormatToDelete) return;
 
-        toast({
-          title: 'Succès',
-          description: 'Le format de date a été supprimé avec succès',
-          variant: 'default'
-        });
-      } catch (error: any) {
-        console.error('Erreur lors de la suppression du format de date:', error);
+    setIsDeleting(true);
 
-        // Vérifier si nous avons un message d'erreur spécifique du serveur
-        let errorMessage = 'Impossible de supprimer le format de date';
+    try {
+      await dateFormatService.delete(dateFormatToDelete.id);
 
-        if (error.response && error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
+      setDateFormats(dateFormats.filter(format => format.id !== dateFormatToDelete.id));
 
-        toast({
-          title: 'Erreur',
-          description: errorMessage,
-          variant: 'destructive'
-        });
+      toast({
+        title: 'Succès',
+        description: 'Le format de date a été supprimé avec succès',
+        variant: 'default'
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setDateFormatToDelete(null);
+    } catch (error: any) {
+      console.error('Erreur lors de la suppression du format de date:', error);
+
+      // Vérifier si nous avons un message d'erreur spécifique du serveur
+      let errorMessage = 'Impossible de supprimer le format de date';
+
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
       }
+
+      toast({
+        title: 'Erreur',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -563,7 +581,7 @@ const DateFormatsSettings: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteDateFormat(dateFormat.id)}
+                              onClick={() => openDeleteDialog(dateFormat)}
                               disabled={dateFormat.is_default}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -585,6 +603,37 @@ const DateFormatsSettings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer le format de date"
+        description="Êtes-vous sûr de vouloir supprimer ce format de date ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<AlertTriangle className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteDateFormat}
+      >
+        {dateFormatToDelete && (
+          <div>
+            <p className="font-medium">{dateFormatToDelete.name}</p>
+            <p className="text-sm text-muted-foreground">
+              Format: <code className="bg-muted px-1 py-0.5 rounded text-sm">{dateFormatToDelete.format}</code>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Exemple: {dateFormatToDelete.example}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Type: <Badge variant="outline">
+                {dateFormatToDelete.type === 'date' ? 'Date' :
+                 dateFormatToDelete.type === 'time' ? 'Heure' : 'Date et heure'}
+              </Badge>
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

@@ -5,7 +5,9 @@ import { Input } from '../../components/ui/input';
 import { Switch } from '../../components/ui/switch';
 import { Badge } from '../../components/ui/badge';
 import { Label } from '../../components/ui/label';
-import { Gauge, Database, Clock, Server, Activity, Loader2 } from 'lucide-react';
+import { Gauge, Database, Clock, Server, Activity, Loader2, AlertTriangle } from 'lucide-react';
+import { useToast } from '../../components/ui/use-toast';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import axios from 'axios';
 
 interface PerformanceConfig {
@@ -74,6 +76,7 @@ interface PerformanceMetrics {
 }
 
 const PerformanceSettings: React.FC = () => {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<PerformanceConfig | null>(null);
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
@@ -83,6 +86,10 @@ const PerformanceSettings: React.FC = () => {
   const [cacheSize, setCacheSize] = useState(500);
   const [pageSize, setPageSize] = useState(25);
   const [queryOptimization, setQueryOptimization] = useState(true);
+
+  // États pour la confirmation de diagnostic
+  const [isDiagnosticDialogOpen, setIsDiagnosticDialogOpen] = useState(false);
+  const [isRunningDiagnostic, setIsRunningDiagnostic] = useState(false);
 
   // Charger les données depuis l'API
   useEffect(() => {
@@ -146,29 +153,53 @@ const PerformanceSettings: React.FC = () => {
       setConfig(updatedConfig);
 
       setLoading(false);
-      alert('Configuration des performances enregistrée avec succès');
+      toast({
+        title: "Configuration sauvegardée",
+        description: "Configuration des performances enregistrée avec succès",
+        variant: "default",
+      });
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la configuration:', error);
       setLoading(false);
-      alert('Erreur lors de la sauvegarde de la configuration');
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la sauvegarde de la configuration",
+        variant: "destructive",
+      });
     }
+  };
+
+  // Ouvrir la boîte de dialogue de confirmation de diagnostic
+  const openDiagnosticDialog = () => {
+    setIsDiagnosticDialogOpen(true);
   };
 
   // Fonction pour lancer un diagnostic
   const runDiagnostic = async () => {
     try {
-      setLoading(true);
+      setIsRunningDiagnostic(true);
 
       // Récupérer les métriques de performance
       const metricsResponse = await axios.get('http://localhost:3001/api/performancemetrics');
       setMetrics(metricsResponse.data);
 
-      setLoading(false);
-      alert('Diagnostic terminé avec succès');
+      toast({
+        title: "Diagnostic terminé",
+        description: "Le diagnostic des performances a été effectué avec succès",
+        variant: "default",
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDiagnosticDialogOpen(false);
     } catch (error) {
       console.error('Erreur lors du diagnostic:', error);
-      setLoading(false);
-      alert('Erreur lors du diagnostic');
+      toast({
+        title: "Erreur",
+        description: "Erreur lors du diagnostic des performances",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRunningDiagnostic(false);
     }
   };
 
@@ -405,8 +436,8 @@ const PerformanceSettings: React.FC = () => {
 
               <Button
                 variant="outline"
-                onClick={runDiagnostic}
-                disabled={loading}
+                onClick={openDiagnosticDialog}
+                disabled={loading || isRunningDiagnostic}
               >
                 <Activity className="h-4 w-4 mr-2" />
                 Lancer un diagnostic
@@ -416,6 +447,29 @@ const PerformanceSettings: React.FC = () => {
         </Card>
       </div>
       )}
+
+      {/* Boîte de dialogue de confirmation de diagnostic */}
+      <ConfirmationDialog
+        open={isDiagnosticDialogOpen}
+        onOpenChange={setIsDiagnosticDialogOpen}
+        title="Lancer un diagnostic"
+        description="Êtes-vous sûr de vouloir lancer un diagnostic complet du système ? Cette opération peut prendre quelques instants et pourrait affecter temporairement les performances."
+        actionLabel="Lancer le diagnostic"
+        variant="default"
+        isProcessing={isRunningDiagnostic}
+        icon={<Activity className="h-4 w-4 mr-2" />}
+        onConfirm={runDiagnostic}
+      >
+        <div>
+          <p className="text-sm text-muted-foreground">
+            Le diagnostic va analyser les performances du système et mettre à jour les métriques affichées.
+          </p>
+          <p className="text-sm font-medium text-amber-500 mt-2">
+            <AlertTriangle className="h-4 w-4 inline-block mr-1" />
+            Cette opération peut ralentir temporairement le système.
+          </p>
+        </div>
+      </ConfirmationDialog>
     </div>
   );
 };

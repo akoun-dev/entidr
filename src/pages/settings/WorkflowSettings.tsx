@@ -5,12 +5,13 @@ import { Input } from '../../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Label } from '../../components/ui/label';
-import { Workflow, Plus, Pencil, Trash2, Users, ArrowRight, Bell, Loader2, X, Check } from 'lucide-react';
+import { Workflow, Plus, Pencil, Trash2, Users, ArrowRight, Bell, Loader2, X, Check, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Switch } from '../../components/ui/switch';
 import { Textarea } from '../../components/ui/textarea';
 import axios from 'axios';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Interface pour les conditions de workflow
 interface WorkflowCondition {
@@ -244,29 +245,44 @@ const WorkflowSettings: React.FC = () => {
     });
   };
 
-  // Fonction pour supprimer un workflow
-  const [deletingWorkflowId, setDeletingWorkflowId] = useState<string | null>(null);
+  // États pour la confirmation de suppression
+  const [workflowToDelete, setWorkflowToDelete] = useState<Workflow | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDeleteWorkflow = async (id: string) => {
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (workflow: Workflow) => {
+    setWorkflowToDelete(workflow);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Supprimer un workflow
+  const handleDeleteWorkflow = async () => {
+    if (!workflowToDelete) return;
+
+    setIsDeleting(true);
+    setError(null);
+
     try {
-      setError(null);
+      // Supprimer le workflow via l'API
+      await axios.delete(`/api/workflows/${workflowToDelete.id}`);
 
-      // Confirmer la suppression
-      if (window.confirm('Êtes-vous sûr de vouloir supprimer ce workflow ? Cette action est irréversible.')) {
-        // Supprimer le workflow via l'API
-        await axios.delete(`/api/workflows/${id}`);
+      // Mettre à jour la liste des workflows
+      setWorkflows(workflows.filter(w => w.id !== workflowToDelete.id));
 
-        // Mettre à jour la liste des workflows
-        setWorkflows(workflows.filter(w => w.id !== id));
-
-        // Si le workflow supprimé était sélectionné, désélectionner
-        if (selectedWorkflow === id) {
-          setSelectedWorkflow(workflows.length > 1 ? workflows.find(w => w.id !== id)?.id || null : null);
-        }
+      // Si le workflow supprimé était sélectionné, désélectionner
+      if (selectedWorkflow === workflowToDelete.id) {
+        setSelectedWorkflow(workflows.length > 1 ? workflows.find(w => w.id !== workflowToDelete.id)?.id || null : null);
       }
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setWorkflowToDelete(null);
     } catch (err) {
       console.error('Erreur lors de la suppression du workflow:', err);
       setError('Erreur lors de la suppression du workflow. Veuillez réessayer.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -743,7 +759,7 @@ const WorkflowSettings: React.FC = () => {
                                 size="icon"
                                 onClick={(e) => {
                                   e.stopPropagation(); // Empêcher la sélection du workflow
-                                  handleDeleteWorkflow(workflow.id);
+                                  openDeleteDialog(workflow);
                                 }}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -839,6 +855,41 @@ const WorkflowSettings: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer le workflow"
+        description="Êtes-vous sûr de vouloir supprimer ce workflow ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<AlertTriangle className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteWorkflow}
+      >
+        {workflowToDelete && (
+          <div>
+            <p className="font-medium">{workflowToDelete.name}</p>
+            <p className="text-sm text-muted-foreground">
+              {workflowToDelete.description}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Type: <Badge variant="outline">
+                {workflowToDelete.entityType || 'Général'}
+              </Badge>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Statut: <Badge variant={workflowToDelete.active ? 'default' : 'secondary'}>
+                {workflowToDelete.active ? 'Actif' : 'Inactif'}
+              </Badge>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Nombre d'étapes: {workflowToDelete.steps.length}
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

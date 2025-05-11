@@ -10,7 +10,9 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Checkbox } from '../../components/ui/checkbox';
-import { Users, Search, Plus, Pencil, Trash2, Shield, UserPlus, Lock } from 'lucide-react';
+import { Users, Search, Plus, Pencil, Trash2, Shield, UserPlus, Lock, Loader2, AlertTriangle } from 'lucide-react';
+import { useToast } from '../../components/ui/use-toast';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Types pour les groupes
 interface Group {
@@ -35,57 +37,64 @@ interface Permission {
  * Permet de gérer les groupes et leurs permissions
  */
 const GroupsSettings: React.FC = () => {
+  const { toast } = useToast();
+
   // État pour les groupes
   const [groups, setGroups] = useState<Group[]>([
-    { 
-      id: '1', 
-      name: 'Administrateurs', 
-      description: 'Accès complet à toutes les fonctionnalités du système', 
-      memberCount: 2, 
+    {
+      id: '1',
+      name: 'Administrateurs',
+      description: 'Accès complet à toutes les fonctionnalités du système',
+      memberCount: 2,
       isSystem: true,
       permissions: ['all']
     },
-    { 
-      id: '2', 
-      name: 'Gestionnaires', 
-      description: 'Accès à la plupart des fonctionnalités, sans les paramètres système', 
-      memberCount: 5, 
+    {
+      id: '2',
+      name: 'Gestionnaires',
+      description: 'Accès à la plupart des fonctionnalités, sans les paramètres système',
+      memberCount: 5,
       isSystem: false,
       permissions: ['read_all', 'write_all', 'delete_documents', 'manage_users']
     },
-    { 
-      id: '3', 
-      name: 'Comptabilité', 
-      description: 'Accès aux modules financiers et comptables', 
-      memberCount: 3, 
+    {
+      id: '3',
+      name: 'Comptabilité',
+      description: 'Accès aux modules financiers et comptables',
+      memberCount: 3,
       isSystem: false,
       permissions: ['read_finance', 'write_finance', 'read_reports']
     },
-    { 
-      id: '4', 
-      name: 'Ressources Humaines', 
-      description: 'Accès aux modules RH et gestion du personnel', 
-      memberCount: 2, 
+    {
+      id: '4',
+      name: 'Ressources Humaines',
+      description: 'Accès aux modules RH et gestion du personnel',
+      memberCount: 2,
       isSystem: false,
       permissions: ['read_hr', 'write_hr', 'read_employees']
     },
-    { 
-      id: '5', 
-      name: 'Ventes', 
-      description: 'Accès aux modules de vente et CRM', 
-      memberCount: 4, 
+    {
+      id: '5',
+      name: 'Ventes',
+      description: 'Accès aux modules de vente et CRM',
+      memberCount: 4,
       isSystem: false,
       permissions: ['read_sales', 'write_sales', 'read_customers']
     },
-    { 
-      id: '6', 
-      name: 'Marketing', 
-      description: 'Accès aux modules marketing et campagnes', 
-      memberCount: 2, 
+    {
+      id: '6',
+      name: 'Marketing',
+      description: 'Accès aux modules marketing et campagnes',
+      memberCount: 2,
       isSystem: false,
       permissions: ['read_marketing', 'write_marketing', 'read_campaigns']
     }
   ]);
+
+  // États pour la confirmation de suppression
+  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Liste des permissions disponibles
   const [permissions, setPermissions] = useState<Permission[]>([
@@ -115,8 +124,8 @@ const GroupsSettings: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Filtrer les groupes en fonction du terme de recherche
-  const filteredGroups = groups.filter(group => 
-    group.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredGroups = groups.filter(group =>
+    group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     group.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -133,22 +142,57 @@ const GroupsSettings: React.FC = () => {
     setEditingGroup(null);
   };
 
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (group: Group) => {
+    setGroupToDelete(group);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Gérer la suppression d'un groupe
-  const handleDeleteGroup = (id: string) => {
-    setGroups(groups.filter(g => g.id !== id));
+  const handleDeleteGroup = async () => {
+    if (!groupToDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Simuler une suppression
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Mettre à jour l'état local
+      setGroups(groups.filter(g => g.id !== groupToDelete.id));
+
+      toast({
+        title: "Groupe supprimé",
+        description: `Le groupe "${groupToDelete.name}" a été supprimé avec succès.`,
+        variant: "default",
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setGroupToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du groupe:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le groupe.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Obtenir les permissions par catégorie
   const getPermissionsByCategory = () => {
     const categories: Record<string, Permission[]> = {};
-    
+
     permissions.forEach(permission => {
       if (!categories[permission.category]) {
         categories[permission.category] = [];
       }
       categories[permission.category].push(permission);
     });
-    
+
     return categories;
   };
 
@@ -174,7 +218,7 @@ const GroupsSettings: React.FC = () => {
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button 
+              <Button
                 className="bg-ivory-orange hover:bg-ivory-orange/90"
                 onClick={() => setEditingGroup(null)}
               >
@@ -186,17 +230,17 @@ const GroupsSettings: React.FC = () => {
               <DialogHeader>
                 <DialogTitle>{editingGroup ? 'Modifier le groupe' : 'Ajouter un groupe'}</DialogTitle>
                 <DialogDescription>
-                  {editingGroup 
-                    ? 'Modifiez les informations du groupe et ses permissions' 
+                  {editingGroup
+                    ? 'Modifiez les informations du groupe et ses permissions'
                     : 'Remplissez les informations pour ajouter un nouveau groupe'}
                 </DialogDescription>
               </DialogHeader>
-              <GroupForm 
-                group={editingGroup || { 
-                  id: '', 
-                  name: '', 
-                  description: '', 
-                  memberCount: 0, 
+              <GroupForm
+                group={editingGroup || {
+                  id: '',
+                  name: '',
+                  description: '',
+                  memberCount: 0,
                   isSystem: false,
                   permissions: []
                 }}
@@ -250,8 +294,8 @@ const GroupsSettings: React.FC = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
                           onClick={() => {
                             setEditingGroup(group);
@@ -261,13 +305,17 @@ const GroupsSettings: React.FC = () => {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteGroup(group.id)}
-                          disabled={group.isSystem}
+                          onClick={() => openDeleteDialog(group)}
+                          disabled={group.isSystem || (isDeleting && groupToDelete?.id === group.id)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {isDeleting && groupToDelete?.id === group.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </TableCell>
@@ -278,6 +326,35 @@ const GroupsSettings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer le groupe"
+        description="Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<Trash2 className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteGroup}
+      >
+        {groupToDelete && (
+          <div>
+            <p className="font-medium">{groupToDelete.name}</p>
+            <p className="text-sm text-muted-foreground">
+              {groupToDelete.description}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Membres: {groupToDelete.memberCount}
+            </p>
+            <p className="text-sm font-medium text-amber-500 mt-2">
+              <AlertTriangle className="h-4 w-4 inline-block mr-1" />
+              Les utilisateurs de ce groupe perdront les permissions associées.
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };
@@ -331,7 +408,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ group, permissions, permissionsBy
           <TabsTrigger value="details">Détails</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="details" className="space-y-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">Nom</Label>
@@ -356,7 +433,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ group, permissions, permissionsBy
             />
           </div>
         </TabsContent>
-        
+
         <TabsContent value="permissions" className="py-4">
           <div className="space-y-4">
             {Object.entries(permissionsByCategory).map(([category, categoryPermissions]) => (
@@ -365,7 +442,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ group, permissions, permissionsBy
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2">
                   {categoryPermissions.map(permission => (
                     <div key={permission.id} className="flex items-start space-x-2">
-                      <Checkbox 
+                      <Checkbox
                         id={permission.id}
                         checked={formData.permissions.includes(permission.id) || formData.permissions.includes('all')}
                         disabled={formData.permissions.includes('all')}
@@ -384,10 +461,10 @@ const GroupForm: React.FC<GroupFormProps> = ({ group, permissions, permissionsBy
                 </div>
               </div>
             ))}
-            
+
             <div className="pt-4 border-t">
               <div className="flex items-start space-x-2">
-                <Checkbox 
+                <Checkbox
                   id="all"
                   checked={formData.permissions.includes('all')}
                   onCheckedChange={(checked) => {
@@ -411,7 +488,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ group, permissions, permissionsBy
           </div>
         </TabsContent>
       </Tabs>
-      
+
       <DialogFooter className="mt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Annuler

@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Label } from '../../components/ui/label';
 import { Checkbox } from '../../components/ui/checkbox';
-import { Search, Plus, Pencil, Trash2, Loader2, Languages } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, Loader2, Languages, FileX } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { translationService, type Translation } from '../../services/api';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 /**
  * Page des paramètres des traductions
@@ -25,6 +26,11 @@ const TranslationsSettings: React.FC = () => {
   const [editingTranslation, setEditingTranslation] = useState<Translation | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  // États pour la confirmation de suppression
+  const [translationToDelete, setTranslationToDelete] = useState<Translation | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Charger les traductions
   useEffect(() => {
@@ -92,25 +98,40 @@ const TranslationsSettings: React.FC = () => {
     }
   };
 
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (translation: Translation) => {
+    setTranslationToDelete(translation);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Gérer la suppression
-  const handleDeleteTranslation = async (id: string) => {
-    if (window.confirm('Supprimer cette traduction ?')) {
-      try {
-        await translationService.delete(id);
-        setTranslations(translations.filter(t => t.id !== id));
-        toast({
-          title: 'Succès',
-          description: 'Traduction supprimée',
-          variant: 'default'
-        });
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
-        toast({
-          title: 'Erreur',
-          description: 'Échec de la suppression',
-          variant: 'destructive'
-        });
-      }
+  const handleDeleteTranslation = async () => {
+    if (!translationToDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      await translationService.delete(translationToDelete.id);
+      setTranslations(translations.filter(t => t.id !== translationToDelete.id));
+
+      toast({
+        title: 'Succès',
+        description: 'Traduction supprimée',
+        variant: 'default'
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setTranslationToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Échec de la suppression',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -118,7 +139,7 @@ const TranslationsSettings: React.FC = () => {
   const handleToggleStatus = async (id: string) => {
     try {
       const updated = await translationService.toggleStatus(id);
-      setTranslations(translations.map(t => 
+      setTranslations(translations.map(t =>
         t.id === id ? updated : t
       ));
       toast({
@@ -170,7 +191,7 @@ const TranslationsSettings: React.FC = () => {
                   {editingTranslation ? 'Modifier la traduction' : 'Ajouter une traduction'}
                 </DialogTitle>
                 <DialogDescription>
-                  {editingTranslation 
+                  {editingTranslation
                     ? 'Modifiez les détails de la traduction'
                     : 'Remplissez les champs pour ajouter une nouvelle traduction'}
                 </DialogDescription>
@@ -258,7 +279,7 @@ const TranslationsSettings: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteTranslation(translation.id)}
+                              onClick={() => openDeleteDialog(translation)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -279,6 +300,32 @@ const TranslationsSettings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer la traduction"
+        description="Êtes-vous sûr de vouloir supprimer cette traduction ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<FileX className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteTranslation}
+      >
+        {translationToDelete && (
+          <div>
+            <p className="font-medium">Clé: {translationToDelete.key}</p>
+            <p className="text-sm text-muted-foreground">
+              Locale: <Badge variant="outline">{translationToDelete.locale}</Badge> |
+              Namespace: {translationToDelete.namespace}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2 italic">
+              "{translationToDelete.value}"
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };
@@ -291,11 +338,11 @@ interface TranslationFormProps {
   saving: boolean;
 }
 
-const TranslationForm: React.FC<TranslationFormProps> = ({ 
-  translation, 
-  onSave, 
+const TranslationForm: React.FC<TranslationFormProps> = ({
+  translation,
+  onSave,
   onCancel,
-  saving 
+  saving
 }) => {
   const [formData, setFormData] = useState<Translation>(translation);
 
@@ -375,7 +422,7 @@ const TranslationForm: React.FC<TranslationFormProps> = ({
             <Checkbox
               id="is_default"
               checked={formData.is_default}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 setFormData({...formData, is_default: Boolean(checked)})
               }
             />
@@ -385,7 +432,7 @@ const TranslationForm: React.FC<TranslationFormProps> = ({
               <Switch
                 id="active"
                 checked={formData.active}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({...formData, active: Boolean(checked)})
                 }
               />
@@ -410,8 +457,8 @@ const TranslationForm: React.FC<TranslationFormProps> = ({
         <Button type="button" variant="outline" onClick={onCancel} disabled={saving}>
           Annuler
         </Button>
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="bg-ivory-orange hover:bg-ivory-orange/90"
           disabled={saving}
         >

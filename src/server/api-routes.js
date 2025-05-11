@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberFormat, TimeFormat, Translation, EmailServer, SecuritySetting, ApiKey, AutomationRule, LoggingSetting, DocumentLayout, ReportTemplate, Printer, PaymentProvider, ShippingMethod, ExternalService, AuditLog, AuditConfig, Backup, BackupConfig, ThemeConfig, CustomLogo, ImportConfig, ExportConfig, ImportExportHistory, ComplianceConfig, ConsentRecord, CalendarConfig, Holiday, CalendarIntegration, Sequence, SequenceConfig, PerformanceConfig, NotificationChannel, NotificationTemplate, NotificationPreference, Notification, NotificationConfig, Workflow, WorkflowStep, WorkflowCondition, Sequelize } = require('../models');
+const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberFormat, TimeFormat, Translation, EmailServer, SecuritySetting, ApiKey, AutomationRule, LoggingSetting, DocumentLayout, ReportTemplate, Printer, PaymentProvider, ShippingMethod, ExternalService, AuditLog, AuditConfig, Backup, BackupConfig, ThemeConfig, CustomLogo, ImportConfig, ExportConfig, ImportExportHistory, ComplianceConfig, ConsentRecord, CalendarConfig, Holiday, CalendarIntegration, Sequence, SequenceConfig, PerformanceConfig, NotificationChannel, NotificationTemplate, NotificationPreference, Notification, NotificationConfig, Workflow, WorkflowStep, WorkflowCondition, Module, Sequelize } = require('../models');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { Op } = Sequelize;
@@ -7385,5 +7385,15 @@ router.delete('/workflowconditions/:id', asyncHandler(async (req, res) => {
   await condition.destroy();
   res.status(204).end();
 }));
+
+// Importer le contrôleur des modules
+const moduleController = require('./controllers/moduleController');
+
+// Routes pour les modules
+router.get('/modules', asyncHandler(moduleController.getAllModules));
+router.get('/modules/:name', asyncHandler(moduleController.getModuleByName));
+router.put('/modules/:name/status', asyncHandler(moduleController.toggleModuleStatus));
+router.post('/modules/:name/install', asyncHandler(moduleController.installModule));
+router.post('/modules/:name/uninstall', asyncHandler(moduleController.uninstallModule));
 
 module.exports = router;

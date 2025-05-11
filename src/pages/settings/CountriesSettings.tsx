@@ -8,9 +8,10 @@ import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Globe, Search, Plus, Pencil, Trash2, MapPin, Loader2 } from 'lucide-react';
+import { Globe, Search, Plus, Pencil, Trash2, MapPin, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { countryService, Country as ApiCountry } from '../../services/api';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Types pour les pays
 interface Country {
@@ -51,6 +52,11 @@ const CountriesSettings: React.FC = () => {
   // État pour le pays en cours d'édition
   const [editingCountry, setEditingCountry] = useState<Country | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // États pour la confirmation de suppression
+  const [countryToDelete, setCountryToDelete] = useState<Country | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Charger les pays depuis l'API
   useEffect(() => {
@@ -162,27 +168,41 @@ const CountriesSettings: React.FC = () => {
     }
   };
 
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (country: Country) => {
+    setCountryToDelete(country);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Gérer la suppression d'un pays
-  const handleDeleteCountry = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce pays ?')) {
-      try {
-        await countryService.delete(id);
+  const handleDeleteCountry = async () => {
+    if (!countryToDelete) return;
 
-        setCountries(countries.filter(c => c.id !== id));
+    setIsDeleting(true);
 
-        toast({
-          title: 'Succès',
-          description: 'Le pays a été supprimé avec succès',
-          variant: 'default'
-        });
-      } catch (error) {
-        console.error('Erreur lors de la suppression du pays:', error);
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de supprimer le pays',
-          variant: 'destructive'
-        });
-      }
+    try {
+      await countryService.delete(countryToDelete.id);
+
+      setCountries(countries.filter(c => c.id !== countryToDelete.id));
+
+      toast({
+        title: 'Succès',
+        description: 'Le pays a été supprimé avec succès',
+        variant: 'default'
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setCountryToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du pays:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer le pays',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -364,7 +384,7 @@ const CountriesSettings: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteCountry(country.id)}
+                              onClick={() => openDeleteDialog(country)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -385,6 +405,32 @@ const CountriesSettings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer le pays"
+        description="Êtes-vous sûr de vouloir supprimer ce pays ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<AlertTriangle className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteCountry}
+      >
+        {countryToDelete && (
+          <div>
+            <p className="font-medium">{countryToDelete.name} ({countryToDelete.code})</p>
+            <p className="text-sm text-muted-foreground">
+              Région: <Badge variant="outline">{countryToDelete.region || 'Non spécifiée'}</Badge>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Indicatif: {countryToDelete.phone_code || 'Non spécifié'} |
+              Devise: {countryToDelete.currency_code || 'Non spécifiée'}
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

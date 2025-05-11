@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   DollarSign, Search, Plus, MoreHorizontal,
-  Edit, Trash2, Save, Check, X, ArrowUpDown, Loader2
+  Edit, Trash2, Save, Check, X, ArrowUpDown, Loader2, AlertTriangle
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../components/ui/card';
@@ -30,6 +30,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { useToast } from '../../components/ui/use-toast';
 import { currencyService, Currency as ApiCurrency } from '../../services/api';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 /**
  * Page de gestion des devises
@@ -43,6 +44,11 @@ const CurrenciesSettings: React.FC = () => {
   // État pour le chargement
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // États pour la confirmation de suppression
+  const [currencyToDelete, setCurrencyToDelete] = useState<ApiCurrency | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Toast pour les notifications
   const { toast } = useToast();
@@ -179,27 +185,41 @@ const CurrenciesSettings: React.FC = () => {
     }
   };
 
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (currency: ApiCurrency) => {
+    setCurrencyToDelete(currency);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Supprimer une devise
-  const deleteCurrency = async (currencyId: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette devise ?')) {
-      try {
-        await currencyService.delete(currencyId);
+  const deleteCurrency = async () => {
+    if (!currencyToDelete) return;
 
-        setCurrencies(currencies.filter(currency => currency.id !== currencyId));
+    setIsDeleting(true);
 
-        toast({
-          title: 'Succès',
-          description: 'La devise a été supprimée avec succès',
-          variant: 'default'
-        });
-      } catch (error) {
-        console.error('Erreur lors de la suppression de la devise:', error);
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de supprimer la devise',
-          variant: 'destructive'
-        });
-      }
+    try {
+      await currencyService.delete(currencyToDelete.id);
+
+      setCurrencies(currencies.filter(currency => currency.id !== currencyToDelete.id));
+
+      toast({
+        title: 'Succès',
+        description: 'La devise a été supprimée avec succès',
+        variant: 'default'
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setCurrencyToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la devise:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer la devise',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -575,7 +595,7 @@ const CurrenciesSettings: React.FC = () => {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="flex items-center gap-2 text-destructive focus:text-destructive"
-                              onClick={() => deleteCurrency(currency.id)}
+                              onClick={() => openDeleteDialog(currency)}
                             >
                               <Trash2 className="h-4 w-4" />
                               <span>Supprimer</span>
@@ -603,6 +623,33 @@ const CurrenciesSettings: React.FC = () => {
           </div>
         </CardFooter>
       </Card>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer la devise"
+        description="Êtes-vous sûr de vouloir supprimer cette devise ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<AlertTriangle className="h-4 w-4 mr-2" />}
+        onConfirm={deleteCurrency}
+      >
+        {currencyToDelete && (
+          <div>
+            <p className="font-medium">{currencyToDelete.name} ({currencyToDelete.code})</p>
+            <p className="text-sm text-muted-foreground">
+              Symbole: {currencyToDelete.symbol} |
+              Taux: {currencyToDelete.rate}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Position: {currencyToDelete.position === 'before' ? 'Avant' : 'Après'} |
+              Décimales: {currencyToDelete.decimal_places}
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

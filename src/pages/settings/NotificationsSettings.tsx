@@ -5,7 +5,10 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Switch } from '../../components/ui/switch';
 import { Badge } from '../../components/ui/badge';
-import { Bell, Mail, Smartphone, Webhook, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Bell, Mail, Smartphone, Webhook, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { useToast } from '../../components/ui/use-toast';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 interface NotificationChannel {
   id: string;
@@ -24,6 +27,7 @@ interface NotificationTemplate {
 }
 
 const NotificationsSettings: React.FC = () => {
+  const { toast } = useToast();
   const [channels, setChannels] = useState<NotificationChannel[]>([
     { id: '1', name: 'Email principal', type: 'email', enabled: true, description: 'Notifications par email' },
     { id: '2', name: 'SMS professionnel', type: 'sms', enabled: true, description: 'Notifications par SMS' },
@@ -38,15 +42,60 @@ const NotificationsSettings: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredChannels = channels.filter(channel => 
-    channel.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  // États pour la confirmation de suppression
+  const [channelToDelete, setChannelToDelete] = useState<NotificationChannel | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const filteredChannels = channels.filter(channel =>
+    channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     channel.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const toggleChannelStatus = (id: string) => {
-    setChannels(channels.map(channel => 
+    setChannels(channels.map(channel =>
       channel.id === id ? { ...channel, enabled: !channel.enabled } : channel
     ));
+  };
+
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (channel: NotificationChannel) => {
+    setChannelToDelete(channel);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Supprimer un canal de notification
+  const handleDeleteChannel = async () => {
+    if (!channelToDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Simuler un appel API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Mettre à jour l'état local
+      setChannels(channels.filter(channel => channel.id !== channelToDelete.id));
+
+      toast({
+        title: "Canal supprimé",
+        description: "Le canal de notification a été supprimé avec succès.",
+        variant: "default",
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setChannelToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du canal:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le canal de notification.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -107,13 +156,13 @@ const NotificationsSettings: React.FC = () => {
                       <TableCell>{channel.description}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Switch 
+                          <Switch
                             checked={channel.enabled}
                             onCheckedChange={() => toggleChannelStatus(channel.id)}
                           />
                           <span className={`px-2 py-1 rounded-full text-xs ${
-                            channel.enabled 
-                              ? 'bg-green-100 text-green-800' 
+                            channel.enabled
+                              ? 'bg-green-100 text-green-800'
                               : 'bg-gray-100 text-gray-800'
                           }`}>
                             {channel.enabled ? 'Activé' : 'Désactivé'}
@@ -125,7 +174,11 @@ const NotificationsSettings: React.FC = () => {
                           <Button variant="ghost" size="icon">
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDeleteDialog(channel)}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -154,6 +207,40 @@ const NotificationsSettings: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer le canal de notification"
+        description="Êtes-vous sûr de vouloir supprimer ce canal de notification ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<AlertTriangle className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteChannel}
+      >
+        {channelToDelete && (
+          <div>
+            <p className="font-medium">{channelToDelete.name}</p>
+            <p className="text-sm text-muted-foreground">
+              Type: <Badge variant="outline">
+                {channelToDelete.type === 'email' ? 'Email' :
+                 channelToDelete.type === 'sms' ? 'SMS' :
+                 channelToDelete.type === 'in_app' ? 'Application' : 'Webhook'}
+              </Badge>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Description: {channelToDelete.description}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Statut: <Badge variant={channelToDelete.enabled ? 'default' : 'secondary'}>
+                {channelToDelete.enabled ? 'Activé' : 'Désactivé'}
+              </Badge>
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

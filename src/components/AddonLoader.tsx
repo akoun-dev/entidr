@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import AddonManager from '../core/AddonManager';
 import { getAllModules } from '../core/ModuleRegistry';
+import moduleService from '../services/moduleService';
+import { Module } from '../types/module';
 
 interface AddonLoaderProps {
   children: React.ReactNode;
@@ -17,13 +19,36 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
       const addonManager = AddonManager.getInstance();
 
       try {
+        // Récupérer les modules depuis la base de données
+        let dbModules: Module[] = [];
+        try {
+          dbModules = await moduleService.getAllModules();
+          console.log("Modules récupérés depuis la base de données:", dbModules);
+        } catch (error) {
+          console.warn("Impossible de récupérer les modules depuis la base de données:", error);
+          console.warn("Utilisation des modules du registre uniquement.");
+        }
+
         // Découvrir et charger automatiquement tous les modules disponibles
         console.log("Chargement des modules depuis le registre...");
-        const modules = await getAllModules();
-        console.log(`${modules.length} modules découverts:`, modules.map(m => m.manifest.name));
+        const registryModules = await getAllModules();
+        console.log(`${registryModules.length} modules découverts:`, registryModules.map(m => m.manifest.name));
 
-        // Enregistrer chaque module découvert
-        for (const addon of modules) {
+        // Filtrer les modules actifs
+        const activeModules = registryModules.filter(addon => {
+          // Si le module existe dans la base de données, vérifier son état d'activation
+          const dbModule = dbModules.find(m => m.name === addon.manifest.name);
+          if (dbModule) {
+            return dbModule.active;
+          }
+          // Si le module n'existe pas dans la base de données, l'activer par défaut
+          return true;
+        });
+
+        console.log(`${activeModules.length} modules actifs:`, activeModules.map(m => m.manifest.name));
+
+        // Enregistrer chaque module actif
+        for (const addon of activeModules) {
           console.log(`Enregistrement du module ${addon.manifest.name}...`);
           console.log(`Routes du module ${addon.manifest.name}:`, addon.routes);
           addonManager.registerAddon(addon);
@@ -39,7 +64,7 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
           console.log("Module HR trouvé:", hrAddon);
           console.log("Routes du module HR:", hrAddon.routes);
         } else {
-          console.error("Module HR non trouvé dans le gestionnaire d'addons");
+          console.warn("Module HR non trouvé dans le gestionnaire d'addons");
         }
 
         // Afficher tous les menus enregistrés

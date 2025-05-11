@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Label } from '../../components/ui/label';
 import { Checkbox } from '../../components/ui/checkbox';
-import { Users, Search, Plus, Pencil, Trash2, UserPlus, Mail, Lock, Shield, Loader2 } from 'lucide-react';
+import { Users, Search, Plus, Pencil, Trash2, UserPlus, Mail, Lock, Shield, Loader2, UserX } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { userService, groupService, User as ApiUser } from '../../services/api';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Types pour les utilisateurs
 interface User {
@@ -51,6 +52,11 @@ const UsersSettings: React.FC = () => {
   // État pour l'utilisateur en cours d'édition
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // États pour la confirmation de suppression
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Charger les utilisateurs et les groupes
   useEffect(() => {
@@ -166,26 +172,40 @@ const UsersSettings: React.FC = () => {
     }
   };
 
-  // Gérer la suppression d'un utilisateur
-  const handleDeleteUser = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-      try {
-        await userService.delete(id);
-        setUsers(users.filter(u => u.id !== id));
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
 
-        toast({
-          title: 'Succès',
-          description: 'L\'utilisateur a été supprimé',
-          variant: 'default'
-        });
-      } catch (error) {
-        console.error('Erreur lors de la suppression de l\'utilisateur:', error);
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de supprimer l\'utilisateur',
-          variant: 'destructive'
-        });
-      }
+  // Gérer la suppression d'un utilisateur
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      await userService.delete(userToDelete.id);
+      setUsers(users.filter(u => u.id !== userToDelete.id));
+
+      toast({
+        title: 'Succès',
+        description: 'L\'utilisateur a été supprimé',
+        variant: 'default'
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer l\'utilisateur',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -358,7 +378,7 @@ const UsersSettings: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => openDeleteDialog(user)}
                               disabled={user.role === 'admin'}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -380,6 +400,31 @@ const UsersSettings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer l'utilisateur"
+        description="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<UserX className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteUser}
+      >
+        {userToDelete && (
+          <div>
+            <p className="font-medium">{userToDelete.username}</p>
+            <p className="text-sm text-muted-foreground">
+              {userToDelete.firstName} {userToDelete.lastName} ({userToDelete.email})
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Rôle: {userToDelete.role === 'admin' ? 'Administrateur' : userToDelete.role === 'manager' ? 'Gestionnaire' : 'Utilisateur'}
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

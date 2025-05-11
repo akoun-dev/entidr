@@ -5,9 +5,10 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Button } from '../../components/ui/button';
-import { Building2, MapPin, Phone, Mail, Globe, FileText, Upload, Loader2 } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, Globe, FileText, Upload, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { parameterService } from '../../services/api';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 /**
  * Page des paramètres de la société
@@ -34,6 +35,13 @@ const CompanySettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // État pour la confirmation de réinitialisation
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  // État pour stocker les paramètres originaux
+  const [originalParams, setOriginalParams] = useState({...companyParams});
+
   // Toast pour les notifications
   const { toast } = useToast();
 
@@ -54,6 +62,7 @@ const CompanySettings: React.FC = () => {
         });
 
         setCompanyParams(newParams);
+        setOriginalParams({...newParams});
         setLoading(false);
       } catch (error) {
         console.error('Erreur lors du chargement des paramètres:', error);
@@ -94,6 +103,9 @@ const CompanySettings: React.FC = () => {
       // Mettre à jour les paramètres
       await parameterService.updateBatch(paramsToUpdate);
 
+      // Mettre à jour les paramètres originaux
+      setOriginalParams({...companyParams});
+
       toast({
         title: 'Succès',
         description: 'Les paramètres de l\'entreprise ont été enregistrés',
@@ -108,6 +120,51 @@ const CompanySettings: React.FC = () => {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Ouvrir la boîte de dialogue de confirmation de réinitialisation
+  const openResetDialog = () => {
+    // Vérifier s'il y a des modifications non enregistrées
+    const hasChanges = JSON.stringify(companyParams) !== JSON.stringify(originalParams);
+
+    if (hasChanges) {
+      setIsResetDialogOpen(true);
+    } else {
+      // S'il n'y a pas de modifications, pas besoin de confirmation
+      toast({
+        title: 'Information',
+        description: 'Aucune modification à annuler',
+        variant: 'default'
+      });
+    }
+  };
+
+  // Réinitialiser les paramètres
+  const handleReset = () => {
+    setIsResetting(true);
+
+    try {
+      // Restaurer les paramètres originaux
+      setCompanyParams({...originalParams});
+
+      toast({
+        title: 'Succès',
+        description: 'Les modifications ont été annulées',
+        variant: 'default'
+      });
+
+      // Fermer la boîte de dialogue
+      setIsResetDialogOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation des paramètres:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'annuler les modifications',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -296,10 +353,11 @@ const CompanySettings: React.FC = () => {
         <div className="flex justify-end gap-3 mt-6">
           <Button
             variant="outline"
-            disabled={loading || saving}
-            onClick={() => window.location.reload()}
+            disabled={loading || saving || isResetting}
+            onClick={openResetDialog}
           >
-            Annuler
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Annuler les modifications
           </Button>
           <Button
             className="bg-ivory-orange hover:bg-ivory-orange/90"
@@ -317,6 +375,25 @@ const CompanySettings: React.FC = () => {
           </Button>
         </div>
       </Tabs>
+
+      {/* Boîte de dialogue de confirmation de réinitialisation */}
+      <ConfirmationDialog
+        open={isResetDialogOpen}
+        onOpenChange={setIsResetDialogOpen}
+        title="Annuler les modifications"
+        description="Êtes-vous sûr de vouloir annuler toutes les modifications non enregistrées ? Cette action est irréversible."
+        actionLabel="Annuler les modifications"
+        variant="default"
+        isProcessing={isResetting}
+        icon={<RefreshCw className="h-4 w-4 mr-2" />}
+        onConfirm={handleReset}
+      >
+        <div>
+          <p className="text-sm text-muted-foreground">
+            Toutes les modifications que vous avez apportées seront perdues et les paramètres seront restaurés à leur état précédent.
+          </p>
+        </div>
+      </ConfirmationDialog>
     </div>
   );
 };

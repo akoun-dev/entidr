@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Mail, Send, Server, TestTube2, Loader2, Plus, Check, X, AlertCircle } from 'lucide-react';
+import { Mail, Send, Server, TestTube2, Loader2, Plus, Check, X, AlertCircle, AlertTriangle, Trash2 } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { emailServerService, type EmailServer } from '../../services/api';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '../../components/ui/badge';
 import { Switch } from '../../components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 const EmailSettings: React.FC = () => {
   const { toast } = useToast();
@@ -21,6 +22,11 @@ const EmailSettings: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // États pour la confirmation de suppression
+  const [serverToDelete, setServerToDelete] = useState<EmailServer | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // État pour le formulaire
   const [emailConfig, setEmailConfig] = useState({
@@ -226,27 +232,31 @@ const EmailSettings: React.FC = () => {
     }
   };
 
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (server: EmailServer) => {
+    // Empêcher la suppression d'un serveur par défaut
+    if (server.is_default) {
+      toast({
+        title: 'Action impossible',
+        description: 'Vous ne pouvez pas supprimer un serveur par défaut. Veuillez d\'abord définir un autre serveur comme serveur par défaut.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setServerToDelete(server);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Supprimer un serveur d'email
-  const handleDeleteServer = async (server: EmailServer) => {
+  const handleDeleteServer = async () => {
+    if (!serverToDelete) return;
+
+    setIsDeleting(true);
+
     try {
-      // Empêcher la suppression d'un serveur par défaut
-      if (server.is_default) {
-        toast({
-          title: 'Action impossible',
-          description: 'Vous ne pouvez pas supprimer un serveur par défaut. Veuillez d\'abord définir un autre serveur comme serveur par défaut.',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le serveur "${server.name}" ?`)) {
-        return;
-      }
-
-      setLoading(true);
-
       // Supprimer le serveur
-      await emailServerService.delete(server.id);
+      await emailServerService.delete(serverToDelete.id);
 
       // Mettre à jour la liste des serveurs
       const servers = await emailServerService.getAll();
@@ -257,6 +267,10 @@ const EmailSettings: React.FC = () => {
         description: 'Le serveur d\'email a été supprimé avec succès',
         variant: 'default'
       });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setServerToDelete(null);
     } catch (error) {
       console.error('Erreur lors de la suppression du serveur d\'email:', error);
       toast({
@@ -265,7 +279,7 @@ const EmailSettings: React.FC = () => {
         variant: 'destructive'
       });
     } finally {
-      setLoading(false);
+      setIsDeleting(false);
     }
   };
 
@@ -452,7 +466,7 @@ const EmailSettings: React.FC = () => {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDeleteServer(server)}
+                            onClick={() => openDeleteDialog(server)}
                             disabled={loading || server.is_default}
                           >
                             Supprimer
@@ -695,6 +709,37 @@ const EmailSettings: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer le serveur d'email"
+        description="Êtes-vous sûr de vouloir supprimer ce serveur d'email ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<Trash2 className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteServer}
+      >
+        {serverToDelete && (
+          <div>
+            <p className="font-medium">{serverToDelete.name}</p>
+            <p className="text-sm text-muted-foreground">
+              Protocole: {serverToDelete.protocol.toUpperCase()} |
+              Serveur: {serverToDelete.host}:{serverToDelete.port}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Email d'expédition: {serverToDelete.from_email}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Statut: <Badge variant={serverToDelete.active ? "success" : "secondary"}>
+                {serverToDelete.active ? "Actif" : "Inactif"}
+              </Badge>
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };

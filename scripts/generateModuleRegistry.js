@@ -26,6 +26,122 @@ function isValidModule(modulePath) {
 }
 
 /**
+ * Lit le manifeste d'un module
+ * @param {string} modulePath Chemin vers le dossier du module
+ * @returns {Object|null} Manifeste du module ou null en cas d'erreur
+ */
+function readModuleManifest(modulePath) {
+  try {
+    const manifestPath = path.join(modulePath, 'manifest.ts');
+    const manifestContent = fs.readFileSync(manifestPath, 'utf8');
+
+    // Extraire les informations du manifeste à l'aide d'expressions régulières
+    // Note: Cette approche est simplifiée et pourrait ne pas fonctionner pour tous les cas
+    // Une approche plus robuste serait d'utiliser un transpileur TypeScript
+
+    // Extraire le nom
+    const nameMatch = manifestContent.match(/name:\s*['"]([^'"]+)['"]/);
+    const name = nameMatch ? nameMatch[1] : null;
+
+    // Extraire les dépendances
+    const depsMatch = manifestContent.match(/dependencies:\s*\[(.*?)\]/s);
+    const depsString = depsMatch ? depsMatch[1] : '';
+    const dependencies = depsString
+      .split(',')
+      .map(dep => dep.trim().replace(/['"]/g, ''))
+      .filter(dep => dep);
+
+    // Extraire les modèles
+    const modelsMatch = manifestContent.match(/models:\s*\[(.*?)\]/s);
+    const modelsString = modelsMatch ? modelsMatch[1] : '';
+    const models = modelsString
+      .split(',')
+      .map(model => {
+        const trimmed = model.trim();
+        if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+          // C'est un objet de définition de modèle, extraire le nom
+          const nameMatch = trimmed.match(/name:\s*['"]([^'"]+)['"]/);
+          return nameMatch ? nameMatch[1] : null;
+        }
+        return trimmed.replace(/['"]/g, '');
+      })
+      .filter(model => model);
+
+    return {
+      name,
+      dependencies,
+      models
+    };
+  } catch (error) {
+    console.error(`Erreur lors de la lecture du manifeste du module ${path.basename(modulePath)}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Trie les modules en fonction de leurs dépendances
+ * @param {string[]} moduleNames Noms des modules
+ * @param {Object} manifestsMap Map des manifestes par nom de module
+ * @returns {string[]} Modules triés
+ */
+function sortModulesByDependencies(moduleNames, manifestsMap) {
+  // Construire un graphe de dépendances
+  const graph = {};
+
+  // Initialiser le graphe
+  moduleNames.forEach(name => {
+    graph[name] = [];
+  });
+
+  // Ajouter les dépendances au graphe
+  moduleNames.forEach(name => {
+    const manifest = manifestsMap[name];
+    if (manifest && manifest.dependencies) {
+      manifest.dependencies.forEach(dep => {
+        if (moduleNames.includes(dep)) {
+          graph[name].push(dep);
+        }
+      });
+    }
+  });
+
+  // Tri topologique
+  const visited = {};
+  const temp = {};
+  const result = [];
+
+  function visit(name) {
+    if (temp[name]) {
+      // Cycle détecté
+      console.error(`Cycle de dépendances détecté impliquant le module ${name}`);
+      return;
+    }
+
+    if (!visited[name]) {
+      temp[name] = true;
+
+      // Visiter les dépendances
+      graph[name].forEach(dep => {
+        visit(dep);
+      });
+
+      temp[name] = false;
+      visited[name] = true;
+      result.unshift(name);
+    }
+  }
+
+  // Visiter tous les modules
+  moduleNames.forEach(name => {
+    if (!visited[name]) {
+      visit(name);
+    }
+  });
+
+  return result;
+}
+
+/**
  * Génère le contenu du fichier ModuleRegistry.ts
  */
 function generateRegistryContent(moduleNames) {
@@ -146,8 +262,22 @@ function main() {
       console.log(`Modules valides trouvés: ${validModules.join(', ')}`);
     }
 
+    // Lire les manifestes des modules
+    const manifests = {};
+    validModules.forEach(moduleName => {
+      const modulePath = path.join(ADDONS_DIR, moduleName);
+      const manifest = readModuleManifest(modulePath);
+      if (manifest) {
+        manifests[moduleName] = manifest;
+      }
+    });
+
+    // Trier les modules en fonction de leurs dépendances
+    const sortedModules = sortModulesByDependencies(validModules, manifests);
+    console.log(`Ordre de chargement des modules: ${sortedModules.join(', ')}`);
+
     // Générer le contenu du fichier ModuleRegistry.ts
-    const content = generateRegistryContent(validModules);
+    const content = generateRegistryContent(sortedModules);
 
     // Créer le dossier src/core s'il n'existe pas
     const coreDir = path.dirname(OUTPUT_FILE);
@@ -158,6 +288,12 @@ function main() {
     // Écrire le fichier ModuleRegistry.ts
     fs.writeFileSync(OUTPUT_FILE, content);
     console.log(`Fichier ModuleRegistry.ts généré avec succès: ${OUTPUT_FILE}`);
+
+    // Mettre à jour la base de données (si nécessaire)
+    // Note: Cette partie serait idéalement gérée par un script séparé
+    console.log('Pour mettre à jour la base de données avec les informations des modules:');
+    console.log('1. Exécutez les migrations: npx sequelize-cli db:migrate');
+    console.log('2. Exécutez les seeders: npx sequelize-cli db:seed:all');
   } catch (error) {
     console.error('Erreur lors de la génération du registre des modules:', error);
     process.exit(1);

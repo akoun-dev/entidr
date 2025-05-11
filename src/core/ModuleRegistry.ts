@@ -10,11 +10,11 @@ import { Addon } from '../types/addon';
 // Liste des noms de modules disponibles
 // Cette liste est générée automatiquement en fonction des modules présents dans le dossier addons
 export const AVAILABLE_MODULE_NAMES = [
-  'crm',
-  'finance',
-  'hr',
-  'inventory',
   'project',
+  'inventory',
+  'hr',
+  'finance',
+  'crm',
 ];
 
 // Fonction pour charger dynamiquement un module

@@ -7,10 +7,11 @@ import { Switch } from '../../components/ui/switch';
 import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
-import { Languages, Search, Plus, Pencil, Trash2, Check, Globe, Loader2 } from 'lucide-react';
+import { Languages, Search, Plus, Pencil, Trash2, Check, Globe, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { languageService, Language as ApiLanguage } from '../../services/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Types pour les langues
 interface Language {
@@ -44,6 +45,11 @@ const LanguagesSettings: React.FC = () => {
   // État pour la langue en cours d'édition
   const [editingLanguage, setEditingLanguage] = useState<Language | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // États pour la confirmation de suppression
+  const [languageToDelete, setLanguageToDelete] = useState<Language | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Charger les langues depuis l'API
   useEffect(() => {
@@ -150,27 +156,41 @@ const LanguagesSettings: React.FC = () => {
     }
   };
 
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteDialog = (language: Language) => {
+    setLanguageToDelete(language);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Gérer la suppression d'une langue
-  const handleDeleteLanguage = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette langue ?')) {
-      try {
-        await languageService.delete(id);
+  const handleDeleteLanguage = async () => {
+    if (!languageToDelete) return;
 
-        setLanguages(languages.filter(l => l.id !== id));
+    setIsDeleting(true);
 
-        toast({
-          title: 'Succès',
-          description: 'La langue a été supprimée avec succès',
-          variant: 'default'
-        });
-      } catch (error) {
-        console.error('Erreur lors de la suppression de la langue:', error);
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de supprimer la langue',
-          variant: 'destructive'
-        });
-      }
+    try {
+      await languageService.delete(languageToDelete.id);
+
+      setLanguages(languages.filter(l => l.id !== languageToDelete.id));
+
+      toast({
+        title: 'Succès',
+        description: 'La langue a été supprimée avec succès',
+        variant: 'default'
+      });
+
+      // Fermer la boîte de dialogue
+      setIsDeleteDialogOpen(false);
+      setLanguageToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la langue:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer la langue',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -380,7 +400,7 @@ const LanguagesSettings: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteLanguage(language.id)}
+                              onClick={() => openDeleteDialog(language)}
                               disabled={language.is_default}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -402,6 +422,33 @@ const LanguagesSettings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Supprimer la langue"
+        description="Êtes-vous sûr de vouloir supprimer cette langue ? Cette action est irréversible."
+        actionLabel="Supprimer"
+        variant="destructive"
+        isProcessing={isDeleting}
+        icon={<AlertTriangle className="h-4 w-4 mr-2" />}
+        onConfirm={handleDeleteLanguage}
+      >
+        {languageToDelete && (
+          <div>
+            <p className="font-medium">{languageToDelete.name} ({languageToDelete.code})</p>
+            <p className="text-sm text-muted-foreground">
+              Nom natif: {languageToDelete.native_name || 'Non spécifié'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Direction: <Badge variant="outline">
+                {languageToDelete.direction === 'rtl' ? 'Droite à gauche' : 'Gauche à droite'}
+              </Badge>
+            </p>
+          </div>
+        )}
+      </ConfirmationDialog>
     </div>
   );
 };
