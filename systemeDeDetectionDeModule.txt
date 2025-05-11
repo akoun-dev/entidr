@@ -1,0 +1,14 @@
+Chargement au démarrage (Boot)
+
+    Il parcourt les chemins définis dans addons.
+
+    Il liste tous les dossiers contenant un fichier manifest.ts.
+
+    Il lit et évalue chaque fichier manifest.ts pour construire une liste interne de tous les modules disponibles.
+
+    Enregister les modules dans une table en base de données.
+
+
+
+Installation et mise à jour
+    Creation de modeles du modules etc

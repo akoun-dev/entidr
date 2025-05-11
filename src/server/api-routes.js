@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberFormat, TimeFormat, Translation, EmailServer, SecuritySetting, ApiKey, AutomationRule, LoggingSetting, DocumentLayout, ReportTemplate, Printer, PaymentProvider, ShippingMethod, ExternalService, AuditLog, AuditConfig, Backup, BackupConfig, ThemeConfig, CustomLogo, ImportConfig, ExportConfig, ImportExportHistory, ComplianceConfig, ConsentRecord, CalendarConfig, Holiday, CalendarIntegration, Sequence, SequenceConfig, PerformanceConfig, NotificationChannel, NotificationTemplate, NotificationPreference, Notification, NotificationConfig, Sequelize } = require('../models');
+const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberFormat, TimeFormat, Translation, EmailServer, SecuritySetting, ApiKey, AutomationRule, LoggingSetting, DocumentLayout, ReportTemplate, Printer, PaymentProvider, ShippingMethod, ExternalService, AuditLog, AuditConfig, Backup, BackupConfig, ThemeConfig, CustomLogo, ImportConfig, ExportConfig, ImportExportHistory, ComplianceConfig, ConsentRecord, CalendarConfig, Holiday, CalendarIntegration, Sequence, SequenceConfig, PerformanceConfig, NotificationChannel, NotificationTemplate, NotificationPreference, Notification, NotificationConfig, Workflow, WorkflowStep, WorkflowCondition, Sequelize } = require('../models');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { Op } = Sequelize;
@@ -6849,6 +6849,541 @@ router.put('/notificationconfig', asyncHandler(async (req, res) => {
   };
 
   res.json(transformedConfig);
+}));
+
+// Routes pour la catégorie "Workflows"
+// 1. Routes pour les workflows
+router.get('/workflows', asyncHandler(async (req, res) => {
+  const workflows = await Workflow.findAll({
+    order: [['priority', 'ASC'], ['name', 'ASC']]
+  });
+
+  // Transformer les données
+  const transformedWorkflows = workflows.map(workflow => ({
+    id: workflow.id.toString(),
+    name: workflow.name,
+    description: workflow.description || '',
+    entityType: workflow.entityType,
+    triggerEvent: workflow.triggerEvent,
+    active: workflow.active,
+    priority: workflow.priority,
+    config: workflow.config || {}
+  }));
+
+  res.json(transformedWorkflows);
+}));
+
+router.get('/workflows/:id', asyncHandler(async (req, res) => {
+  const workflow = await Workflow.findByPk(req.params.id, {
+    include: [
+      {
+        model: WorkflowStep,
+        as: 'steps',
+        include: [
+          {
+            model: WorkflowCondition,
+            as: 'conditions'
+          }
+        ]
+      }
+    ]
+  });
+
+  if (!workflow) {
+    return res.status(404).json({ message: 'Workflow non trouvé' });
+  }
+
+  // Transformer les données
+  const transformedWorkflow = {
+    id: workflow.id.toString(),
+    name: workflow.name,
+    description: workflow.description || '',
+    entityType: workflow.entityType,
+    triggerEvent: workflow.triggerEvent,
+    active: workflow.active,
+    priority: workflow.priority,
+    config: workflow.config || {},
+    steps: workflow.steps ? workflow.steps.map(step => ({
+      id: step.id.toString(),
+      name: step.name,
+      type: step.type,
+      assignee: step.assignee,
+      assigneeType: step.assigneeType,
+      sequence: step.sequence,
+      delay: step.delay,
+      timeout: step.timeout,
+      action: step.action,
+      config: step.config || {},
+      active: step.active,
+      conditions: step.conditions ? step.conditions.map(condition => ({
+        id: condition.id.toString(),
+        field: condition.field,
+        operator: condition.operator,
+        value: condition.value,
+        valueType: condition.valueType,
+        logicGroup: condition.logicGroup,
+        sequence: condition.sequence,
+        config: condition.config || {}
+      })) : []
+    })) : []
+  };
+
+  res.json(transformedWorkflow);
+}));
+
+router.post('/workflows', asyncHandler(async (req, res) => {
+  const {
+    name,
+    description,
+    entityType,
+    triggerEvent,
+    active,
+    priority,
+    config
+  } = req.body;
+
+  // Vérifier les données requises
+  if (!name || !entityType || !triggerEvent) {
+    return res.status(400).json({ message: 'Les champs name, entityType et triggerEvent sont requis' });
+  }
+
+  // Créer le workflow
+  const workflow = await Workflow.create({
+    name,
+    description,
+    entityType,
+    triggerEvent,
+    active: active !== undefined ? active : true,
+    priority: priority || 10,
+    config
+  });
+
+  // Transformer les données
+  const transformedWorkflow = {
+    id: workflow.id.toString(),
+    name: workflow.name,
+    description: workflow.description || '',
+    entityType: workflow.entityType,
+    triggerEvent: workflow.triggerEvent,
+    active: workflow.active,
+    priority: workflow.priority,
+    config: workflow.config || {}
+  };
+
+  res.status(201).json(transformedWorkflow);
+}));
+
+router.put('/workflows/:id', asyncHandler(async (req, res) => {
+  const {
+    name,
+    description,
+    entityType,
+    triggerEvent,
+    active,
+    priority,
+    config
+  } = req.body;
+
+  // Vérifier les données requises
+  if (!name || !entityType || !triggerEvent) {
+    return res.status(400).json({ message: 'Les champs name, entityType et triggerEvent sont requis' });
+  }
+
+  const workflow = await Workflow.findByPk(req.params.id);
+  if (!workflow) {
+    return res.status(404).json({ message: 'Workflow non trouvé' });
+  }
+
+  // Mettre à jour le workflow
+  await workflow.update({
+    name,
+    description,
+    entityType,
+    triggerEvent,
+    active: active !== undefined ? active : workflow.active,
+    priority: priority !== undefined ? priority : workflow.priority,
+    config
+  });
+
+  // Transformer les données
+  const transformedWorkflow = {
+    id: workflow.id.toString(),
+    name: workflow.name,
+    description: workflow.description || '',
+    entityType: workflow.entityType,
+    triggerEvent: workflow.triggerEvent,
+    active: workflow.active,
+    priority: workflow.priority,
+    config: workflow.config || {}
+  };
+
+  res.json(transformedWorkflow);
+}));
+
+router.delete('/workflows/:id', asyncHandler(async (req, res) => {
+  const workflow = await Workflow.findByPk(req.params.id);
+  if (!workflow) {
+    return res.status(404).json({ message: 'Workflow non trouvé' });
+  }
+
+  await workflow.destroy();
+  res.status(204).end();
+}));
+
+// 2. Routes pour les étapes de workflow
+router.get('/workflowsteps', asyncHandler(async (req, res) => {
+  const workflowId = req.query.workflowId;
+
+  const whereClause = workflowId ? { workflowId } : {};
+
+  const steps = await WorkflowStep.findAll({
+    where: whereClause,
+    order: [['sequence', 'ASC'], ['name', 'ASC']],
+    include: [
+      {
+        model: Workflow,
+        as: 'workflow'
+      }
+    ]
+  });
+
+  // Transformer les données
+  const transformedSteps = steps.map(step => ({
+    id: step.id.toString(),
+    workflowId: step.workflowId.toString(),
+    workflowName: step.workflow ? step.workflow.name : null,
+    name: step.name,
+    type: step.type,
+    assignee: step.assignee,
+    assigneeType: step.assigneeType,
+    sequence: step.sequence,
+    delay: step.delay,
+    timeout: step.timeout,
+    action: step.action,
+    config: step.config || {},
+    active: step.active
+  }));
+
+  res.json(transformedSteps);
+}));
+
+router.get('/workflowsteps/:id', asyncHandler(async (req, res) => {
+  const step = await WorkflowStep.findByPk(req.params.id, {
+    include: [
+      {
+        model: Workflow,
+        as: 'workflow'
+      },
+      {
+        model: WorkflowCondition,
+        as: 'conditions',
+        order: [['sequence', 'ASC']]
+      }
+    ]
+  });
+
+  if (!step) {
+    return res.status(404).json({ message: 'Étape de workflow non trouvée' });
+  }
+
+  // Transformer les données
+  const transformedStep = {
+    id: step.id.toString(),
+    workflowId: step.workflowId.toString(),
+    workflowName: step.workflow ? step.workflow.name : null,
+    name: step.name,
+    type: step.type,
+    assignee: step.assignee,
+    assigneeType: step.assigneeType,
+    sequence: step.sequence,
+    delay: step.delay,
+    timeout: step.timeout,
+    action: step.action,
+    config: step.config || {},
+    active: step.active,
+    conditions: step.conditions ? step.conditions.map(condition => ({
+      id: condition.id.toString(),
+      field: condition.field,
+      operator: condition.operator,
+      value: condition.value,
+      valueType: condition.valueType,
+      logicGroup: condition.logicGroup,
+      sequence: condition.sequence,
+      config: condition.config || {}
+    })) : []
+  };
+
+  res.json(transformedStep);
+}));
+
+router.post('/workflowsteps', asyncHandler(async (req, res) => {
+  const {
+    workflowId,
+    name,
+    type,
+    assignee,
+    assigneeType,
+    sequence,
+    delay,
+    timeout,
+    action,
+    config,
+    active
+  } = req.body;
+
+  // Vérifier les données requises
+  if (!workflowId || !name || !type) {
+    return res.status(400).json({ message: 'Les champs workflowId, name et type sont requis' });
+  }
+
+  // Vérifier que le workflow existe
+  const workflow = await Workflow.findByPk(workflowId);
+  if (!workflow) {
+    return res.status(404).json({ message: 'Workflow non trouvé' });
+  }
+
+  // Créer l'étape
+  const step = await WorkflowStep.create({
+    workflowId,
+    name,
+    type,
+    assignee,
+    assigneeType,
+    sequence: sequence || 10,
+    delay,
+    timeout,
+    action,
+    config,
+    active: active !== undefined ? active : true
+  });
+
+  // Transformer les données
+  const transformedStep = {
+    id: step.id.toString(),
+    workflowId: step.workflowId.toString(),
+    name: step.name,
+    type: step.type,
+    assignee: step.assignee,
+    assigneeType: step.assigneeType,
+    sequence: step.sequence,
+    delay: step.delay,
+    timeout: step.timeout,
+    action: step.action,
+    config: step.config || {},
+    active: step.active
+  };
+
+  res.status(201).json(transformedStep);
+}));
+
+router.put('/workflowsteps/:id', asyncHandler(async (req, res) => {
+  const {
+    name,
+    type,
+    assignee,
+    assigneeType,
+    sequence,
+    delay,
+    timeout,
+    action,
+    config,
+    active
+  } = req.body;
+
+  // Vérifier les données requises
+  if (!name || !type) {
+    return res.status(400).json({ message: 'Les champs name et type sont requis' });
+  }
+
+  const step = await WorkflowStep.findByPk(req.params.id);
+  if (!step) {
+    return res.status(404).json({ message: 'Étape de workflow non trouvée' });
+  }
+
+  // Mettre à jour l'étape
+  await step.update({
+    name,
+    type,
+    assignee,
+    assigneeType,
+    sequence: sequence !== undefined ? sequence : step.sequence,
+    delay,
+    timeout,
+    action,
+    config,
+    active: active !== undefined ? active : step.active
+  });
+
+  // Transformer les données
+  const transformedStep = {
+    id: step.id.toString(),
+    workflowId: step.workflowId.toString(),
+    name: step.name,
+    type: step.type,
+    assignee: step.assignee,
+    assigneeType: step.assigneeType,
+    sequence: step.sequence,
+    delay: step.delay,
+    timeout: step.timeout,
+    action: step.action,
+    config: step.config || {},
+    active: step.active
+  };
+
+  res.json(transformedStep);
+}));
+
+router.delete('/workflowsteps/:id', asyncHandler(async (req, res) => {
+  const step = await WorkflowStep.findByPk(req.params.id);
+  if (!step) {
+    return res.status(404).json({ message: 'Étape de workflow non trouvée' });
+  }
+
+  await step.destroy();
+  res.status(204).end();
+}));
+
+// 3. Routes pour les conditions des étapes
+router.get('/workflowconditions', asyncHandler(async (req, res) => {
+  const stepId = req.query.stepId;
+
+  const whereClause = stepId ? { stepId } : {};
+
+  const conditions = await WorkflowCondition.findAll({
+    where: whereClause,
+    order: [['sequence', 'ASC']],
+    include: [
+      {
+        model: WorkflowStep,
+        as: 'step'
+      }
+    ]
+  });
+
+  // Transformer les données
+  const transformedConditions = conditions.map(condition => ({
+    id: condition.id.toString(),
+    stepId: condition.stepId.toString(),
+    stepName: condition.step ? condition.step.name : null,
+    field: condition.field,
+    operator: condition.operator,
+    value: condition.value,
+    valueType: condition.valueType,
+    logicGroup: condition.logicGroup,
+    sequence: condition.sequence,
+    config: condition.config || {}
+  }));
+
+  res.json(transformedConditions);
+}));
+
+router.post('/workflowconditions', asyncHandler(async (req, res) => {
+  const {
+    stepId,
+    field,
+    operator,
+    value,
+    valueType,
+    logicGroup,
+    sequence,
+    config
+  } = req.body;
+
+  // Vérifier les données requises
+  if (!stepId || !field || !operator) {
+    return res.status(400).json({ message: 'Les champs stepId, field et operator sont requis' });
+  }
+
+  // Vérifier que l'étape existe
+  const step = await WorkflowStep.findByPk(stepId);
+  if (!step) {
+    return res.status(404).json({ message: 'Étape de workflow non trouvée' });
+  }
+
+  // Créer la condition
+  const condition = await WorkflowCondition.create({
+    stepId,
+    field,
+    operator,
+    value,
+    valueType: valueType || 'string',
+    logicGroup: logicGroup || 'AND',
+    sequence: sequence || 10,
+    config
+  });
+
+  // Transformer les données
+  const transformedCondition = {
+    id: condition.id.toString(),
+    stepId: condition.stepId.toString(),
+    field: condition.field,
+    operator: condition.operator,
+    value: condition.value,
+    valueType: condition.valueType,
+    logicGroup: condition.logicGroup,
+    sequence: condition.sequence,
+    config: condition.config || {}
+  };
+
+  res.status(201).json(transformedCondition);
+}));
+
+router.put('/workflowconditions/:id', asyncHandler(async (req, res) => {
+  const {
+    field,
+    operator,
+    value,
+    valueType,
+    logicGroup,
+    sequence,
+    config
+  } = req.body;
+
+  // Vérifier les données requises
+  if (!field || !operator) {
+    return res.status(400).json({ message: 'Les champs field et operator sont requis' });
+  }
+
+  const condition = await WorkflowCondition.findByPk(req.params.id);
+  if (!condition) {
+    return res.status(404).json({ message: 'Condition de workflow non trouvée' });
+  }
+
+  // Mettre à jour la condition
+  await condition.update({
+    field,
+    operator,
+    value,
+    valueType: valueType || condition.valueType,
+    logicGroup: logicGroup || condition.logicGroup,
+    sequence: sequence !== undefined ? sequence : condition.sequence,
+    config
+  });
+
+  // Transformer les données
+  const transformedCondition = {
+    id: condition.id.toString(),
+    stepId: condition.stepId.toString(),
+    field: condition.field,
+    operator: condition.operator,
+    value: condition.value,
+    valueType: condition.valueType,
+    logicGroup: condition.logicGroup,
+    sequence: condition.sequence,
+    config: condition.config || {}
+  };
+
+  res.json(transformedCondition);
+}));
+
+router.delete('/workflowconditions/:id', asyncHandler(async (req, res) => {
+  const condition = await WorkflowCondition.findByPk(req.params.id);
+  if (!condition) {
+    return res.status(404).json({ message: 'Condition de workflow non trouvée' });
+  }
+
+  await condition.destroy();
+  res.status(204).end();
 }));
 
 module.exports = router;
