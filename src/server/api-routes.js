@@ -5,12 +5,31 @@ const router = express.Router();
 const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberFormat, TimeFormat, Translation, EmailServer, SecuritySetting, ApiKey, AutomationRule, LoggingSetting, DocumentLayout, ReportTemplate, Printer, PaymentProvider, ShippingMethod, ExternalService, AuditLog, AuditConfig, Backup, BackupConfig, ThemeConfig, CustomLogo, ImportConfig, ExportConfig, ImportExportHistory, ComplianceConfig, ConsentRecord, CalendarConfig, Holiday, CalendarIntegration, Sequence, SequenceConfig, PerformanceConfig, NotificationChannel, NotificationTemplate, NotificationPreference, Notification, NotificationConfig, Workflow, WorkflowStep, WorkflowCondition, Module, Sequelize } = require('../models');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const { Op } = Sequelize;
 
 // Middleware pour gérer les erreurs
 const asyncHandler = fn => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
+
+const authMiddleware = require('./middleware/auth');
+
+router.post('/login', asyncHandler(async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ where: { username } });
+  if (!user) {
+    return res.status(401).json({ message: 'Identifiants invalides' });
+  }
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    return res.status(401).json({ message: 'Identifiants invalides' });
+  }
+  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
+  res.json({ token });
+}));
+
+router.use(authMiddleware);
 
 // Routes pour les utilisateurs
 router.get('/users', asyncHandler(async (req, res) => {
