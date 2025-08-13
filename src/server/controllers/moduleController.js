@@ -3,12 +3,61 @@
 const { Module } = require('../../models');
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
-const execPromise = util.promisify(exec);
+const { spawn } = require('child_process');
 
 // Chemin vers le dossier des modules
 const ADDONS_DIR = path.resolve(__dirname, '../../../addons');
+
+// Regex de validation pour le nom du module
+const MODULE_NAME_REGEX = /^[\w-]+$/;
+
+/**
+ * Valide le nom du module et retourne son chemin sécurisé
+ * @param {string} name Nom du module
+ * @returns {string} Chemin sécurisé vers le module
+ */
+function validateModuleName(name) {
+  if (!MODULE_NAME_REGEX.test(name)) {
+    throw new Error('Nom de module invalide');
+  }
+
+  const modulePath = path.resolve(ADDONS_DIR, name);
+  if (!modulePath.startsWith(ADDONS_DIR)) {
+    throw new Error('Chemin de module invalide');
+  }
+
+  return modulePath;
+}
+
+/**
+ * Exécute une commande et gère les erreurs de façon centralisée
+ * @param {string} command Commande à exécuter
+ * @param {string[]} args Liste des arguments
+ */
+function runCommand(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { shell: false });
+    let stderr = '';
+
+    if (child.stderr) {
+      child.stderr.on('data', data => {
+        stderr += data.toString();
+      });
+    }
+
+    child.on('error', reject);
+    child.on('close', code => {
+      if (code !== 0) {
+        const error = new Error(`Commande échouée avec le code ${code}`);
+        error.code = code;
+        error.stderr = stderr;
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
 
 /**
  * Contrôleur pour la gestion des modules
@@ -39,7 +88,14 @@ const moduleController = {
   async getModuleByName(req, res) {
     try {
       const { name } = req.params;
-      
+      try {
+        validateModuleName(name);
+      } catch (err) {
+        return res.status(400).json({
+          message: err.message
+        });
+      }
+
       const module = await Module.findOne({
         where: { name }
       });
@@ -67,7 +123,15 @@ const moduleController = {
     try {
       const { name } = req.params;
       const { active } = req.body;
-      
+
+      try {
+        validateModuleName(name);
+      } catch (err) {
+        return res.status(400).json({
+          message: err.message
+        });
+      }
+
       const module = await Module.findOne({
         where: { name }
       });
@@ -123,7 +187,15 @@ const moduleController = {
   async installModule(req, res) {
     try {
       const { name } = req.params;
-      
+      let modulePath;
+      try {
+        modulePath = validateModuleName(name);
+      } catch (err) {
+        return res.status(400).json({
+          message: err.message
+        });
+      }
+
       const module = await Module.findOne({
         where: { name }
       });
@@ -141,7 +213,6 @@ const moduleController = {
       }
       
       // Vérifier que le dossier du module existe
-      const modulePath = path.join(ADDONS_DIR, name);
       if (!fs.existsSync(modulePath)) {
         return res.status(400).json({
           message: `Le dossier du module ${name} n'existe pas`
@@ -174,7 +245,7 @@ const moduleController = {
       if (fs.existsSync(migrationsPath)) {
         try {
           // Exécuter les migrations
-          await execPromise(`npx sequelize-cli db:migrate --migrations-path=${migrationsPath}`);
+          await runCommand('npx', ['sequelize-cli', 'db:migrate', '--migrations-path', migrationsPath]);
         } catch (error) {
           console.error(`Erreur lors de l'exécution des migrations du module ${name}:`, error);
           return res.status(500).json({
@@ -183,13 +254,13 @@ const moduleController = {
           });
         }
       }
-      
+
       // Exécuter les seeders du module si ils existent
       const seedersPath = path.join(modulePath, 'seeders');
       if (fs.existsSync(seedersPath)) {
         try {
           // Exécuter les seeders
-          await execPromise(`npx sequelize-cli db:seed --seed-path=${seedersPath}`);
+          await runCommand('npx', ['sequelize-cli', 'db:seed', '--seed-path', seedersPath]);
         } catch (error) {
           console.error(`Erreur lors de l'exécution des seeders du module ${name}:`, error);
           return res.status(500).json({
@@ -223,7 +294,14 @@ const moduleController = {
   async uninstallModule(req, res) {
     try {
       const { name } = req.params;
-      
+      try {
+        validateModuleName(name);
+      } catch (err) {
+        return res.status(400).json({
+          message: err.message
+        });
+      }
+
       const module = await Module.findOne({
         where: { name }
       });
