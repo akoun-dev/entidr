@@ -3,7 +3,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const apiRoutes = require('./api-routes');
+const userRoutes = require('./routes/users');
+const groupRoutes = require('./routes/groups');
+const parameterRoutes = require('./routes/parameters');
 const { sequelize } = require('../models');
 
 // Créer l'application Express
@@ -15,7 +17,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes API
-app.use('/api', apiRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/parameters', parameterRoutes);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
