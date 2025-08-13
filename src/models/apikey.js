@@ -27,15 +27,31 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     /**
+     * Hache une clé API
+     * @param {string} key - La clé API en clair
+     * @returns {string} Le hash SHA-256 de la clé
+     */
+    static hashKey(key) {
+      return crypto.createHash('sha256').update(key).digest('hex');
+    }
+
+    /**
      * Masque une clé API pour l'affichage
-     * @param {string} key - La clé API complète
+     * @param {string} last4 - Les 4 derniers caractères de la clé
      * @returns {string} La clé API masquée (ex: sk_****1234)
      */
-    static maskKey(key) {
-      if (!key) return '';
-      const prefix = key.substring(0, 3);
-      const suffix = key.substring(key.length - 4);
-      return `${prefix}****${suffix}`;
+    static maskKey(last4) {
+      if (!last4) return '';
+      return `sk_****${last4}`;
+    }
+
+    /**
+     * Vérifie si la clé fournie correspond au hash stocké
+     * @param {string} key - La clé API en clair
+     * @returns {boolean} Vrai si la clé correspond
+     */
+    verifyKey(key) {
+      return ApiKey.hashKey(key) === this.key_hash;
     }
   }
   
@@ -45,17 +61,22 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    // Clé API (générée automatiquement)
-    key: {
+    // Hash de la clé API
+    key_hash: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
+    },
+    // Derniers caractères de la clé pour l'affichage
+    key_last4: {
+      type: DataTypes.STRING(4),
+      allowNull: false
     },
     // Clé API masquée pour l'affichage
     masked_key: {
       type: DataTypes.VIRTUAL,
       get() {
-        return ApiKey.maskKey(this.key);
+        return ApiKey.maskKey(this.key_last4);
       }
     },
     // Permissions de la clé API (stockées sous forme de tableau JSON)
@@ -87,14 +108,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'ApiKey',
-    hooks: {
-      beforeCreate: (apiKey) => {
-        if (!apiKey.key) {
-          apiKey.key = ApiKey.generateKey();
-        }
-      }
-    }
+    modelName: 'ApiKey'
   });
   
   return ApiKey;

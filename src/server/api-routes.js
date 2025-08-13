@@ -2482,12 +2482,11 @@ router.post('/apikeys', asyncHandler(async (req, res) => {
   const { name, permissions, active, expires_at, description } = req.body;
 
   // Générer une nouvelle clé API
-  const key = 'sk_' + crypto.randomBytes(24).toString('hex');
-
-  // Créer la clé API
+  const key = ApiKey.generateKey();
   const apiKey = await ApiKey.create({
     name,
-    key,
+    key_hash: ApiKey.hashKey(key),
+    key_last4: key.slice(-4),
     permissions: permissions || ['read'],
     active: active !== undefined ? active : true,
     expires_at: expires_at || null,
@@ -2498,7 +2497,7 @@ router.post('/apikeys', asyncHandler(async (req, res) => {
   const transformedApiKey = {
     id: apiKey.id.toString(),
     name: apiKey.name,
-    key: apiKey.key, // Renvoyer la clé complète lors de la création
+    key, // Renvoyer la clé complète lors de la création
     permissions: apiKey.permissions,
     active: apiKey.active,
     expires_at: apiKey.expires_at ? apiKey.expires_at.toISOString() : null,
@@ -2560,15 +2559,16 @@ router.post('/apikeys/:id/regenerate', asyncHandler(async (req, res) => {
   }
 
   // Générer une nouvelle clé API
-  const key = 'sk_' + crypto.randomBytes(24).toString('hex');
-  apiKey.key = key;
+  const key = ApiKey.generateKey();
+  apiKey.key_hash = ApiKey.hashKey(key);
+  apiKey.key_last4 = key.slice(-4);
   await apiKey.save();
 
   // Transformer les données
   const transformedApiKey = {
     id: apiKey.id.toString(),
     name: apiKey.name,
-    key: apiKey.key, // Renvoyer la clé complète lors de la régénération
+    key, // Renvoyer la clé complète lors de la régénération
     permissions: apiKey.permissions,
     active: apiKey.active,
     expires_at: apiKey.expires_at ? apiKey.expires_at.toISOString() : null,

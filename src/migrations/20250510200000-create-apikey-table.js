@@ -14,10 +14,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      key: {
+      key_hash: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true
+      },
+      key_last4: {
+        type: Sequelize.STRING(4),
+        allowNull: false
       },
       permissions: {
         type: Sequelize.JSON,
