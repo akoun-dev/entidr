@@ -6,6 +6,7 @@ const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberF
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { Op } = Sequelize;
+const { validateCreateUser, validateUpdateUser } = require('./validators/userSchemas');
 
 // Middleware pour gérer les erreurs
 const asyncHandler = fn => (req, res, next) => {
@@ -59,7 +60,7 @@ router.get('/users/:id', asyncHandler(async (req, res) => {
   res.json(transformedUser);
 }));
 
-router.post('/users', asyncHandler(async (req, res) => {
+router.post('/users', validateCreateUser, asyncHandler(async (req, res) => {
   const { username, email, password, firstName, lastName, role, status, groups } = req.body;
 
   // Hacher le mot de passe
@@ -106,7 +107,7 @@ router.post('/users', asyncHandler(async (req, res) => {
   res.status(201).json(transformedUser);
 }));
 
-router.put('/users/:id', asyncHandler(async (req, res) => {
+router.put('/users/:id', validateUpdateUser, asyncHandler(async (req, res) => {
   const { username, email, password, firstName, lastName, role, status, groups } = req.body;
 
   const user = await User.findByPk(req.params.id);
