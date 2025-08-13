@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Calendar, Search, Plus, Pencil, Trash2, Check, Info, Loader2, AlertTriangle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
 import { useToast } from '../../components/ui/use-toast';
-import { dateFormatService, DateFormat as ApiDateFormat } from '../../services/api';
+import { dateFormatService, DateFormat as ApiDateFormat } from '../../services';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Types pour les formats de date

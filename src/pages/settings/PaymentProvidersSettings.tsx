@@ -8,7 +8,7 @@ import { CreditCard, Plus, Settings, Trash2, Loader2, AlertCircle, X } from 'luc
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';

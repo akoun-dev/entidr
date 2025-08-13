@@ -6,7 +6,7 @@ import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Mail, Send, Server, TestTube2, Loader2, Plus, Check, X, AlertCircle, AlertTriangle, Trash2 } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { emailServerService, type EmailServer } from '../../services/api';
+import { emailServerService, type EmailServer } from '../../services';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import { Badge } from '../../components/ui/badge';

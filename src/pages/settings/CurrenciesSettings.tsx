@@ -29,7 +29,7 @@ import {
 } from '../../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { useToast } from '../../components/ui/use-toast';
-import { currencyService, Currency as ApiCurrency } from '../../services/api';
+import { currencyService, Currency as ApiCurrency } from '../../services';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import { CountrySelector } from '../../components/selectors';
 import { useCountries } from '../../hooks/useReferenceData';

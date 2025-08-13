@@ -7,7 +7,7 @@ import { FileText, Plus, FileEdit, Trash2, Loader2, AlertCircle, Check } from 'l
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 interface DocumentLayout {
   id: string;

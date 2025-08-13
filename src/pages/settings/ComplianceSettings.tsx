@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Shield, Lock, UserCheck, FileText, Calendar, Trash2, Plus, Loader2, AlertCircle, Check, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 interface ComplianceConfig {
   id?: string;

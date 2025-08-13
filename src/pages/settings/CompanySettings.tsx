@@ -7,7 +7,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Button } from '../../components/ui/button';
 import { Building2, MapPin, Phone, Mail, Globe, FileText, Upload, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { parameterService } from '../../services/api';
+import { parameterService } from '../../services';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 /**

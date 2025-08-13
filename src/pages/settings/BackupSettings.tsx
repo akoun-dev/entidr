@@ -15,7 +15,7 @@ import {
 import { Database, HardDrive, Cloud, Lock, Clock, Calendar, RefreshCw, Loader2, AlertCircle, Download, RotateCw, Check, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 

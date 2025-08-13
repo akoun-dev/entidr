@@ -9,7 +9,7 @@ import { Switch } from '../../components/ui/switch';
 import { FileText, FileInput, FileOutput, Calendar, Download, Upload, Plus, Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 interface ImportExportJob {
   id: string;

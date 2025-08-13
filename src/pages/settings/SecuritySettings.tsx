@@ -7,7 +7,7 @@ import { Switch } from '../../components/ui/switch';
 import { Lock, Shield, Key, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 // Interface pour les paramètres de sécurité
 interface SecuritySetting {

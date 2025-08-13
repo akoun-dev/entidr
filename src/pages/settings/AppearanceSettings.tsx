@@ -8,7 +8,7 @@ import { Switch } from '../../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 interface ThemeConfig {
   id?: string;
