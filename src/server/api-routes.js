@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberFormat, TimeFormat, Translation, EmailServer, SecuritySetting, ApiKey, AutomationRule, LoggingSetting, DocumentLayout, ReportTemplate, Printer, PaymentProvider, ShippingMethod, ExternalService, AuditLog, AuditConfig, Backup, BackupConfig, ThemeConfig, CustomLogo, ImportConfig, ExportConfig, ImportExportHistory, ComplianceConfig, ConsentRecord, CalendarConfig, Holiday, CalendarIntegration, Sequence, SequenceConfig, PerformanceConfig, NotificationChannel, NotificationTemplate, NotificationPreference, Notification, NotificationConfig, Workflow, WorkflowStep, WorkflowCondition, Module, Sequelize } = require('../models');
+const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberFormat, TimeFormat, Translation, EmailServer, SecuritySetting, ApiKey, AutomationRule, LoggingSetting, DocumentLayout, ReportTemplate, Printer, PaymentProvider, ShippingMethod, ExternalService, AuditLog, AuditConfig, Backup, BackupConfig, ThemeConfig, CustomLogo, ImportConfig, ExportConfig, ImportExportHistory, ComplianceConfig, ConsentRecord, CalendarConfig, Holiday, CalendarIntegration, Sequence, SequenceConfig, PerformanceConfig, NotificationChannel, NotificationTemplate, NotificationPreference, Notification, NotificationConfig, Workflow, WorkflowStep, WorkflowCondition, Module, Sequelize, sequelize } = require('../models');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { Op } = Sequelize;
@@ -393,28 +393,38 @@ router.put('/parameters/key/:key', asyncHandler(async (req, res) => {
 router.put('/parameters/batch', asyncHandler(async (req, res) => {
   const { parameters } = req.body;
 
-  const updatedParameters = [];
+  const transaction = await sequelize.transaction();
 
-  for (const param of parameters) {
-    const parameter = await Parameter.findOne({
-      where: { key: param.key }
-    });
+  try {
+    const updatedParameters = await Promise.all(parameters.map(async param => {
+      const parameter = await Parameter.findOne({ where: { key: param.key }, transaction });
 
-    if (parameter) {
+      if (!parameter) {
+        throw new Error(`Paramètre ${param.key} non trouvé`);
+      }
+
       parameter.value = param.value;
-      await parameter.save();
+      await parameter.save({ transaction });
 
-      updatedParameters.push({
+      return {
         id: parameter.id.toString(),
         key: parameter.key,
         value: parameter.value,
         category: parameter.category,
         description: parameter.description || ''
-      });
-    }
-  }
+      };
+    }));
 
-  res.json(updatedParameters);
+    await transaction.commit();
+    res.json(updatedParameters);
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Erreur lors de la mise à jour des paramètres:', error);
+    return res.status(400).json({
+      message: "Une erreur est survenue lors de la mise à jour des paramètres",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 }));
 
 // Routes pour les devises
