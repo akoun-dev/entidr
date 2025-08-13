@@ -101,6 +101,19 @@ npm install
 npm run dev
 ```
 
+## Variables d'environnement
+
+Le projet nécessite certaines variables d'environnement pour fonctionner correctement. Vous pouvez utiliser le fichier `.env.example` comme base.
+
+- **VITE_API_BASE_URL** : URL de base de l'API utilisée par le front-end.
+- **PORT** : Port d'écoute du serveur backend (optionnel, `3001` par défaut).
+- **DB_USERNAME** : Nom d'utilisateur de la base de données.
+- **DB_PASSWORD** : Mot de passe de la base de données.
+- **DB_NAME** : Nom de la base de données.
+- **DB_HOST** : Hôte de la base de données.
+- **DB_DIALECT** : Dialecte Sequelize (ex. `sqlite`).
+- **DB_STORAGE** : Chemin du fichier de base de données pour SQLite.
+
 ## Contribution
 
 Les contributions sont les bienvenues ! N'hésitez pas à soumettre des pull requests ou à ouvrir des issues pour améliorer le projet.
