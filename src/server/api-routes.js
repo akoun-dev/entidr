@@ -6,6 +6,7 @@ const { User, Group, Parameter, Currency, Country, Language, DateFormat, NumberF
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { Op } = Sequelize;
+const logger = require('./logger');
 
 // Middleware pour gérer les erreurs
 const asyncHandler = fn => (req, res, next) => {
@@ -985,13 +986,13 @@ router.get('/dateformats/:id', asyncHandler(async (req, res) => {
 }));
 
 router.post('/dateformats', asyncHandler(async (req, res) => {
-  console.log('POST /dateformats - Données reçues:', req.body);
+  logger.info('POST /dateformats');
 
   const { name, format, description, type, is_default, active } = req.body;
 
   // Vérifier les données requises
   if (!name || !format || !type) {
-    console.log('Données manquantes:', { name, format, type });
+    logger.warn('POST /dateformats - données manquantes');
     return res.status(400).json({ message: 'Les champs name, format et type sont requis' });
   }
 
@@ -1001,7 +1002,7 @@ router.post('/dateformats', asyncHandler(async (req, res) => {
   });
 
   if (existingFormat) {
-    console.log('Format existant:', existingFormat.format);
+    logger.warn('POST /dateformats - format existant');
     return res.status(400).json({ message: 'Un format avec ce motif existe déjà' });
   }
 
@@ -1038,13 +1039,13 @@ router.post('/dateformats', asyncHandler(async (req, res) => {
 }));
 
 router.put('/dateformats/:id', asyncHandler(async (req, res) => {
-  console.log('PUT /dateformats/:id - Données reçues:', req.body);
+  logger.info('PUT /dateformats/:id');
 
   const { name, format, description, type, is_default, active } = req.body;
 
   // Vérifier les données requises
   if (!name || !format || !type) {
-    console.log('Données manquantes:', { name, format, type });
+    logger.warn('PUT /dateformats/:id - données manquantes');
     return res.status(400).json({ message: 'Les champs name, format et type sont requis' });
   }
 
@@ -1216,13 +1217,13 @@ router.get('/translations/:id', asyncHandler(async (req, res) => {
 }));
 
 router.post('/translations', asyncHandler(async (req, res) => {
-  console.log('POST /translations - Données reçues:', req.body);
+  logger.info('POST /translations');
 
     const { key, locale, namespace, value, is_default, active, description } = req.body;
 
   // Vérifier les données requises
   if (!key || !locale || !value) {
-    console.log('Données manquantes:', { key, locale, value });
+    logger.warn('POST /translations - données manquantes');
     return res.status(400).json({ message: 'Les champs key, locale et value sont requis' });
   }
 
@@ -1236,7 +1237,7 @@ router.post('/translations', asyncHandler(async (req, res) => {
   });
 
   if (existingTranslation) {
-    console.log('Traduction existante:', existingTranslation.key);
+    logger.warn('POST /translations - traduction existante');
     return res.status(400).json({ message: 'Une traduction avec cette clé, cette locale et cet espace de noms existe déjà' });
   }
 
@@ -1269,13 +1270,13 @@ router.post('/translations', asyncHandler(async (req, res) => {
 }));
 
 router.put('/translations/:id', asyncHandler(async (req, res) => {
-  console.log('PUT /translations/:id - Données reçues:', req.body);
+  logger.info('PUT /translations/:id');
 
   const { key, locale, namespace, value, is_default, active, description } = req.body;
 
   // Vérifier les données requises
   if (!key || !locale || !value) {
-    console.log('Données manquantes:', { key, locale, value });
+    logger.warn('PUT /translations/:id - données manquantes');
     return res.status(400).json({ message: 'Les champs key, locale et value sont requis' });
   }
 
@@ -2245,7 +2246,7 @@ router.get('/securitysettings', asyncHandler(async (req, res) => {
       try {
         parsedValue = JSON.parse(setting.value);
       } catch (error) {
-        console.error(`Erreur lors de l'analyse JSON pour ${setting.key}:`, error);
+        logger.error("Erreur lors de l'analyse JSON");
       }
     }
 
@@ -2279,7 +2280,7 @@ router.get('/securitysettings/category/:category', asyncHandler(async (req, res)
       try {
         parsedValue = JSON.parse(setting.value);
       } catch (error) {
-        console.error(`Erreur lors de l'analyse JSON pour ${setting.key}:`, error);
+        logger.error("Erreur lors de l'analyse JSON");
       }
     }
 
@@ -2315,7 +2316,7 @@ router.get('/securitysettings/key/:key', asyncHandler(async (req, res) => {
     try {
       parsedValue = JSON.parse(securitySetting.value);
     } catch (error) {
-      console.error(`Erreur lors de l'analyse JSON pour ${securitySetting.key}:`, error);
+      logger.error("Erreur lors de l'analyse JSON");
     }
   }
 
@@ -2366,7 +2367,7 @@ router.put('/securitysettings/key/:key', asyncHandler(async (req, res) => {
     try {
       parsedValue = JSON.parse(securitySetting.value);
     } catch (error) {
-      console.error(`Erreur lors de l'analyse JSON pour ${securitySetting.key}:`, error);
+      logger.error("Erreur lors de l'analyse JSON");
     }
   }
 
@@ -2417,7 +2418,7 @@ router.put('/securitysettings/batch', asyncHandler(async (req, res) => {
         try {
           parsedValue = JSON.parse(securitySetting.value);
         } catch (error) {
-          console.error(`Erreur lors de l'analyse JSON pour ${securitySetting.key}:`, error);
+          logger.error("Erreur lors de l'analyse JSON");
         }
       }
 
@@ -2860,7 +2861,7 @@ router.get('/loggingsettings', asyncHandler(async (req, res) => {
       try {
         value = JSON.parse(value);
       } catch (e) {
-        console.error(`Erreur lors de la conversion JSON pour ${setting.key}:`, e);
+        logger.error('Erreur lors de la conversion JSON');
       }
     }
 
@@ -2896,7 +2897,7 @@ router.get('/loggingsettings/:key', asyncHandler(async (req, res) => {
     try {
       value = JSON.parse(value);
     } catch (e) {
-      console.error(`Erreur lors de la conversion JSON pour ${setting.key}:`, e);
+      logger.error('Erreur lors de la conversion JSON');
     }
   }
 
@@ -2949,7 +2950,7 @@ router.put('/loggingsettings/:key', asyncHandler(async (req, res) => {
     try {
       convertedValue = JSON.parse(convertedValue);
     } catch (e) {
-      console.error(`Erreur lors de la conversion JSON pour ${setting.key}:`, e);
+      logger.error('Erreur lors de la conversion JSON');
     }
   }
 
@@ -3002,7 +3003,7 @@ router.put('/loggingsettings/batch', asyncHandler(async (req, res) => {
         try {
           convertedValue = JSON.parse(convertedValue);
         } catch (e) {
-          console.error(`Erreur lors de la conversion JSON pour ${setting.key}:`, e);
+          logger.error('Erreur lors de la conversion JSON');
         }
       }
 
