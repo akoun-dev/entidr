@@ -5,11 +5,13 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Switch } from '../../components/ui/switch';
 import { Badge } from '../../components/ui/badge';
-import { Truck, Plus, Trash2, Package, Loader2, AlertCircle } from 'lucide-react';
+import { Truck, Plus, Trash2, Package, Loader2, AlertCircle, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
 import { api } from '../../services/api';
+import { CountrySelector } from '../../components/selectors';
+import { useCountries } from '../../hooks/useReferenceData';
 
 interface ShippingMethod {
   id: string;
@@ -20,6 +22,7 @@ interface ShippingMethod {
   isActive: boolean;
   displayOrder?: number;
   lastModified?: string;
+  supportedCountries?: string[]; // IDs des pays supportés
 }
 
 const ShippingMethodsSettings: React.FC = () => {
@@ -57,8 +60,24 @@ const ShippingMethodsSettings: React.FC = () => {
     name: '',
     carrier: '',
     deliveryTime: '',
-    price: ''
+    price: '',
+    supportedCountries: [] as string[]
   });
+
+  // Utiliser le hook useCountries pour récupérer les pays
+  const { data: countries, loading: loadingCountries } = useCountries();
+
+  // Gérer la sélection des pays supportés
+  const handleSupportedCountryChange = (countryId: string) => {
+    setNewMethod(prev => {
+      const currentCountries = [...prev.supportedCountries];
+      if (currentCountries.includes(countryId)) {
+        return { ...prev, supportedCountries: currentCountries.filter(id => id !== countryId) };
+      } else {
+        return { ...prev, supportedCountries: [...currentCountries, countryId] };
+      }
+    });
+  };
 
   // Ouvrir la boîte de dialogue de confirmation de suppression
   const openDeleteDialog = (method: ShippingMethod) => {
@@ -78,6 +97,7 @@ const ShippingMethodsSettings: React.FC = () => {
         carrier: newMethod.carrier,
         deliveryTime: newMethod.deliveryTime,
         price: newMethod.price,
+        supportedCountries: newMethod.supportedCountries,
         isActive: true,
         displayOrder: methods.length + 1
       });
@@ -90,7 +110,8 @@ const ShippingMethodsSettings: React.FC = () => {
         name: '',
         carrier: '',
         deliveryTime: '',
-        price: ''
+        price: '',
+        supportedCountries: []
       });
 
       toast({
@@ -252,6 +273,59 @@ const ShippingMethodsSettings: React.FC = () => {
               />
             </div>
 
+            {/* Pays supportés */}
+            <div className="grid grid-cols-4 items-start gap-4 pt-2">
+              <Label className="text-right pt-2">
+                Pays supportés
+              </Label>
+              <div className="col-span-3 border rounded-md p-3 space-y-2">
+                {loadingCountries ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Chargement des pays...</span>
+                  </div>
+                ) : (
+                  <>
+                    <CountrySelector
+                      id="country-selector"
+                      label=""
+                      placeholder="Sélectionner un pays à ajouter"
+                      onChange={handleSupportedCountryChange}
+                    />
+
+                    {/* Afficher les pays sélectionnés */}
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {newMethod.supportedCountries.length > 0 ? (
+                        newMethod.supportedCountries.map(countryId => {
+                          const country = countries?.find(c => c.id.toString() === countryId);
+                          return (
+                            <Badge
+                              key={countryId}
+                              variant="outline"
+                              className="flex items-center gap-1"
+                            >
+                              {country ? country.name : countryId}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-transparent"
+                                onClick={() => handleSupportedCountryChange(countryId)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Aucun pays sélectionné</p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-end">
               <Button
                 className="bg-ivory-orange hover:bg-ivory-orange/90"
@@ -303,6 +377,18 @@ const ShippingMethodsSettings: React.FC = () => {
                       <div className="text-sm text-muted-foreground">
                         {method.carrier} • {method.deliveryTime} • {method.price}
                       </div>
+                      {method.supportedCountries && method.supportedCountries.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {method.supportedCountries.map(countryId => {
+                            const country = countries?.find(c => c.id.toString() === countryId);
+                            return (
+                              <Badge key={countryId} variant="outline" className="text-xs">
+                                {country ? country.name : countryId}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      )}
                       {method.lastModified && (
                         <div className="text-xs text-muted-foreground mt-1">
                           Dernière modification: {method.lastModified}

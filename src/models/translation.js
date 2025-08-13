@@ -9,14 +9,19 @@ module.exports = (sequelize, DataTypes) => {
   }
   Translation.init(
     {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+      },
       key: {
         type: DataTypes.STRING,
         allowNull: false,
       },
       locale: {
         type: DataTypes.STRING(5),
-        allowNull: false,
-        field: 'locale'
+        allowNull: false
       },
       namespace: {
         type: DataTypes.STRING,
@@ -29,8 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       is_default: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        field: 'is_default'
+        defaultValue: false
       },
       active: {
         type: DataTypes.BOOLEAN,
@@ -38,8 +42,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       description: {
         type: DataTypes.TEXT,
-        allowNull: true,
-        field: 'description'
+        allowNull: true
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -53,6 +56,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'Translation',
+      tableName: 'Translations',
+      timestamps: true,
       indexes: [
         {
           unique: true,

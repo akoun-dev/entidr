@@ -10,6 +10,10 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Configuration du serveur
+SERVER_IP="164.160.40.182"
+SERVER_MODE=${1:-"local"} # Par défaut en mode local, peut être "server" en argument
+
 # Fonction pour afficher les messages avec un préfixe
 log() {
   local type=$1

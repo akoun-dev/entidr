@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Switch } from '../../components/ui/switch';
-import { CreditCard, Plus, Settings, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { CreditCard, Plus, Settings, Trash2, Loader2, AlertCircle, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
@@ -12,6 +12,8 @@ import { api } from '../../services/api';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { CountrySelector, CurrencySelector } from '../../components/selectors';
+import { useCountries, useCurrencies } from '../../hooks/useReferenceData';
 
 interface PaymentProvider {
   id: string;
@@ -31,6 +33,8 @@ interface NewProviderForm {
   fees: string;
   apiKey: string;
   apiSecret: string;
+  supportedCountries: string[]; // IDs des pays supportés
+  supportedCurrencies: string[]; // IDs des devises supportées
 }
 
 const PaymentProvidersSettings: React.FC = () => {
@@ -49,8 +53,14 @@ const PaymentProvidersSettings: React.FC = () => {
     type: '',
     fees: '',
     apiKey: '',
-    apiSecret: ''
+    apiSecret: '',
+    supportedCountries: [],
+    supportedCurrencies: []
   });
+
+  // Utiliser les hooks pour récupérer les pays et devises
+  const { data: countries, loading: loadingCountries } = useCountries();
+  const { data: currencies, loading: loadingCurrencies } = useCurrencies();
 
   // Charger les fournisseurs de paiement depuis l'API
   useEffect(() => {
@@ -85,7 +95,9 @@ const PaymentProvidersSettings: React.FC = () => {
       type: '',
       fees: '',
       apiKey: '',
-      apiSecret: ''
+      apiSecret: '',
+      supportedCountries: [],
+      supportedCurrencies: []
     });
     setShowAddDialog(true);
   };
@@ -99,6 +111,30 @@ const PaymentProvidersSettings: React.FC = () => {
   // Gérer la sélection du type de fournisseur
   const handleTypeChange = (value: string) => {
     setNewProvider(prev => ({ ...prev, type: value }));
+  };
+
+  // Gérer la sélection des pays supportés
+  const handleCountryChange = (countryId: string) => {
+    setNewProvider(prev => {
+      const currentCountries = [...prev.supportedCountries];
+      if (currentCountries.includes(countryId)) {
+        return { ...prev, supportedCountries: currentCountries.filter(id => id !== countryId) };
+      } else {
+        return { ...prev, supportedCountries: [...currentCountries, countryId] };
+      }
+    });
+  };
+
+  // Gérer la sélection des devises supportées
+  const handleCurrencyChange = (currencyId: string) => {
+    setNewProvider(prev => {
+      const currentCurrencies = [...prev.supportedCurrencies];
+      if (currentCurrencies.includes(currencyId)) {
+        return { ...prev, supportedCurrencies: currentCurrencies.filter(id => id !== currencyId) };
+      } else {
+        return { ...prev, supportedCurrencies: [...currentCurrencies, currencyId] };
+      }
+    });
   };
 
   // Ajouter un nouveau fournisseur de paiement
@@ -121,6 +157,8 @@ const PaymentProvidersSettings: React.FC = () => {
         fees: newProvider.fees,
         apiKey: newProvider.apiKey,
         apiSecret: newProvider.apiSecret,
+        supportedCountries: newProvider.supportedCountries,
+        supportedCurrencies: newProvider.supportedCurrencies,
         isActive: false,
         mode: 'test'
       });
@@ -457,6 +495,112 @@ const PaymentProvidersSettings: React.FC = () => {
                 className="col-span-3"
                 placeholder="Secret API (optionnel)"
               />
+            </div>
+
+            {/* Pays supportés */}
+            <div className="grid grid-cols-4 items-start gap-4 pt-2">
+              <Label className="text-right pt-2">
+                Pays supportés
+              </Label>
+              <div className="col-span-3 border rounded-md p-3 space-y-2">
+                {loadingCountries ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Chargement des pays...</span>
+                  </div>
+                ) : (
+                  <>
+                    <CountrySelector
+                      id="country-selector"
+                      label=""
+                      placeholder="Sélectionner un pays à ajouter"
+                      onChange={handleCountryChange}
+                    />
+
+                    {/* Afficher les pays sélectionnés */}
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {newProvider.supportedCountries.length > 0 ? (
+                        newProvider.supportedCountries.map(countryId => {
+                          const country = countries?.find(c => c.id.toString() === countryId);
+                          return (
+                            <Badge
+                              key={countryId}
+                              variant="outline"
+                              className="flex items-center gap-1"
+                            >
+                              {country ? country.name : countryId}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-transparent"
+                                onClick={() => handleCountryChange(countryId)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Aucun pays sélectionné</p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Devises supportées */}
+            <div className="grid grid-cols-4 items-start gap-4 pt-2">
+              <Label className="text-right pt-2">
+                Devises supportées
+              </Label>
+              <div className="col-span-3 border rounded-md p-3 space-y-2">
+                {loadingCurrencies ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Chargement des devises...</span>
+                  </div>
+                ) : (
+                  <>
+                    <CurrencySelector
+                      id="currency-selector"
+                      label=""
+                      placeholder="Sélectionner une devise à ajouter"
+                      onChange={handleCurrencyChange}
+                    />
+
+                    {/* Afficher les devises sélectionnées */}
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {newProvider.supportedCurrencies.length > 0 ? (
+                        newProvider.supportedCurrencies.map(currencyId => {
+                          const currency = currencies?.find(c => c.id.toString() === currencyId);
+                          return (
+                            <Badge
+                              key={currencyId}
+                              variant="outline"
+                              className="flex items-center gap-1"
+                            >
+                              {currency ? `${currency.code} (${currency.symbol})` : currencyId}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-transparent"
+                                onClick={() => handleCurrencyChange(currencyId)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Aucune devise sélectionnée</p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>

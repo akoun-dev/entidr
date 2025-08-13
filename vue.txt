@@ -1,2 +1,1 @@
-Modules
-workflow
+Il ya des tables qui se repetent dans les parametres. Par exemple si je vois utiliser un utilisateur, on sait que la tables users contient tous les utilisateurs, un autres exemple, les pays, on sait une table existe, si je dois avoir un formulaire, qui demande un pays, je sais que je dois recuperer les pays dans la table countries.

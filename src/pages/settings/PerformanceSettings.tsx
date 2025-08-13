@@ -98,7 +98,7 @@ const PerformanceSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer la configuration des performances
-        const configResponse = await axios.get('http://localhost:3001/api/performanceconfig');
+        const configResponse = await axios.get('http://164.160.40.182:3001/api/performanceconfig');
         setConfig(configResponse.data);
 
         // Mettre à jour les états locaux
@@ -108,7 +108,7 @@ const PerformanceSettings: React.FC = () => {
         setQueryOptimization(configResponse.data.queryOptimization);
 
         // Récupérer les métriques de performance
-        const metricsResponse = await axios.get('http://localhost:3001/api/performancemetrics');
+        const metricsResponse = await axios.get('http://164.160.40.182:3001/api/performancemetrics');
         setMetrics(metricsResponse.data);
 
         setLoading(false);
@@ -123,7 +123,7 @@ const PerformanceSettings: React.FC = () => {
     // Mettre à jour les métriques toutes les 10 secondes
     const intervalId = setInterval(async () => {
       try {
-        const metricsResponse = await axios.get('http://localhost:3001/api/performancemetrics');
+        const metricsResponse = await axios.get('http://164.160.40.182:3001/api/performancemetrics');
         setMetrics(metricsResponse.data);
       } catch (error) {
         console.error('Erreur lors de la mise à jour des métriques:', error);
@@ -149,7 +149,7 @@ const PerformanceSettings: React.FC = () => {
         queryOptimization
       };
 
-      await axios.put('http://localhost:3001/api/performanceconfig', updatedConfig);
+      await axios.put('http://164.160.40.182:3001/api/performanceconfig', updatedConfig);
       setConfig(updatedConfig);
 
       setLoading(false);
@@ -180,7 +180,7 @@ const PerformanceSettings: React.FC = () => {
       setIsRunningDiagnostic(true);
 
       // Récupérer les métriques de performance
-      const metricsResponse = await axios.get('http://localhost:3001/api/performancemetrics');
+      const metricsResponse = await axios.get('http://164.160.40.182:3001/api/performancemetrics');
       setMetrics(metricsResponse.data);
 
       toast({

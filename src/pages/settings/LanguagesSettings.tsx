@@ -12,6 +12,8 @@ import { useToast } from '../../components/ui/use-toast';
 import { languageService, Language as ApiLanguage } from '../../services/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
+import { CountrySelector } from '../../components/selectors';
+import { useCountries } from '../../hooks/useReferenceData';
 
 // Types pour les langues
 interface Language {
@@ -22,6 +24,7 @@ interface Language {
   direction: 'ltr' | 'rtl';
   is_default: boolean;
   active: boolean;
+  countries?: string[]; // IDs des pays où cette langue est parlée
 }
 
 /**
@@ -462,7 +465,13 @@ interface LanguageFormProps {
 }
 
 const LanguageForm: React.FC<LanguageFormProps> = ({ language, onSave, onCancel, saving = false }) => {
-  const [formData, setFormData] = useState<Language>(language);
+  const [formData, setFormData] = useState<Language>({
+    ...language,
+    countries: language.countries || []
+  });
+
+  // Utiliser le hook useCountries pour récupérer les pays
+  const { data: countries, loading: loadingCountries } = useCountries();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -476,6 +485,18 @@ const LanguageForm: React.FC<LanguageFormProps> = ({ language, onSave, onCancel,
     setFormData({
       ...formData,
       [name]: value
+    });
+  };
+
+  // Gérer les changements de pays associés
+  const handleCountryChange = (countryId: string) => {
+    setFormData(prev => {
+      const currentCountries = [...(prev.countries || [])];
+      if (currentCountries.includes(countryId)) {
+        return { ...prev, countries: currentCountries.filter(id => id !== countryId) };
+      } else {
+        return { ...prev, countries: [...currentCountries, countryId] };
+      }
     });
   };
 
@@ -537,6 +558,56 @@ const LanguageForm: React.FC<LanguageFormProps> = ({ language, onSave, onCancel,
             </SelectContent>
           </Select>
         </div>
+        <div className="grid grid-cols-4 items-start gap-4 pt-2">
+          <Label className="text-right pt-2">Pays associés</Label>
+          <div className="col-span-3 border rounded-md p-3 space-y-2">
+            {loadingCountries ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Chargement des pays...</span>
+              </div>
+            ) : (
+              <>
+                <CountrySelector
+                  id="country-selector"
+                  label=""
+                  placeholder="Sélectionner un pays à ajouter"
+                  onChange={handleCountryChange}
+                />
+
+                {/* Afficher les pays sélectionnés */}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {formData.countries && formData.countries.length > 0 ? (
+                    formData.countries.map(countryId => {
+                      const country = countries?.find(c => c.id.toString() === countryId);
+                      return (
+                        <Badge
+                          key={countryId}
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
+                          {country ? country.name : countryId}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => handleCountryChange(countryId)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Aucun pays sélectionné</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="active" className="text-right">Actif</Label>
           <div className="col-span-3 flex items-center">

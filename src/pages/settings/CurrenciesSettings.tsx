@@ -31,6 +31,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '../../components/ui/use-toast';
 import { currencyService, Currency as ApiCurrency } from '../../services/api';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
+import { CountrySelector } from '../../components/selectors';
+import { useCountries } from '../../hooks/useReferenceData';
 
 /**
  * Page de gestion des devises
@@ -62,7 +64,8 @@ const CurrenciesSettings: React.FC = () => {
     position: 'after' as 'before' | 'after',
     decimal_places: '2',
     rounding: '0.01',
-    active: true
+    active: true,
+    supportedCountries: [] as string[]
   });
 
   // État pour les devises
@@ -112,6 +115,18 @@ const CurrenciesSettings: React.FC = () => {
     setNewCurrency(prev => ({ ...prev, [name]: checked }));
   };
 
+  // Gérer les changements de pays supportés
+  const handleSupportedCountryChange = (countryId: string) => {
+    setNewCurrency(prev => {
+      const currentCountries = [...prev.supportedCountries];
+      if (currentCountries.includes(countryId)) {
+        return { ...prev, supportedCountries: currentCountries.filter(id => id !== countryId) };
+      } else {
+        return { ...prev, supportedCountries: [...currentCountries, countryId] };
+      }
+    });
+  };
+
   // Ajouter une nouvelle devise
   const handleAddCurrency = async () => {
     setSaving(true);
@@ -125,7 +140,8 @@ const CurrenciesSettings: React.FC = () => {
         position: newCurrency.position,
         decimal_places: parseInt(newCurrency.decimal_places),
         rounding: parseFloat(newCurrency.rounding),
-        active: newCurrency.active
+        active: newCurrency.active,
+        supportedCountries: newCurrency.supportedCountries
       };
 
       const createdCurrency = await currencyService.create(newCurrencyData);
@@ -139,7 +155,8 @@ const CurrenciesSettings: React.FC = () => {
         position: 'after' as 'before' | 'after',
         decimal_places: '2',
         rounding: '0.01',
-        active: true
+        active: true,
+        supportedCountries: []
       });
 
       toast({
@@ -384,6 +401,45 @@ const CurrenciesSettings: React.FC = () => {
                     <SelectItem value="after">Après le montant (100 €)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supportedCountries">Pays supportés</Label>
+                <div className="border rounded-md p-3 max-h-40 overflow-y-auto">
+                  {/* Utiliser le hook useCountries pour récupérer les pays */}
+                  <CountrySelector
+                    id="supportedCountries"
+                    label=""
+                    placeholder="Sélectionner un pays à ajouter"
+                    onChange={handleSupportedCountryChange}
+                  />
+
+                  {/* Afficher les pays sélectionnés */}
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {newCurrency.supportedCountries.length > 0 ? (
+                      newCurrency.supportedCountries.map(countryId => (
+                        <Badge
+                          key={countryId}
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
+                          {countryId}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                            onClick={() => handleSupportedCountryChange(countryId)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Aucun pays sélectionné</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-center space-x-2">

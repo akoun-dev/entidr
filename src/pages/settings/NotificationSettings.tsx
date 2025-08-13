@@ -149,23 +149,23 @@ const NotificationSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer les canaux de notification
-        const channelsResponse = await axios.get('http://localhost:3001/api/notificationchannels');
+        const channelsResponse = await axios.get('http://164.160.40.182:3001/api/notificationchannels');
         setChannels(channelsResponse.data);
 
         // Récupérer les modèles de notification
-        const templatesResponse = await axios.get('http://localhost:3001/api/notificationtemplates');
+        const templatesResponse = await axios.get('http://164.160.40.182:3001/api/notificationtemplates');
         setTemplates(templatesResponse.data);
 
         // Récupérer les préférences de notification
-        const preferencesResponse = await axios.get('http://localhost:3001/api/notificationpreferences');
+        const preferencesResponse = await axios.get('http://164.160.40.182:3001/api/notificationpreferences');
         setPreferences(preferencesResponse.data);
 
         // Récupérer les notifications
-        const notificationsResponse = await axios.get('http://localhost:3001/api/notifications');
+        const notificationsResponse = await axios.get('http://164.160.40.182:3001/api/notifications');
         setNotifications(notificationsResponse.data);
 
         // Récupérer la configuration des notifications
-        const configResponse = await axios.get('http://localhost:3001/api/notificationconfig');
+        const configResponse = await axios.get('http://164.160.40.182:3001/api/notificationconfig');
         setConfig(configResponse.data);
 
         setLoading(false);
@@ -184,7 +184,7 @@ const NotificationSettings: React.FC = () => {
 
     try {
       setLoading(true);
-      await axios.put('http://localhost:3001/api/notificationconfig', config);
+      await axios.put('http://164.160.40.182:3001/api/notificationconfig', config);
       setLoading(false);
       alert('Configuration enregistrée avec succès');
     } catch (error) {
@@ -242,7 +242,7 @@ const NotificationSettings: React.FC = () => {
       }
 
       // Appel API
-      const response = await axios.post('http://localhost:3001/api/notificationchannels', {
+      const response = await axios.post('http://164.160.40.182:3001/api/notificationchannels', {
         name: newChannel.name,
         type: newChannel.type,
         description: newChannel.description,
@@ -283,7 +283,7 @@ const NotificationSettings: React.FC = () => {
       }
 
       // Appel API
-      const response = await axios.post('http://localhost:3001/api/notificationtemplates', {
+      const response = await axios.post('http://164.160.40.182:3001/api/notificationtemplates', {
         name: newTemplate.name,
         event: newTemplate.event,
         subject: newTemplate.subject,

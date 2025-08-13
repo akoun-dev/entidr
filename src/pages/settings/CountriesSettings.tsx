@@ -12,6 +12,7 @@ import { Globe, Search, Plus, Pencil, Trash2, MapPin, Loader2, AlertTriangle } f
 import { useToast } from '../../components/ui/use-toast';
 import { countryService, Country as ApiCountry } from '../../services/api';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
+import { CurrencySelector } from '../../components/selectors';
 
 // Types pour les pays
 interface Country {
@@ -42,8 +43,7 @@ const CountriesSettings: React.FC = () => {
   // Régions disponibles
   const regions = ['Europe', 'Amérique du Nord', 'Amérique du Sud', 'Asie', 'Afrique', 'Océanie', 'Antarctique'];
 
-  // Devises disponibles
-  const currencies = ['EUR', 'USD', 'GBP', 'CAD', 'JPY', 'AUD', 'BRL', 'CNY', 'INR', 'RUB'];
+  // Nous utilisons maintenant le sélecteur de devises qui récupère les données depuis l'API
 
   // État pour la recherche
   const [searchTerm, setSearchTerm] = useState('');
@@ -289,7 +289,6 @@ const CountriesSettings: React.FC = () => {
                   active: true
                 }}
                 regions={regions}
-                currencies={currencies}
                 onSave={handleSaveCountry}
                 onCancel={() => setIsDialogOpen(false)}
                 saving={saving}
@@ -439,13 +438,12 @@ const CountriesSettings: React.FC = () => {
 interface CountryFormProps {
   country: Country;
   regions: string[];
-  currencies: string[];
   onSave: (country: Country) => void;
   onCancel: () => void;
   saving?: boolean;
 }
 
-const CountryForm: React.FC<CountryFormProps> = ({ country, regions, currencies, onSave, onCancel, saving = false }) => {
+const CountryForm: React.FC<CountryFormProps> = ({ country, regions, onSave, onCancel, saving = false }) => {
   const [formData, setFormData] = useState<Country>(country);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -460,6 +458,14 @@ const CountryForm: React.FC<CountryFormProps> = ({ country, regions, currencies,
     setFormData({
       ...formData,
       [name]: value
+    });
+  };
+
+  // Gestionnaire pour le sélecteur de devises
+  const handleCurrencyChange = (value: string) => {
+    setFormData({
+      ...formData,
+      currency_code: value
     });
   };
 
@@ -525,19 +531,15 @@ const CountryForm: React.FC<CountryFormProps> = ({ country, regions, currencies,
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="currency_code" className="text-right">Devise</Label>
-          <Select
-            value={formData.currency_code}
-            onValueChange={(value) => handleSelectChange('currency_code', value)}
-          >
-            <SelectTrigger className="col-span-3">
-              <SelectValue placeholder="Sélectionnez une devise" />
-            </SelectTrigger>
-            <SelectContent>
-              {currencies.map(currency => (
-                <SelectItem key={currency} value={currency}>{currency}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="col-span-3">
+            <CurrencySelector
+              id="currency_code"
+              value={formData.currency_code}
+              onChange={handleCurrencyChange}
+              placeholder="Sélectionner une devise"
+              label=""
+            />
+          </div>
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="active" className="text-right">Actif</Label>

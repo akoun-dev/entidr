@@ -8,10 +8,10 @@
     "storage": "./src/database.sqlite"
   },
   "test": {
-    "username": "root",
+    "username": "root", 
     "password": null,
     "database": "database_test",
-    "host": "127.0.0.1",
+    "host": "164.160.40.182",
     "dialect": "sqlite",
     "storage": ":memory:"
   },

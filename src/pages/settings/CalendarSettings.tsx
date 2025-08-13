@@ -97,7 +97,7 @@ const CalendarSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer la configuration du calendrier
-        const configResponse = await axios.get('http://localhost:3001/api/calendarconfig');
+        const configResponse = await axios.get('http://164.160.40.182:3001/api/calendarconfig');
         setCalendarConfig(configResponse.data);
         setTimezone(configResponse.data.timezone);
         setWorkHours({
@@ -107,11 +107,11 @@ const CalendarSettings: React.FC = () => {
         setWeekStart(configResponse.data.weekStart);
 
         // Récupérer les jours fériés
-        const holidaysResponse = await axios.get('http://localhost:3001/api/holidays');
+        const holidaysResponse = await axios.get('http://164.160.40.182:3001/api/holidays');
         setHolidays(holidaysResponse.data);
 
         // Récupérer les intégrations de calendrier
-        const integrationsResponse = await axios.get('http://localhost:3001/api/calendarintegrations');
+        const integrationsResponse = await axios.get('http://164.160.40.182:3001/api/calendarintegrations');
         setIntegrations(integrationsResponse.data);
 
         setLoading(false);
@@ -139,7 +139,7 @@ const CalendarSettings: React.FC = () => {
         weekStart
       };
 
-      await axios.put('http://localhost:3001/api/calendarconfig', updatedConfig);
+      await axios.put('http://164.160.40.182:3001/api/calendarconfig', updatedConfig);
       setCalendarConfig(updatedConfig);
 
       setLoading(false);
@@ -164,7 +164,7 @@ const CalendarSettings: React.FC = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post('http://localhost:3001/api/holidays', newHoliday);
+      const response = await axios.post('http://164.160.40.182:3001/api/holidays', newHoliday);
       setHolidays([...holidays, response.data]);
 
       // Réinitialiser le formulaire et fermer la boîte de dialogue
@@ -209,7 +209,7 @@ const CalendarSettings: React.FC = () => {
     setIsDeleting(true);
 
     try {
-      await axios.delete(`http://localhost:3001/api/holidays/${holidayToDelete.id}`);
+      await axios.delete(`http://164.160.40.182:3001/api/holidays/${holidayToDelete.id}`);
 
       // Mettre à jour l'état local
       setHolidays(holidays.filter(h => h.id !== holidayToDelete.id));

@@ -13,6 +13,7 @@ import { Users, Search, Plus, Pencil, Trash2, UserPlus, Mail, Lock, Shield, Load
 import { useToast } from '../../components/ui/use-toast';
 import { userService, groupService, User as ApiUser } from '../../services/api';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
+import { useGroups } from '../../hooks/useReferenceData';
 
 // Types pour les utilisateurs
 interface User {
@@ -286,7 +287,6 @@ const UsersSettings: React.FC = () => {
                   status: 'active',
                   groups: []
                 }}
-                availableGroups={availableGroups}
                 onSave={handleSaveUser}
                 onCancel={() => setIsDialogOpen(false)}
                 saving={saving}
@@ -432,15 +432,17 @@ const UsersSettings: React.FC = () => {
 // Composant de formulaire pour ajouter/modifier un utilisateur
 interface UserFormProps {
   user: User;
-  availableGroups: string[];
   onSave: (user: User) => void;
   onCancel: () => void;
   saving: boolean;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ user, availableGroups, onSave, onCancel, saving }) => {
+const UserForm: React.FC<UserFormProps> = ({ user, onSave, onCancel, saving }) => {
   const [formData, setFormData] = useState<User>(user);
   const [selectedGroups, setSelectedGroups] = useState<string[]>(user.groups || []);
+
+  // Utiliser le hook useGroups pour récupérer les groupes
+  const { data: availableGroups, loading: loadingGroups } = useGroups();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -553,16 +555,21 @@ const UserForm: React.FC<UserFormProps> = ({ user, availableGroups, onSave, onCa
         <div className="grid grid-cols-4 items-start gap-4 pt-2">
           <Label className="text-right pt-2">Groupes</Label>
           <div className="col-span-3 border rounded-md p-3 space-y-2">
-            {availableGroups.length > 0 ? (
+            {loadingGroups ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Chargement des groupes...</span>
+              </div>
+            ) : availableGroups && availableGroups.length > 0 ? (
               availableGroups.map(group => (
-                <div key={group} className="flex items-center space-x-2">
+                <div key={group.name} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`group-${group}`}
-                    checked={selectedGroups.includes(group)}
-                    onCheckedChange={() => handleGroupToggle(group)}
+                    id={`group-${group.name}`}
+                    checked={selectedGroups.includes(group.name)}
+                    onCheckedChange={() => handleGroupToggle(group.name)}
                   />
-                  <Label htmlFor={`group-${group}`} className="cursor-pointer">
-                    {group}
+                  <Label htmlFor={`group-${group.name}`} className="cursor-pointer">
+                    {group.name}
                   </Label>
                 </div>
               ))
