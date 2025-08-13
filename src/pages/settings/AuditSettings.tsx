@@ -16,7 +16,7 @@ import {
 import { Shield, Clock, AlertTriangle, FileText, Search, Plus, Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 type LogLevel = 'minimal' | 'normal' | 'verbose';
 

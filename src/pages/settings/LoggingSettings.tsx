@@ -8,7 +8,7 @@ import { Switch } from '../../components/ui/switch';
 import { FileText, Filter, HardDrive, Clock, Loader2, AlertCircle, FolderOpen, FileType, Calendar } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 interface LoggingSetting {
   id: string;

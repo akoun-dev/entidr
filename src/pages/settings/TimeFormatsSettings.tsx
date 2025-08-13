@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Clock, Search, Plus, Pencil, Trash2, Check, Info, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
 import { useToast } from '../../components/ui/use-toast';
-import { timeFormatService, type TimeFormat as ApiTimeFormat } from '../../services/api';
+import { timeFormatService, type TimeFormat as ApiTimeFormat } from '../../services';
 
 // Types pour les formats d'heure
 interface TimeFormat {

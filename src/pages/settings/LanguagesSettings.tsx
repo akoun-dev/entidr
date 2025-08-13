@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '../../components/ui/label';
 import { Languages, Search, Plus, Pencil, Trash2, Check, Globe, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { languageService, Language as ApiLanguage } from '../../services/api';
+import { languageService, Language as ApiLanguage } from '../../services';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import { CountrySelector } from '../../components/selectors';
