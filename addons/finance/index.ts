@@ -24,11 +24,9 @@ export const Components = {
 
 // Fonctions d'initialisation et de nettoyage
 export function initialize() {
-  console.log('[Finance Addon] Initialisation de l\'addon Finance');
   // Code d'initialisation...
 }
 
 export function cleanup() {
-  console.log('[Finance Addon] Nettoyage de l\'addon Finance');
   // Code de nettoyage...
 }

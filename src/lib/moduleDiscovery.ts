@@ -23,21 +23,13 @@ const KNOWN_MODULES = [
  */
 export const loadModule = async (moduleName: string): Promise<any> => {
   try {
-    // Utilisation de l'import dynamique pour charger le module
-    // Avec Vite, nous devons utiliser un chemin relatif spécifique
-    let moduleExports;
-
-    // Chargement conditionnel des modules connus
-    if (moduleName === 'hr') {
-      moduleExports = await import('../../addons/hr');
-    } else if (moduleName === 'finance') {
-      moduleExports = await import('../../addons/finance');
-    } else {
+    if (!KNOWN_MODULES.includes(moduleName)) {
       console.warn(`Module inconnu: ${moduleName}`);
       return null;
     }
 
-    return moduleExports;
+    // Utilisation de l'import dynamique pour charger le module
+    return await import(`../../addons/${moduleName}`);
   } catch (error) {
     console.error(`Erreur lors du chargement du module ${moduleName}:`, error);
     return null;

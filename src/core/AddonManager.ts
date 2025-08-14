@@ -41,7 +41,6 @@ class AddonManager {
       this.menus = [...this.menus, ...addon.manifest.menus];
     }
 
-    console.log(`Addon ${addon.manifest.name} enregistré avec succès.`);
   }
 
   /**

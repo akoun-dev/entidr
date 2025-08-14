@@ -13,6 +13,8 @@ interface AddonLoaderProps {
  */
 const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
+  const [hasModules, setHasModules] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadAddons = async () => {
@@ -23,16 +25,13 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
         let dbModules: Module[] = [];
         try {
           dbModules = await moduleService.getAllModules();
-          console.log("Modules récupérés depuis la base de données:", dbModules);
         } catch (error) {
           console.warn("Impossible de récupérer les modules depuis la base de données:", error);
           console.warn("Utilisation des modules du registre uniquement.");
         }
 
         // Découvrir et charger automatiquement tous les modules disponibles
-        console.log("Chargement des modules depuis le registre...");
         const registryModules = await getAllModules();
-        console.log(`${registryModules.length} modules découverts:`, registryModules.map(m => m.manifest.name));
 
         // Filtrer les modules actifs
         const activeModules = registryModules.filter(addon => {
@@ -45,32 +44,16 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
           return true;
         });
 
-        console.log(`${activeModules.length} modules actifs:`, activeModules.map(m => m.manifest.name));
-
         // Enregistrer chaque module actif
         for (const addon of activeModules) {
-          console.log(`Enregistrement du module ${addon.manifest.name}...`);
-          console.log(`Routes du module ${addon.manifest.name}:`, addon.routes);
           addonManager.registerAddon(addon);
         }
 
-        // Vérifier que les routes sont bien enregistrées
-        const allRoutes = addonManager.getAllRoutes();
-        console.log("Routes après enregistrement:", allRoutes);
-
-        // Vérifier spécifiquement les routes du module HR
-        const hrAddon = addonManager.getAddon('hr');
-        if (hrAddon) {
-          console.log("Module HR trouvé:", hrAddon);
-          console.log("Routes du module HR:", hrAddon.routes);
-        } else {
-          console.warn("Module HR non trouvé dans le gestionnaire d'addons");
+        if (activeModules.length === 0) {
+          setHasModules(false);
         }
-
-        // Afficher tous les menus enregistrés
-        console.log("Menus enregistrés:", addonManager.getAllMenus());
       } catch (error) {
-        console.error("Erreur lors du chargement des modules:", error);
+        setError('Erreur lors du chargement des modules');
       }
 
       setLoaded(true);
@@ -131,6 +114,14 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
         </style>
       </div>
     );
+  }
+
+  if (error) {
+    return <div style={{ padding: 20 }}>{error}</div>;
+  }
+
+  if (!hasModules) {
+    return <div style={{ padding: 20 }}>Aucun module disponible</div>;
   }
 
   return <>{children}</>;

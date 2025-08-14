@@ -16,11 +16,9 @@ export const Components = {
 
 // Fonctions d'initialisation et de nettoyage
 export function initialize() {
-  console.log('[CRM Addon] Initialisation de l\'addon CRM');
   // Code d'initialisation...
 }
 
 export function cleanup() {
-  console.log('[CRM Addon] Nettoyage de l\'addon CRM');
   // Code de nettoyage...
 }

@@ -37,12 +37,9 @@ async function startServer() {
   try {
     // Vérifier la connexion à la base de données
     await sequelize.authenticate();
-    console.log('Connexion à la base de données établie avec succès.');
-    
+
     // Démarrer le serveur
-    app.listen(PORT, () => {
-      console.log(`Serveur démarré sur le port ${PORT}`);
-    });
+    app.listen(PORT);
   } catch (error) {
     console.error('Impossible de se connecter à la base de données:', error);
     process.exit(1);

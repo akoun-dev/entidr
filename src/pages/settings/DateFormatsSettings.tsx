@@ -163,7 +163,6 @@ const DateFormatsSettings: React.FC = () => {
           active: updatedDateFormat.active !== undefined ? Boolean(updatedDateFormat.active) : true
         };
 
-        console.log('Données envoyées au serveur pour mise à jour:', apiFormat);
 
         const updatedFormat = await dateFormatService.update(updatedDateFormat.id, apiFormat);
 
@@ -219,7 +218,6 @@ const DateFormatsSettings: React.FC = () => {
           active: updatedDateFormat.active !== undefined ? Boolean(updatedDateFormat.active) : true
         };
 
-        console.log('Données envoyées au serveur:', apiFormat);
 
         const newFormat = await dateFormatService.create(apiFormat);
 
