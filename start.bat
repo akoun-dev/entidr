@@ -83,10 +83,14 @@ if %ERRORLEVEL% equ 0 (
   timeout /t 2 >nul
 )
 
-call :check_port 3001
+set "API_PORT=%PORT%"
+if "%API_PORT%"=="" set "API_PORT=3001"
+set "PORT=%API_PORT%"
+
+call :check_port %API_PORT%
 if %ERRORLEVEL% equ 0 (
-  call :log "warning" "Un processus est déjà en cours d'exécution sur le port 3001. Tentative d'arrêt..."
-  for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3001"') do (
+  call :log "warning" "Un processus est déjà en cours d'exécution sur le port %API_PORT%. Tentative d'arrêt..."
+  for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":%API_PORT%"') do (
     taskkill /F /PID %%a >nul 2>nul
   )
   timeout /t 2 >nul
@@ -120,7 +124,7 @@ call :log "info" "Attente du démarrage du serveur API..."
 timeout /t 5 >nul
 
 :: Vérifier si le serveur est en cours d'exécution
-call :check_port 3001
+call :check_port %API_PORT%
 if %ERRORLEVEL% neq 0 (
   call :log "error" "Le serveur API n'a pas pu démarrer. Veuillez vérifier les erreurs dans la fenêtre du serveur."
   exit /b 1
@@ -148,7 +152,11 @@ call :log "success" "Application frontend démarrée avec succès."
 :: Afficher les informations d'accès
 call :log "info" "L'application est maintenant accessible aux adresses suivantes:"
 call :log "info" "- Frontend: http://localhost:8080"
-call :log "info" "- API: http://localhost:3001"
+
+call :log "info" "- API: http://localhost:%API_PORT%"
+
+call :log "info" "- API: %VITE_API_BASE_URL%"
+n
 
 call :log "warning" "Pour arrêter l'application, fermez les fenêtres de commande ou appuyez sur Ctrl+C dans chaque fenêtre."
 
