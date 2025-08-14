@@ -1,6 +1,9 @@
 // Exporter les vues
 export * from './views';
 
+// Exporter l'éditeur BPMN
+export * from './editor';
+
 // Exporter les routes
 
 export { default as routes } from './routes';

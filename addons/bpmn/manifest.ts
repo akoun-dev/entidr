@@ -3,7 +3,7 @@ import { AddonManifest } from '../../src/types/addon';
 const manifest: AddonManifest = {
   // Métadonnées de base
   name: 'bpmn',
-  version: '1.0.0',
+  version: '1.1.0',
   displayName: 'BPMN',
   summary: 'Modélisation et exécution de processus BPMN 2.0',
   description: 'Module pour créer, publier et piloter des workflows métiers via BPMN 2.0',
