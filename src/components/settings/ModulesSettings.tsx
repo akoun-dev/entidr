@@ -26,8 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Loader2, Trash2, Power, RefreshCw } from 'lucide-react';
 import { Module } from '../../types/module';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://164.160.40.182:3001/api';
+import { API_BASE_URL } from '../../config/api';
 
 /**
  * Composant pour la gestion des modules

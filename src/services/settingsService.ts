@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 import {
   Settings,
   NotificationSettings,
@@ -28,7 +29,6 @@ import {
   ShippingMethodsSettings
 } from '../types/settings.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 /**
  * Service pour la gestion des paramètres
