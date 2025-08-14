@@ -59,6 +59,20 @@ export const SettingsService = {
   async getAllSettings(): Promise<Record<string, Settings>> {
     const response = await axios.get(`${API_BASE_URL}/settings`);
     return response.data as Record<string, Settings>;
+  },
+
+  /**
+   * Teste la connexion à la base de données
+   */
+  async testDatabaseConnection(connection: {
+    host: string;
+    port: string;
+    name: string;
+    user: string;
+    password: string;
+  }): Promise<{ success: boolean; message: string }> {
+    const response = await axios.post(`${API_BASE_URL}/settings/database/test`, connection);
+    return response.data as { success: boolean; message: string };
   }
 };
 
