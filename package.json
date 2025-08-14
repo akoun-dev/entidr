@@ -1,7 +1,8 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "entidr",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Entidr application",
   "type": "commonjs",
   "scripts": {
     "generate-modules": "node scripts/generateModuleRegistry.js",
