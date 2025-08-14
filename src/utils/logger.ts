@@ -8,7 +8,7 @@ const levelOrder: Record<LogLevel, number> = {
   none: 4,
 };
 
-const currentLevel = (import.meta.env.VITE_LOG_LEVEL as LogLevel) || 'info';
+const currentLevel = (import.meta.env.LOG_LEVEL as LogLevel) || 'info';
 
 function shouldLog(level: LogLevel): boolean {
   return levelOrder[level] >= levelOrder[currentLevel];

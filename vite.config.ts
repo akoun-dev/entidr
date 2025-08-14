@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
   const proxyTarget = apiBaseUrl ? new URL(apiBaseUrl).origin : "";
 
   return {
+    define: {
+      'import.meta.env.LOG_LEVEL': JSON.stringify(process.env.LOG_LEVEL || 'info'),
+    },
     server: {
       host: "::",
       port: 8080,
