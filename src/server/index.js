@@ -5,15 +5,31 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('ws');
 const userRoutes = require('./routes/users');
 const groupRoutes = require('./routes/groups');
 const parameterRoutes = require('./routes/parameters');
+const bpmnAnalytics = require('./routes/bpmnAnalytics');
+
 const bpmnRoutes = require('./routes/bpmn');
+
 const { sequelize } = require('../models');
 const logger = require('../utils/logger');
 
 // Créer l'application Express
 const app = express();
+const server = http.createServer(app);
+const wss = new Server({ server, path: '/ws/analytics' });
+
+wss.on('connection', ws => {
+  const sendMetrics = () => {
+    ws.send(JSON.stringify(bpmnAnalytics.generateMetrics()));
+  };
+  const interval = setInterval(sendMetrics, 5000);
+  ws.on('close', () => clearInterval(interval));
+  sendMetrics();
+});
 
 // Middleware
 app.use(cors());
@@ -24,7 +40,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/parameters', parameterRoutes);
+app.use('/api/bpmn/analytics', bpmnAnalytics.router);
+=======
 app.use('/api/bpmn', bpmnRoutes);
+
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
@@ -44,8 +63,8 @@ async function startServer() {
     await sequelize.authenticate();
     logger.info('Connexion à la base de données établie avec succès.');
     
-    // Démarrer le serveur
-    app.listen(PORT, () => {
+    // Démarrer le serveur HTTP et WebSocket
+    server.listen(PORT, () => {
       logger.info(`Serveur démarré sur le port ${PORT}`);
     });
   } catch (error) {

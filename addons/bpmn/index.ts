@@ -1,5 +1,6 @@
 // Exporter les vues
 export * from './views';
+export * from './analytics';
 
 // Exporter les formulaires dynamiques
 export * from './forms';
