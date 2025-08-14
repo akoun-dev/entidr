@@ -2,13 +2,16 @@
  * Hooks personnalisés pour accéder aux données de référence
  * Ces hooks facilitent l'utilisation des données de référence dans les composants React
  */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useDeepCompareEffect } from './useDeepCompareEffect';
 import ReferenceDataService from '../services/ReferenceDataService';
 
 /**
  * Hook générique pour récupérer des données de référence
  * @param fetchFunction Fonction à appeler pour récupérer les données
- * @param params Paramètres optionnels pour la requête
+ * @param params Paramètres optionnels pour la requête. Pour éviter des
+ * rechargements inutiles, mémoïsez cet objet afin de garantir la stabilité de
+ * sa référence (ex. avec `useMemo`).
  * @param dependencies Dépendances supplémentaires pour le useEffect
  */
 export function useReferenceData<T>(
@@ -20,7 +23,7 @@ export function useReferenceData<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -37,8 +40,7 @@ export function useReferenceData<T>(
     };
 
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(params), ...dependencies]);
+  }, [params, ...dependencies]);
 
   return { data, loading, error };
 }
