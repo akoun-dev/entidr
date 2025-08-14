@@ -13,11 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Checkbox } from '../../components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-if (!API_BASE_URL) {
-  throw new Error('VITE_API_BASE_URL is required');
-}
+import { API_BASE_URL } from '../../config/api';
 
 // Types pour les notifications
 interface NotificationChannel {
