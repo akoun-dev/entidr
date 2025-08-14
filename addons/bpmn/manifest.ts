@@ -3,10 +3,15 @@ import { AddonManifest } from '../../src/types/addon';
 const manifest: AddonManifest = {
   // Métadonnées de base
   name: 'bpmn',
-  version: '1.1.0',
+  version: '1.0.0',
+
   displayName: 'BPMN',
   summary: 'Modélisation et exécution de processus BPMN 2.0',
   description: 'Module pour créer, publier et piloter des workflows métiers via BPMN 2.0',
+  publication: {
+    status: 'draft',
+    auditLog: 'addons/bpmn/bpmn.log'
+  },
 
   // Configuration
   application: true,
@@ -67,7 +72,63 @@ const manifest: AddonManifest = {
         { name: 'schema', type: 'string', required: true, label: 'Schéma JSON' },
         { name: 'public', type: 'boolean', required: true, label: 'Public', default: false }
       ]
+
+    },
+    {
+      name: 'bpmn.variable',
+      displayName: 'Variable',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'name', type: 'string', required: true, label: 'Nom' },
+        { name: 'value', type: 'string', required: false, label: 'Valeur', pii: true },
+        { name: 'encrypted', type: 'boolean', required: true, label: 'Chiffré', default: false }
+      ]
+    },
+    {
+      name: 'bpmn.attachment',
+      displayName: 'Pièce jointe',
+      fields: [
+        { name: 'task_id', type: 'many2one', required: true, label: 'Tâche', relation: 'bpmn.task' },
+        { name: 'filename', type: 'string', required: true, label: 'Nom du fichier' },
+        { name: 'mimetype', type: 'string', required: true, label: 'Type MIME' },
+        { name: 'size', type: 'integer', required: true, label: 'Taille' },
+        { name: 'content', type: 'binary', required: true, label: 'Contenu', pii: true },
+        { name: 'encrypted', type: 'boolean', required: true, label: 'Chiffré', default: false }
+      ]
     }
+
+      },
+    {
+      name: 'bpmn.event',
+      displayName: 'Événement',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'type', type: 'string', required: true, label: 'Type' },
+        { name: 'payload', type: 'string', required: false, label: 'Données' },
+        { name: 'status', type: 'string', required: true, label: 'Statut', default: 'pending' }
+      ]
+    },
+    {
+      name: 'bpmn.job',
+      displayName: 'Job',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'type', type: 'string', required: true, label: 'Type' },
+        { name: 'scheduled_at', type: 'datetime', required: false, label: 'Planifié pour' },
+        { name: 'status', type: 'string', required: true, label: 'Statut', default: 'pending' },
+        { name: 'data', type: 'string', required: false, label: 'Données' }
+      ]
+    },
+    {
+      name: 'bpmn.transaction',
+      displayName: 'Transaction',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'status', type: 'string', required: true, label: 'Statut', default: 'started' },
+        { name: 'started_at', type: 'datetime', required: false, label: 'Début' },
+        { name: 'ended_at', type: 'datetime', required: false, label: 'Fin' }
+      ]
+    },
   ],
 
   // Menus définis par l'addon
