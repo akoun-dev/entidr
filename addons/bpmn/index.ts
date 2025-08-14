@@ -1,6 +1,9 @@
 // Exporter les vues
 export * from './views';
 
+// Exporter les formulaires dynamiques
+export * from './forms';
+
 // Exporter les routes
 
 export { default as routes } from './routes';
@@ -11,6 +14,10 @@ export { default as manifest } from './manifest';
 // Exporter les connecteurs et le coffre-fort
 export * from './connectors';
 export { SecretStore } from './secrets/SecretStore';
+
+// Exporter le moteur de processus
+export { processEngine, ProcessEngine } from './engine';
+
 
 
 // Exporter les composants pour l'enregistrement des routes
