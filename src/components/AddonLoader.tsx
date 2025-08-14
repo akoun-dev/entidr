@@ -15,6 +15,8 @@ interface AddonLoaderProps {
  */
 const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
+  const [hasModules, setHasModules] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadAddons = async () => {
@@ -25,16 +27,22 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
         let dbModules: Module[] = [];
         try {
           dbModules = await moduleService.getAllModules();
+
           logger.debug("Modules récupérés depuis la base de données:", dbModules);
+
         } catch (error) {
           logger.warn("Impossible de récupérer les modules depuis la base de données:", error);
           logger.warn("Utilisation des modules du registre uniquement.");
         }
 
         // Découvrir et charger automatiquement tous les modules disponibles
+
+        const registryModules = await getAllModules();
+
         logger.info("Chargement des modules depuis le registre...");
         const registryModules = await getAllModules();
         logger.info(`${registryModules.length} modules découverts:`, registryModules.map(m => m.manifest.name));
+
 
         // Filtrer les modules actifs
         const activeModules = registryModules.filter(addon => {
@@ -46,6 +54,18 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
           // Si le module n'existe pas dans la base de données, l'activer par défaut
           return true;
         });
+
+
+        // Enregistrer chaque module actif
+        for (const addon of activeModules) {
+          addonManager.registerAddon(addon);
+        }
+
+        if (activeModules.length === 0) {
+          setHasModules(false);
+        }
+      } catch (error) {
+        setError('Erreur lors du chargement des modules');
 
         logger.info(`${activeModules.length} modules actifs:`, activeModules.map(m => m.manifest.name));
 
@@ -89,6 +109,14 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
 
   if (!loaded) {
     return <LoadingAnimation />;
+  }
+
+  if (error) {
+    return <div style={{ padding: 20 }}>{error}</div>;
+  }
+
+  if (!hasModules) {
+    return <div style={{ padding: 20 }}>Aucun module disponible</div>;
   }
 
   return <>{children}</>;

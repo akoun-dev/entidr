@@ -43,6 +43,7 @@ class AddonManager {
     }
 
     logger.info(`Addon ${addon.manifest.name} enregistré avec succès.`);
+
   }
 
   /**
