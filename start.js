@@ -123,9 +123,11 @@ async function main() {
   try {
     log('info', 'Démarrage de l\'application avec migrations...');
 
+    const apiPort = process.env.PORT || 3001;
+
     // Vérifier si les ports sont déjà utilisés
     const port8080InUse = await isPortInUse(8080);
-    const port3001InUse = await isPortInUse(3001);
+    const portApiInUse = await isPortInUse(apiPort);
 
     if (port8080InUse) {
       log('warning', 'Le port 8080 est déjà utilisé. Tentative d\'arrêt du processus...');
@@ -134,9 +136,9 @@ async function main() {
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
-    if (port3001InUse) {
-      log('warning', 'Le port 3001 est déjà utilisé. Tentative d\'arrêt du processus...');
-      await killProcessOnPort(3001);
+    if (portApiInUse) {
+      log('warning', `Le port ${apiPort} est déjà utilisé. Tentative d\'arrêt du processus...`);
+      await killProcessOnPort(apiPort);
       // Attendre un peu pour s'assurer que le port est libéré
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
@@ -180,7 +182,7 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 5000));
 
     // Vérifier si le serveur est en cours d'exécution
-    if (!await isPortInUse(3001)) {
+    if (!await isPortInUse(apiPort)) {
       log('error', 'Le serveur API n\'a pas pu démarrer. Veuillez vérifier les erreurs ci-dessus.');
       return;
     }
@@ -207,7 +209,7 @@ async function main() {
     // Afficher les informations d'accès
     log('info', 'L\'application est maintenant accessible aux adresses suivantes:');
     log('info', '- Frontend: http://localhost:8080');
-    log('info', '- API: http://localhost:3001');
+    log('info', `- API: http://localhost:${apiPort}`);
 
     log('warning', 'Appuyez sur Ctrl+C pour arrêter l\'application.');
 
