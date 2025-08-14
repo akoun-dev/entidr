@@ -30,6 +30,28 @@ export const Components = {
   ConnectorListView
 };
 
+// Middleware RBAC spécifique au module BPMN
+import { Request, Response, NextFunction } from 'express';
+
+export type BpmnRole =
+  | 'SuperAdmin'
+  | 'Administrateur'
+  | 'Concepteur'
+  | 'Éditeur'
+  | 'Validateur'
+  | 'Opérateur'
+  | 'Auditeur'
+  | 'Utilisateur final';
+
+export function authorizeBpmn(allowedRoles: BpmnRole[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const userRoles: string[] = (req as any).user?.roles || [];
+    if (allowedRoles.some(role => userRoles.includes(role))) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Accès refusé' });
+  };
+}
 
 export function initialize() {
   // Code d'initialisation du module BPMN
