@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 // Récupérer l'URL de base de l'API depuis les variables d'environnement
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -9,6 +10,7 @@ if (!apiBaseUrl) {
 // Configuration de base d'axios
 const api = axios.create({
   baseURL: apiBaseUrl,
+
   headers: {
     'Content-Type': 'application/json',
   },

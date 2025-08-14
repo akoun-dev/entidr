@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 import {
   Settings,
   NotificationSettings,
@@ -27,6 +28,7 @@ import {
   PaymentProvidersSettings,
   ShippingMethodsSettings
 } from '../types/settings.ts';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 if (!API_BASE_URL) {
