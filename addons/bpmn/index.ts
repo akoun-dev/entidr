@@ -8,6 +8,10 @@ export { default as routes } from './routes';
 // Exporter le manifeste
 export { default as manifest } from './manifest';
 
+// Exporter les connecteurs et le coffre-fort
+export * from './connectors';
+export { SecretStore } from './secrets/SecretStore';
+
 
 // Exporter les composants pour l'enregistrement des routes
 import { BpmnDashboardView, ProcessListView, InstanceListView, ConnectorListView } from './views/pages';
@@ -18,8 +22,6 @@ export const Components = {
   InstanceListView,
   ConnectorListView
 };
-// Aucun composant spécifique pour l'instant
-export const Components = {};
 
 
 export function initialize() {
