@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Addon, AddonManifest, MenuDefinition } from '../types/addon';
+import logger from '../utils/logger';
 
 /**
  * Gestionnaire des addons de l'application
@@ -26,7 +27,7 @@ class AddonManager {
    */
   public registerAddon(addon: Addon): void {
     if (this.addons.has(addon.manifest.name)) {
-      console.warn(`L'addon ${addon.manifest.name} est déjà enregistré. Il sera remplacé.`);
+      logger.warn(`L'addon ${addon.manifest.name} est déjà enregistré. Il sera remplacé.`);
     }
 
     this.addons.set(addon.manifest.name, addon);
@@ -40,6 +41,8 @@ class AddonManager {
     if (addon.manifest.menus) {
       this.menus = [...this.menus, ...addon.manifest.menus];
     }
+
+    logger.info(`Addon ${addon.manifest.name} enregistré avec succès.`);
 
   }
 

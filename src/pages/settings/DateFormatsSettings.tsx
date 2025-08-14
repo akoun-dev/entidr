@@ -163,7 +163,6 @@ const DateFormatsSettings: React.FC = () => {
           active: updatedDateFormat.active !== undefined ? Boolean(updatedDateFormat.active) : true
         };
 
-
         const updatedFormat = await dateFormatService.update(updatedDateFormat.id, apiFormat);
 
         // Transformer les données pour correspondre à notre interface et ajouter l'exemple
@@ -217,7 +216,6 @@ const DateFormatsSettings: React.FC = () => {
           is_default: Boolean(updatedDateFormat.is_default),
           active: updatedDateFormat.active !== undefined ? Boolean(updatedDateFormat.active) : true
         };
-
 
         const newFormat = await dateFormatService.create(apiFormat);
 

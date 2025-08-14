@@ -9,6 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const logger = require('../src/utils/logger');
 
 // Chemins
 const ADDONS_DIR = path.resolve(__dirname, '../addons');
@@ -257,9 +258,9 @@ function main() {
     );
 
     if (validModules.length === 0) {
-      console.warn('Aucun module valide trouvé dans le dossier addons');
+      logger.warn('Aucun module valide trouvé dans le dossier addons');
     } else {
-      console.log(`Modules valides trouvés: ${validModules.join(', ')}`);
+      logger.info(`Modules valides trouvés: ${validModules.join(', ')}`);
     }
 
     // Lire les manifestes des modules
@@ -274,7 +275,7 @@ function main() {
 
     // Trier les modules en fonction de leurs dépendances
     const sortedModules = sortModulesByDependencies(validModules, manifests);
-    console.log(`Ordre de chargement des modules: ${sortedModules.join(', ')}`);
+    logger.info(`Ordre de chargement des modules: ${sortedModules.join(', ')}`);
 
     // Générer le contenu du fichier ModuleRegistry.ts
     const content = generateRegistryContent(sortedModules);
@@ -287,15 +288,15 @@ function main() {
 
     // Écrire le fichier ModuleRegistry.ts
     fs.writeFileSync(OUTPUT_FILE, content);
-    console.log(`Fichier ModuleRegistry.ts généré avec succès: ${OUTPUT_FILE}`);
+    logger.info(`Fichier ModuleRegistry.ts généré avec succès: ${OUTPUT_FILE}`);
 
     // Mettre à jour la base de données (si nécessaire)
     // Note: Cette partie serait idéalement gérée par un script séparé
-    console.log('Pour mettre à jour la base de données avec les informations des modules:');
-    console.log('1. Exécutez les migrations: npx sequelize-cli db:migrate');
-    console.log('2. Exécutez les seeders: npx sequelize-cli db:seed:all');
+    logger.info('Pour mettre à jour la base de données avec les informations des modules:');
+    logger.info('1. Exécutez les migrations: npx sequelize-cli db:migrate');
+    logger.info('2. Exécutez les seeders: npx sequelize-cli db:seed:all');
   } catch (error) {
-    console.error('Erreur lors de la génération du registre des modules:', error);
+    logger.error('Erreur lors de la génération du registre des modules:', error);
     process.exit(1);
   }
 }
