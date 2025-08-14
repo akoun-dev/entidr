@@ -9,7 +9,7 @@ import { Code, Key, RefreshCw, Plus, Trash2, Loader2, AlertCircle, Check, Copy }
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 interface ApiKey {
   id: string;

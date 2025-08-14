@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Hash, Search, Plus, Pencil, Trash2, Check, Info, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
 import { useToast } from '../../components/ui/use-toast';
-import { numberFormatService, type NumberFormat as ApiNumberFormat } from '../../services/api';
+import { numberFormatService, type NumberFormat as ApiNumberFormat } from '../../services';
 
 // Types pour les formats de nombre
 interface NumberFormat {

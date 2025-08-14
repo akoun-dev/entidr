@@ -10,7 +10,7 @@ import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Globe, Search, Plus, Pencil, Trash2, MapPin, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { countryService, Country as ApiCountry } from '../../services/api';
+import { countryService, Country as ApiCountry } from '../../services';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import { CurrencySelector } from '../../components/selectors';
 

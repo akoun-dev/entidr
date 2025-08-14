@@ -11,7 +11,7 @@ import { Label } from '../../components/ui/label';
 import { Checkbox } from '../../components/ui/checkbox';
 import { Users, Search, Plus, Pencil, Trash2, UserPlus, Mail, Lock, Shield, Loader2, UserX } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { userService, groupService, User as ApiUser } from '../../services/api';
+import { userService, groupService, User as ApiUser } from '../../services';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import { useGroups } from '../../hooks/useReferenceData';
 

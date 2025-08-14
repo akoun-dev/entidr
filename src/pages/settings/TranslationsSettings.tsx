@@ -11,7 +11,7 @@ import { Label } from '../../components/ui/label';
 import { Checkbox } from '../../components/ui/checkbox';
 import { Search, Plus, Pencil, Trash2, Loader2, Languages, FileX } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { translationService, type Translation } from '../../services/api';
+import { translationService, type Translation } from '../../services';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 /**

@@ -8,7 +8,7 @@ import { Zap, Plus, Trash2, Pencil, Loader2, AlertCircle, PlayCircle, CheckCircl
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
-import { api } from '../../services/api';
+import { api } from '../../services';
 
 interface AutomationRule {
   id: string;

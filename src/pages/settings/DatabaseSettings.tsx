@@ -4,6 +4,8 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Database, HardDrive, Server, RefreshCw, Archive } from 'lucide-react';
+import { useToast } from '../../components/ui/use-toast';
+import { SettingsService } from '../../services/settingsService.ts';
 
 const DatabaseSettings: React.FC = () => {
   const [connection, setConnection] = useState({
@@ -14,19 +16,45 @@ const DatabaseSettings: React.FC = () => {
     password: ''
   });
 
+  const { toast } = useToast();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setConnection(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleTestConnection = () => {
-    // TODO: Implémenter la logique de test de connexion
-    console.log('Test connection:', connection);
+  const handleTestConnection = async () => {
+    try {
+      await SettingsService.testDatabaseConnection(connection);
+      toast({
+        title: 'Connexion réussie',
+        description: 'La connexion à la base de données a été vérifiée avec succès.'
+      });
+    } catch (error) {
+      console.error('Erreur de test de connexion:', error);
+      toast({
+        title: 'Échec de la connexion',
+        description: 'Impossible de se connecter à la base de données.',
+        variant: 'destructive'
+      });
+    }
   };
 
-  const handleSave = () => {
-    // TODO: Implémenter la sauvegarde des paramètres
-    console.log('Save connection:', connection);
+  const handleSave = async () => {
+    try {
+      await SettingsService.saveSettings('database', connection);
+      toast({
+        title: 'Paramètres sauvegardés',
+        description: 'La configuration de la base de données a été enregistrée.'
+      });
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      toast({
+        title: 'Erreur de sauvegarde',
+        description: "Impossible d'enregistrer les paramètres de la base de données.",
+        variant: 'destructive'
+      });
+    }
   };
 
   return (

@@ -123,6 +123,8 @@ function MyForm() {
 3. **Utiliser les composants de sélection** pour garantir une expérience utilisateur cohérente.
 4. **Utiliser les hooks personnalisés** pour simplifier l'accès aux données dans les composants React.
 5. **Utiliser le service centralisé** pour accéder aux données dans les services et les composants non-React.
+6. **Stabiliser les paramètres** transmis aux hooks (ex. `params`) en les mémoïsant
+   avec `useMemo` afin d'éviter des requêtes répétées inutiles.
 
 ## Exemple complet
 
