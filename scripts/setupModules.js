@@ -13,6 +13,7 @@ const path = require('path');
 const { Sequelize } = require('sequelize');
 const env = process.env.NODE_ENV || 'development';
 const config = require('../src/config/config.js')[env];
+const logger = require('../src/utils/logger');
 
 // Couleurs pour les logs
 const colors = {
@@ -55,19 +56,19 @@ function log(type, message) {
   
   switch (type) {
     case 'info':
-      console.log(`${colors.fg.blue}[${timestamp}] [INFO]${colors.reset} ${message}`);
+      logger.info(`${colors.fg.blue}[${timestamp}] [INFO]${colors.reset} ${message}`);
       break;
     case 'success':
-      console.log(`${colors.fg.green}[${timestamp}] [SUCCESS]${colors.reset} ${message}`);
+      logger.info(`${colors.fg.green}[${timestamp}] [SUCCESS]${colors.reset} ${message}`);
       break;
     case 'warning':
-      console.log(`${colors.fg.yellow}[${timestamp}] [WARNING]${colors.reset} ${message}`);
+      logger.warn(`${colors.fg.yellow}[${timestamp}] [WARNING]${colors.reset} ${message}`);
       break;
     case 'error':
-      console.log(`${colors.fg.red}[${timestamp}] [ERROR]${colors.reset} ${message}`);
+      logger.error(`${colors.fg.red}[${timestamp}] [ERROR]${colors.reset} ${message}`);
       break;
     default:
-      console.log(`[${timestamp}] ${message}`);
+      logger.info(`[${timestamp}] ${message}`);
   }
 }
 

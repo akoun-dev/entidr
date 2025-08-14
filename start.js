@@ -7,6 +7,7 @@ const { spawn, exec } = require('child_process');
 const readline = require('readline');
 const path = require('path');
 const os = require('os');
+const logger = require('./src/utils/logger');
 
 // Couleurs pour les messages
 const colors = {
@@ -41,7 +42,7 @@ function log(type, message) {
       break;
   }
 
-  console.log(`${color}${prefix} ${message}${colors.reset}`);
+  logger.info(`${color}${prefix} ${message}${colors.reset}`);
 }
 
 // Fonction pour exécuter une commande et retourner une promesse
@@ -97,11 +98,11 @@ function startProcess(command, args, name) {
   });
 
   process.stdout.on('data', (data) => {
-    console.log(`${colors.blue}[${name}]${colors.reset} ${data.toString().trim()}`);
+    logger.info(`${colors.blue}[${name}]${colors.reset} ${data.toString().trim()}`);
   });
 
   process.stderr.on('data', (data) => {
-    console.error(`${colors.red}[${name} ERROR]${colors.reset} ${data.toString().trim()}`);
+    logger.error(`${colors.red}[${name} ERROR]${colors.reset} ${data.toString().trim()}`);
   });
 
   process.on('close', (code) => {
@@ -146,7 +147,7 @@ async function main() {
     try {
       const { stdout, stderr } = await execCommand('npx sequelize-cli db:migrate --migrations-path=src/migrations');
       if (stderr && !stderr.includes('Executing')) {
-        console.error(stderr);
+        logger.error(stderr);
       }
       log('success', 'Migrations exécutées avec succès.');
     } catch (error) {
@@ -159,7 +160,7 @@ async function main() {
     try {
       const { stdout, stderr } = await execCommand('npx sequelize-cli db:seed:all --seeders-path=src/seeders');
       if (stderr && !stderr.includes('Executing')) {
-        console.error(stderr);
+        logger.error(stderr);
       }
     } catch (error) {
       log('warning', `Des erreurs se sont produites lors du seeding: ${error.message}`);

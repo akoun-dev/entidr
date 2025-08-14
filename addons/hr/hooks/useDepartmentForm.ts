@@ -125,7 +125,6 @@ export const useDepartmentForm = () => {
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    console.log('Données soumises:', department);
 
     // Simulate a successful save
     alert(`Département ${isEditMode ? 'modifié' : 'créé'} avec succès !`);

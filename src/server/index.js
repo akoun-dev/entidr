@@ -7,6 +7,7 @@ const userRoutes = require('./routes/users');
 const groupRoutes = require('./routes/groups');
 const parameterRoutes = require('./routes/parameters');
 const { sequelize } = require('../models');
+const logger = require('../utils/logger');
 
 // Créer l'application Express
 const app = express();
@@ -23,7 +24,7 @@ app.use('/api/parameters', parameterRoutes);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error(err.stack);
   res.status(500).json({
     message: 'Une erreur est survenue',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
@@ -37,14 +38,14 @@ async function startServer() {
   try {
     // Vérifier la connexion à la base de données
     await sequelize.authenticate();
-    console.log('Connexion à la base de données établie avec succès.');
+    logger.info('Connexion à la base de données établie avec succès.');
     
     // Démarrer le serveur
     app.listen(PORT, () => {
-      console.log(`Serveur démarré sur le port ${PORT}`);
+      logger.info(`Serveur démarré sur le port ${PORT}`);
     });
   } catch (error) {
-    console.error('Impossible de se connecter à la base de données:', error);
+    logger.error('Impossible de se connecter à la base de données:', error);
     process.exit(1);
   }
 }

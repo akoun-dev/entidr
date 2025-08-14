@@ -16,11 +16,9 @@ export const Components = {
 
 // Fonctions d'initialisation et de nettoyage
 export function initialize() {
-  console.log('[Inventory Addon] Initialisation de l\'addon Inventaire');
   // Code d'initialisation...
 }
 
 export function cleanup() {
-  console.log('[Inventory Addon] Nettoyage de l\'addon Inventaire');
   // Code de nettoyage...
 }
