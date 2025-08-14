@@ -67,6 +67,31 @@ const manifest: AddonManifest = {
         { name: 'schema', type: 'string', required: true, label: 'Schéma JSON' },
         { name: 'public', type: 'boolean', required: true, label: 'Public', default: false }
       ]
+
+    },
+    {
+      name: 'bpmn.variable',
+      displayName: 'Variable',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'name', type: 'string', required: true, label: 'Nom' },
+        { name: 'value', type: 'string', required: false, label: 'Valeur', pii: true },
+        { name: 'encrypted', type: 'boolean', required: true, label: 'Chiffré', default: false }
+      ]
+    },
+    {
+      name: 'bpmn.attachment',
+      displayName: 'Pièce jointe',
+      fields: [
+        { name: 'task_id', type: 'many2one', required: true, label: 'Tâche', relation: 'bpmn.task' },
+        { name: 'filename', type: 'string', required: true, label: 'Nom du fichier' },
+        { name: 'mimetype', type: 'string', required: true, label: 'Type MIME' },
+        { name: 'size', type: 'integer', required: true, label: 'Taille' },
+        { name: 'content', type: 'binary', required: true, label: 'Contenu', pii: true },
+        { name: 'encrypted', type: 'boolean', required: true, label: 'Chiffré', default: false }
+      ]
+    }
+
       },
     {
       name: 'bpmn.event',

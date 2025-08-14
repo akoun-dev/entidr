@@ -1,6 +1,9 @@
 // Exporter les vues
 export * from './views';
 
+// Exporter les formulaires dynamiques
+export * from './forms';
+
 // Exporter les routes
 
 export { default as routes } from './routes';
