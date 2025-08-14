@@ -1,5 +1,7 @@
 'use strict';
 
+require('dotenv').config();
+
 const { sequelize } = require('./models');
 const { exec } = require('child_process');
 const path = require('path');

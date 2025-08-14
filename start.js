@@ -3,6 +3,8 @@
  * Ce script initialise la base de données, lance le serveur API et l'application frontend
  */
 
+require('dotenv').config();
+
 const { spawn, exec } = require('child_process');
 const readline = require('readline');
 const path = require('path');
