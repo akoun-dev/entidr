@@ -106,6 +106,7 @@ npm run dev
 Le projet nécessite certaines variables d'environnement pour fonctionner correctement. Vous pouvez utiliser le fichier `.env.example` comme base.
 
 - **VITE_API_BASE_URL** : URL de base de l'API utilisée par le front-end. Modifiez cette valeur dans `.env` pour changer l'URL cible.
+- **LOG_LEVEL** : Niveau de journalisation pour le backend et le frontend (`debug`, `info`, `warn`, `error`, `none`).
 - **PORT** : Port d'écoute du serveur backend (optionnel, `3001` par défaut).
 - **DB_USERNAME** : Nom d'utilisateur de la base de données.
 - **DB_PASSWORD** : Mot de passe de la base de données.
