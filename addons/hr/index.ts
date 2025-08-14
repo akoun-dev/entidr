@@ -55,11 +55,9 @@ export const Components = {
 
 // Fonctions d'initialisation et de nettoyage
 export function initialize() {
-  console.log('[HR Addon] Initialisation de l\'addon HR');
   // Code d'initialisation...
 }
 
 export function cleanup() {
-  console.log('[HR Addon] Nettoyage de l\'addon HR');
   // Code de nettoyage...
 }

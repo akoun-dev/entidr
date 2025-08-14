@@ -23,15 +23,6 @@ const ReferenceDataExample: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Afficher les données du formulaire
-    console.log({
-      name,
-      userId,
-      countryId,
-      currencyId,
-      languageId
-    });
-    
     // Ici, vous pourriez envoyer les données à une API
     alert('Formulaire soumis avec succès !');
   };
