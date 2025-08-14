@@ -5,6 +5,9 @@ export * from './analytics';
 // Exporter les formulaires dynamiques
 export * from './forms';
 
+// Exporter l'éditeur BPMN
+export * from './editor';
+
 // Exporter les routes
 
 export { default as routes } from './routes';
