@@ -8,6 +8,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/users');
 const groupRoutes = require('./routes/groups');
 const parameterRoutes = require('./routes/parameters');
+const bpmnRoutes = require('./routes/bpmn');
 const { sequelize } = require('../models');
 const logger = require('../utils/logger');
 
@@ -23,6 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/parameters', parameterRoutes);
+app.use('/api/bpmn', bpmnRoutes);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
