@@ -75,6 +75,9 @@ check_port() {
   fi
 }
 
+API_PORT=${PORT:-3001}
+export PORT=$API_PORT
+
 # Arrêter les processus existants si nécessaire
 if check_port 8080; then
   log "warning" "Un processus est déjà en cours d'exécution sur le port 8080. Tentative d'arrêt..."
@@ -82,9 +85,9 @@ if check_port 8080; then
   sleep 2
 fi
 
-if check_port 3001; then
-  log "warning" "Un processus est déjà en cours d'exécution sur le port 3001. Tentative d'arrêt..."
-  kill $(lsof -t -i:3001) 2>/dev/null || true
+if check_port "$API_PORT"; then
+  log "warning" "Un processus est déjà en cours d'exécution sur le port $API_PORT. Tentative d'arrêt..."
+  kill $(lsof -t -i:$API_PORT) 2>/dev/null || true
   sleep 2
 fi
 
@@ -144,7 +147,10 @@ log "success" "Application frontend démarrée avec succès (PID: $FRONTEND_PID)
 # Afficher les informations d'accès
 log "info" "L'application est maintenant accessible aux adresses suivantes:"
 log "info" "- Frontend: http://localhost:8080"
+log "info" "- API: http://localhost:$API_PORT"
+
 log "info" "- API: ${VITE_API_BASE_URL}"
+
 
 log "warning" "Appuyez sur Ctrl+C pour arrêter l'application."
 
