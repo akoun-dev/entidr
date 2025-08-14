@@ -10,9 +10,14 @@ export interface AddonManifest {
   // Métadonnées de base
   name: string;
   version: string;
+  versions?: string[];
   displayName: string;
   summary: string;
   description: string;
+  publication?: {
+    status: 'draft' | 'published';
+    auditLog?: string;
+  };
   
   // Configuration
   application: boolean;

@@ -2,12 +2,23 @@
 export * from './views';
 export * from './analytics';
 
+// Exporter les formulaires dynamiques
+export * from './forms';
+
 // Exporter les routes
 
 export { default as routes } from './routes';
 
 // Exporter le manifeste
 export { default as manifest } from './manifest';
+
+// Exporter les connecteurs et le coffre-fort
+export * from './connectors';
+export { SecretStore } from './secrets/SecretStore';
+
+// Exporter le moteur de processus
+export { processEngine, ProcessEngine } from './engine';
+
 
 
 // Exporter les composants pour l'enregistrement des routes
@@ -19,9 +30,29 @@ export const Components = {
   InstanceListView,
   ConnectorListView
 };
-// Aucun composant spécifique pour l'instant
-export const Components = {};
 
+// Middleware RBAC spécifique au module BPMN
+import { Request, Response, NextFunction } from 'express';
+
+export type BpmnRole =
+  | 'SuperAdmin'
+  | 'Administrateur'
+  | 'Concepteur'
+  | 'Éditeur'
+  | 'Validateur'
+  | 'Opérateur'
+  | 'Auditeur'
+  | 'Utilisateur final';
+
+export function authorizeBpmn(allowedRoles: BpmnRole[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const userRoles: string[] = (req as any).user?.roles || [];
+    if (allowedRoles.some(role => userRoles.includes(role))) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Accès refusé' });
+  };
+}
 
 export function initialize() {
   // Code d'initialisation du module BPMN

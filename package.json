@@ -10,6 +10,7 @@
     "build": "npm run generate-modules && vite build",
     "build:dev": "npm run generate-modules && vite build --mode development",
     "lint": "eslint .",
+    "test": "node --test tests/engine.test.js tests/editor.test.js tests/connectors.test.js",
     "preview": "vite preview",
     "server": "node server.js",
     "setup-db": "node src/setup-db.js"
