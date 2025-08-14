@@ -148,7 +148,7 @@ call :log "success" "Application frontend démarrée avec succès."
 :: Afficher les informations d'accès
 call :log "info" "L'application est maintenant accessible aux adresses suivantes:"
 call :log "info" "- Frontend: http://localhost:8080"
-call :log "info" "- API: http://localhost:3001"
+call :log "info" "- API: %VITE_API_BASE_URL%"
 
 call :log "warning" "Pour arrêter l'application, fermez les fenêtres de commande ou appuyez sur Ctrl+C dans chaque fenêtre."
 
