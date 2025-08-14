@@ -1,11 +1,17 @@
 import axios from 'axios';
 import { Module } from '../types/module';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-if (!API_BASE_URL) {
-  throw new Error('VITE_API_BASE_URL is required');
-}
+/**
+ * Récupère l'URL de base de l'API et vérifie qu'elle est définie.
+ * Lance une erreur si la variable d'environnement est absente.
+ */
+const getApiBaseUrl = (): string => {
+  const url = import.meta.env.VITE_API_BASE_URL;
+  if (!url) {
+    throw new Error('VITE_API_BASE_URL is required');
+  }
+  return url;
+};
 
 /**
  * Service pour interagir avec l'API des modules
@@ -16,8 +22,9 @@ const moduleService = {
    * @returns Promise résolvant vers un tableau de modules
    */
   async getAllModules(): Promise<Module[]> {
+    const baseUrl = getApiBaseUrl();
     try {
-      const response = await axios.get(`${API_BASE_URL}/modules`);
+      const response = await axios.get(`${baseUrl}/modules`);
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des modules:', error);
@@ -31,8 +38,9 @@ const moduleService = {
    * @returns Promise résolvant vers le module
    */
   async getModuleByName(name: string): Promise<Module> {
+    const baseUrl = getApiBaseUrl();
     try {
-      const response = await axios.get(`${API_BASE_URL}/modules/${name}`);
+      const response = await axios.get(`${baseUrl}/modules/${name}`);
       return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération du module ${name}:`, error);
@@ -47,8 +55,9 @@ const moduleService = {
    * @returns Promise résolvant vers le module mis à jour
    */
   async toggleModuleStatus(name: string, active: boolean): Promise<Module> {
+    const baseUrl = getApiBaseUrl();
     try {
-      const response = await axios.put(`${API_BASE_URL}/modules/${name}/status`, { active });
+      const response = await axios.put(`${baseUrl}/modules/${name}/status`, { active });
       return response.data.module;
     } catch (error) {
       console.error(`Erreur lors de la modification du statut du module ${name}:`, error);
@@ -62,8 +71,9 @@ const moduleService = {
    * @returns Promise résolvant vers le module installé
    */
   async installModule(name: string): Promise<Module> {
+    const baseUrl = getApiBaseUrl();
     try {
-      const response = await axios.post(`${API_BASE_URL}/modules/${name}/install`);
+      const response = await axios.post(`${baseUrl}/modules/${name}/install`);
       return response.data.module;
     } catch (error) {
       console.error(`Erreur lors de l'installation du module ${name}:`, error);
@@ -77,8 +87,9 @@ const moduleService = {
    * @returns Promise résolvant vers le module désinstallé
    */
   async uninstallModule(name: string): Promise<Module> {
+    const baseUrl = getApiBaseUrl();
     try {
-      const response = await axios.post(`${API_BASE_URL}/modules/${name}/uninstall`);
+      const response = await axios.post(`${baseUrl}/modules/${name}/uninstall`);
       return response.data.module;
     } catch (error) {
       console.error(`Erreur lors de la désinstallation du module ${name}:`, error);
