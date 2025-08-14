@@ -11,7 +11,6 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration du serveur
-SERVER_IP="164.160.40.182"
 SERVER_MODE=${1:-"local"} # Par défaut en mode local, peut être "server" en argument
 
 # Fonction pour afficher les messages avec un préfixe
@@ -149,6 +148,9 @@ log "success" "Application frontend démarrée avec succès (PID: $FRONTEND_PID)
 log "info" "L'application est maintenant accessible aux adresses suivantes:"
 log "info" "- Frontend: http://localhost:8080"
 log "info" "- API: http://localhost:$API_PORT"
+
+log "info" "- API: ${VITE_API_BASE_URL}"
+
 
 log "warning" "Appuyez sur Ctrl+C pour arrêter l'application."
 

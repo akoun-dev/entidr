@@ -5,26 +5,31 @@ import path from "path";
 // import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
+export default defineConfig(({ mode }) => {
+  const apiBaseUrl = process.env.VITE_API_BASE_URL;
+  const proxyTarget = apiBaseUrl ? new URL(apiBaseUrl).origin : "";
+
+  return {
+    server: {
+      host: "::",
+      port: 8080,
+      proxy: {
+        '/api': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        }
       }
-    }
-  },
-  plugins: [
-    react(),
-    // Désactivé temporairement en raison de problèmes de compatibilité ESM/CommonJS
-    // mode === 'development' && componentTagger(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
     },
-  },
-}));
+    plugins: [
+      react(),
+      // Désactivé temporairement en raison de problèmes de compatibilité ESM/CommonJS
+      // mode === 'development' && componentTagger(),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
+  };
+});

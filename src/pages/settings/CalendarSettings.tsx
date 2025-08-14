@@ -11,6 +11,11 @@ import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+if (!API_BASE_URL) {
+  throw new Error('VITE_API_BASE_URL is required');
+}
+
 interface Holiday {
   id: string;
   name: string;
@@ -97,7 +102,7 @@ const CalendarSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer la configuration du calendrier
-        const configResponse = await axios.get('http://164.160.40.182:3001/api/calendarconfig');
+        const configResponse = await axios.get(`${API_BASE_URL}/calendarconfig`);
         setCalendarConfig(configResponse.data);
         setTimezone(configResponse.data.timezone);
         setWorkHours({
@@ -107,11 +112,11 @@ const CalendarSettings: React.FC = () => {
         setWeekStart(configResponse.data.weekStart);
 
         // Récupérer les jours fériés
-        const holidaysResponse = await axios.get('http://164.160.40.182:3001/api/holidays');
+        const holidaysResponse = await axios.get(`${API_BASE_URL}/holidays`);
         setHolidays(holidaysResponse.data);
 
         // Récupérer les intégrations de calendrier
-        const integrationsResponse = await axios.get('http://164.160.40.182:3001/api/calendarintegrations');
+        const integrationsResponse = await axios.get(`${API_BASE_URL}/calendarintegrations`);
         setIntegrations(integrationsResponse.data);
 
         setLoading(false);
@@ -139,7 +144,7 @@ const CalendarSettings: React.FC = () => {
         weekStart
       };
 
-      await axios.put('http://164.160.40.182:3001/api/calendarconfig', updatedConfig);
+      await axios.put(`${API_BASE_URL}/calendarconfig`, updatedConfig);
       setCalendarConfig(updatedConfig);
 
       setLoading(false);
@@ -164,7 +169,7 @@ const CalendarSettings: React.FC = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post('http://164.160.40.182:3001/api/holidays', newHoliday);
+      const response = await axios.post(`${API_BASE_URL}/holidays`, newHoliday);
       setHolidays([...holidays, response.data]);
 
       // Réinitialiser le formulaire et fermer la boîte de dialogue
@@ -209,7 +214,7 @@ const CalendarSettings: React.FC = () => {
     setIsDeleting(true);
 
     try {
-      await axios.delete(`http://164.160.40.182:3001/api/holidays/${holidayToDelete.id}`);
+      await axios.delete(`${API_BASE_URL}/holidays/${holidayToDelete.id}`);
 
       // Mettre à jour l'état local
       setHolidays(holidays.filter(h => h.id !== holidayToDelete.id));

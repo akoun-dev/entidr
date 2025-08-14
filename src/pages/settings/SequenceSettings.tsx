@@ -9,6 +9,11 @@ import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+if (!API_BASE_URL) {
+  throw new Error('VITE_API_BASE_URL is required');
+}
+
 interface Sequence {
   id: string;
   name: string;
@@ -62,11 +67,11 @@ const SequenceSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer les séquences
-        const sequencesResponse = await axios.get('http://164.160.40.182:3001/api/sequences');
+        const sequencesResponse = await axios.get(`${API_BASE_URL}/sequences`);
         setSequences(sequencesResponse.data);
 
         // Récupérer la configuration des séquences
-        const configResponse = await axios.get('http://164.160.40.182:3001/api/sequenceconfig');
+        const configResponse = await axios.get(`${API_BASE_URL}/sequenceconfig`);
         setSequenceConfig(configResponse.data);
 
         setLoading(false);
@@ -91,7 +96,7 @@ const SequenceSettings: React.FC = () => {
 
       if (!sequenceConfig) return;
 
-      await axios.put('http://164.160.40.182:3001/api/sequenceconfig', sequenceConfig);
+      await axios.put(`${API_BASE_URL}/sequenceconfig`, sequenceConfig);
 
       toast({
         title: "Configuration sauvegardée",
@@ -123,7 +128,7 @@ const SequenceSettings: React.FC = () => {
     setIsResetting(true);
 
     try {
-      const response = await axios.post(`http://164.160.40.182:3001/api/sequences/${sequenceToReset.id}/reset`);
+      const response = await axios.post(`${API_BASE_URL}/sequences/${sequenceToReset.id}/reset`);
 
       // Mettre à jour la séquence dans le tableau
       setSequences(sequences.map(seq =>

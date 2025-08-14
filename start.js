@@ -211,6 +211,9 @@ async function main() {
     log('info', '- Frontend: http://localhost:8080');
     log('info', `- API: http://localhost:${apiPort}`);
 
+    log('info', `- API: ${process.env.VITE_API_BASE_URL}`);
+
+
     log('warning', 'Appuyez sur Ctrl+C pour arrêter l\'application.');
 
     // Gérer l'arrêt propre
