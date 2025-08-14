@@ -4,7 +4,7 @@ Ce document explique comment démarrer l'application avec toutes ses migrations 
 
 ## Prérequis
 
-- Node.js (version 14 ou supérieure)
+- Node.js 18 (ou une version plus récente compatible avec les dépendances). L'utilisation d'une version antérieure n'est pas recommandée.
 - npm (généralement installé avec Node.js)
 
 ## Scripts de Démarrage
