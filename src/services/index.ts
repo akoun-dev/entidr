@@ -1,5 +1,4 @@
 export { default as api } from './api';
-export { default } from './api';
 export { default as moduleService } from './moduleService';
 export { default as settingsService } from './settingsService';
 

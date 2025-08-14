@@ -3,7 +3,7 @@
  * Ce service fournit des méthodes pour récupérer les données des tables de référence
  * comme les utilisateurs, pays, devises, langues, etc.
  */
-import { api } from './api';
+import api from './api';
 
 class ReferenceDataService {
   // Méthodes génériques
