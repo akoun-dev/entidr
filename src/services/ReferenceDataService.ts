@@ -3,13 +3,13 @@
  * Ce service fournit des méthodes pour récupérer les données des tables de référence
  * comme les utilisateurs, pays, devises, langues, etc.
  */
-import axios from 'axios';
+import { api } from './api';
 
 class ReferenceDataService {
   // Méthodes génériques
   async getAll(endpoint: string, params = {}) {
     try {
-      const response = await axios.get(`/api/${endpoint}`, { params });
+      const response = await api.get(`/${endpoint}`, { params });
       return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des données depuis ${endpoint}:`, error);
@@ -19,7 +19,7 @@ class ReferenceDataService {
   
   async getById(endpoint: string, id: number | string) {
     try {
-      const response = await axios.get(`/api/${endpoint}/${id}`);
+      const response = await api.get(`/${endpoint}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des données depuis ${endpoint}/${id}:`, error);
