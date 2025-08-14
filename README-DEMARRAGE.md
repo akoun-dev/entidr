@@ -54,7 +54,7 @@ Les scripts effectuent les opérations suivantes dans l'ordre :
 Une fois les scripts exécutés avec succès, vous pouvez accéder à :
 
 - **Frontend** : [http://localhost:8080](http://localhost:8080)
-- **API** : [http://localhost:3001](http://localhost:3001)
+- **API** : définie par la variable `VITE_API_BASE_URL`
 
 ## Arrêt de l'Application
 

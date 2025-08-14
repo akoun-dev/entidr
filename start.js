@@ -207,7 +207,7 @@ async function main() {
     // Afficher les informations d'accès
     log('info', 'L\'application est maintenant accessible aux adresses suivantes:');
     log('info', '- Frontend: http://localhost:8080');
-    log('info', '- API: http://localhost:3001');
+    log('info', `- API: ${process.env.VITE_API_BASE_URL}`);
 
     log('warning', 'Appuyez sur Ctrl+C pour arrêter l\'application.');
 

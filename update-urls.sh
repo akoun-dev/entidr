@@ -1,12 +1,15 @@
 #!/bin/bash
 
-# Définir l'URL du serveur
-NEW_SERVER="164.160.40.182"
+# Met à jour la variable VITE_API_BASE_URL dans le fichier .env
+# Usage: ./update-urls.sh <nouveau_serveur>
 
-# Rechercher et remplacer les URLs codées en dur
-find ./src -type f -name "*.ts" -o -name "*.tsx" | xargs sed -i "s|http://localhost:3001|http://$NEW_SERVER:3001|g"
+NEW_SERVER="$1"
 
-# Mettre à jour les fichiers d'environnement
+if [ -z "$NEW_SERVER" ]; then
+  echo "Usage: $0 <nouveau_serveur>"
+  exit 1
+fi
+
 echo "VITE_API_BASE_URL=http://$NEW_SERVER:3001/api" > .env
+echo "VITE_API_BASE_URL mis à jour dans .env"
 
-echo "URLs mises à jour avec succès!"
