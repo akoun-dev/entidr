@@ -1,103 +1,96 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Route } from 'react-router-dom';
 import SettingsLayout from '../components/layouts/SettingsLayout';
-import CurrenciesSettings from '../pages/settings/CurrenciesSettings';
-import SettingsOverview from '../pages/settings/SettingsOverview';
-import CompanySettings from '../pages/settings/CompanySettings';
-import ModulesListSettings from '../pages/settings/ModulesListSettings';
-import UsersSettings from '../pages/settings/UsersSettings';
-import GroupsSettings from '../pages/settings/GroupsSettings';
-import LanguagesSettings from '../pages/settings/LanguagesSettings';
-import CountriesSettings from '../pages/settings/CountriesSettings';
-import TranslationsSettings from '../pages/settings/TranslationsSettings';
-import DateFormatsSettings from '../pages/settings/DateFormatsSettings';
-import TimeFormatsSettings from '../pages/settings/TimeFormatsSettings';
-import NumberFormatsSettings from '../pages/settings/NumberFormatsSettings';
 
-// Import des composants de paramètres
-import DatabaseSettings from '../pages/settings/DatabaseSettings';
-import EmailSettings from '../pages/settings/EmailSettings';
-import SecuritySettings from '../pages/settings/SecuritySettings';
-import AutomationSettings from '../pages/settings/AutomationSettings';
-import ApiSettings from '../pages/settings/ApiSettings';
-import LoggingSettings from '../pages/settings/LoggingSettings';
-import AppsStoreSettings from '../pages/settings/AppsStoreSettings';
-import UpdatesSettings from '../pages/settings/UpdatesSettings';
-import DocumentLayoutsSettings from '../pages/settings/DocumentLayoutsSettings';
-import ReportTemplatesSettings from '../pages/settings/ReportTemplatesSettings';
-import PrintersSettings from '../pages/settings/PrintersSettings';
-import PaymentProvidersSettings from '../pages/settings/PaymentProvidersSettings';
-import ShippingMethodsSettings from '../pages/settings/ShippingMethodsSettings';
-import ExternalServicesSettings from '../pages/settings/ExternalServicesSettings';
-import NotificationSettings from '../pages/settings/NotificationSettings';
-import AuditSettings from '../pages/settings/AuditSettings';
-import BackupSettings from '../pages/settings/BackupSettings';
-import AppearanceSettings from '../pages/settings/AppearanceSettings';
-import WorkflowSettings from '../pages/settings/WorkflowSettings';
-import ComplianceSettings from '../pages/settings/ComplianceSettings';
-import ImportExportSettings from '../pages/settings/ImportExportSettings';
-import CalendarSettings from '../pages/settings/CalendarSettings';
-import SequenceSettings from '../pages/settings/SequenceSettings';
-import PerformanceSettings from '../pages/settings/PerformanceSettings';
+const SettingsOverview = lazy(() => import('../pages/settings/SettingsOverview'));
+const CompanySettings = lazy(() => import('../pages/settings/CompanySettings'));
+const UsersSettings = lazy(() => import('../pages/settings/UsersSettings'));
+const GroupsSettings = lazy(() => import('../pages/settings/GroupsSettings'));
+const LanguagesSettings = lazy(() => import('../pages/settings/LanguagesSettings'));
+const CurrenciesSettings = lazy(() => import('../pages/settings/CurrenciesSettings'));
+const CountriesSettings = lazy(() => import('../pages/settings/CountriesSettings'));
+const TranslationsSettings = lazy(() => import('../pages/settings/TranslationsSettings'));
+const DateFormatsSettings = lazy(() => import('../pages/settings/DateFormatsSettings'));
+const TimeFormatsSettings = lazy(() => import('../pages/settings/TimeFormatsSettings'));
+const NumberFormatsSettings = lazy(() => import('../pages/settings/NumberFormatsSettings'));
+const DatabaseSettings = lazy(() => import('../pages/settings/DatabaseSettings'));
+const EmailSettings = lazy(() => import('../pages/settings/EmailSettings'));
+const SecuritySettings = lazy(() => import('../pages/settings/SecuritySettings'));
+const AutomationSettings = lazy(() => import('../pages/settings/AutomationSettings'));
+const ApiSettings = lazy(() => import('../pages/settings/ApiSettings'));
+const LoggingSettings = lazy(() => import('../pages/settings/LoggingSettings'));
+const ModulesListSettings = lazy(() => import('../pages/settings/ModulesListSettings'));
+const AppsStoreSettings = lazy(() => import('../pages/settings/AppsStoreSettings'));
+const UpdatesSettings = lazy(() => import('../pages/settings/UpdatesSettings'));
+const DocumentLayoutsSettings = lazy(() => import('../pages/settings/DocumentLayoutsSettings'));
+const ReportTemplatesSettings = lazy(() => import('../pages/settings/ReportTemplatesSettings'));
+const PrintersSettings = lazy(() => import('../pages/settings/PrintersSettings'));
+const PaymentProvidersSettings = lazy(() => import('../pages/settings/PaymentProvidersSettings'));
+const ShippingMethodsSettings = lazy(() => import('../pages/settings/ShippingMethodsSettings'));
+const ExternalServicesSettings = lazy(() => import('../pages/settings/ExternalServicesSettings'));
+const NotificationSettings = lazy(() => import('../pages/settings/NotificationSettings'));
+const AuditSettings = lazy(() => import('../pages/settings/AuditSettings'));
+const BackupSettings = lazy(() => import('../pages/settings/BackupSettings'));
+const AppearanceSettings = lazy(() => import('../pages/settings/AppearanceSettings'));
+const WorkflowSettings = lazy(() => import('../pages/settings/WorkflowSettings'));
+const ComplianceSettings = lazy(() => import('../pages/settings/ComplianceSettings'));
+const ImportExportSettings = lazy(() => import('../pages/settings/ImportExportSettings'));
+const CalendarSettings = lazy(() => import('../pages/settings/CalendarSettings'));
+const SequenceSettings = lazy(() => import('../pages/settings/SequenceSettings'));
+const PerformanceSettings = lazy(() => import('../pages/settings/PerformanceSettings'));
 
-/**
- * Routes pour la section des paramètres de l'application
- * Ces routes sont chargées dans App.tsx
- */
+const settingsRoutes = [
+  { path: 'company', Component: CompanySettings },
+  { path: 'users', Component: UsersSettings },
+  { path: 'groups', Component: GroupsSettings },
+  { path: 'languages', Component: LanguagesSettings },
+  { path: 'currencies', Component: CurrenciesSettings },
+  { path: 'countries', Component: CountriesSettings },
+  { path: 'translations', Component: TranslationsSettings },
+  { path: 'date-formats', Component: DateFormatsSettings },
+  { path: 'time-formats', Component: TimeFormatsSettings },
+  { path: 'number-formats', Component: NumberFormatsSettings },
+  { path: 'database', Component: DatabaseSettings },
+  { path: 'email', Component: EmailSettings },
+  { path: 'security', Component: SecuritySettings },
+  { path: 'automation', Component: AutomationSettings },
+  { path: 'api', Component: ApiSettings },
+  { path: 'logging', Component: LoggingSettings },
+  { path: 'modules-list', Component: ModulesListSettings },
+  { path: 'apps-store', Component: AppsStoreSettings },
+  { path: 'updates', Component: UpdatesSettings },
+  { path: 'document-layouts', Component: DocumentLayoutsSettings },
+  { path: 'report-templates', Component: ReportTemplatesSettings },
+  { path: 'printers', Component: PrintersSettings },
+  { path: 'payment-providers', Component: PaymentProvidersSettings },
+  { path: 'shipping-methods', Component: ShippingMethodsSettings },
+  { path: 'external-services', Component: ExternalServicesSettings },
+  { path: 'notifications', Component: NotificationSettings },
+  { path: 'audit', Component: AuditSettings },
+  { path: 'backup', Component: BackupSettings },
+  { path: 'appearance', Component: AppearanceSettings },
+  { path: 'workflows', Component: WorkflowSettings },
+  { path: 'compliance', Component: ComplianceSettings },
+  { path: 'import-export', Component: ImportExportSettings },
+  { path: 'calendar', Component: CalendarSettings },
+  { path: 'sequences', Component: SequenceSettings },
+  { path: 'performance', Component: PerformanceSettings },
+];
+
+const renderLazy = (Component: React.LazyExoticComponent<React.ComponentType>) => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <Component />
+  </Suspense>
+);
+
 const SettingsRoutes = (
   <Route path="settings" element={<SettingsLayout />}>
-    {/* Page d'accueil des paramètres */}
-    <Route index element={<SettingsOverview />} />
-
-    {/* Paramètres généraux */}
-    <Route path="company" element={<CompanySettings />} />
-    <Route path="users" element={<UsersSettings />} />
-    <Route path="groups" element={<GroupsSettings />} />
-
-    {/* Paramètres de localisation */}
-    <Route path="languages" element={<LanguagesSettings />} />
-    <Route path="currencies" element={<CurrenciesSettings />} />
-    <Route path="countries" element={<CountriesSettings />} />
-    <Route path="translations" element={<TranslationsSettings />} />
-    <Route path="date-formats" element={<DateFormatsSettings />} />
-    <Route path="time-formats" element={<TimeFormatsSettings />} />
-    <Route path="number-formats" element={<NumberFormatsSettings />} />
-
-    {/* Paramètres techniques */}
-    <Route path="database" element={<DatabaseSettings />} />
-    <Route path="email" element={<EmailSettings />} />
-    <Route path="security" element={<SecuritySettings />} />
-    <Route path="automation" element={<AutomationSettings />} />
-    <Route path="api" element={<ApiSettings />} />
-    <Route path="logging" element={<LoggingSettings />} />
-
-    {/* Gestion des modules */}
-    <Route path="modules-list" element={<ModulesListSettings />} />
-    <Route path="apps-store" element={<AppsStoreSettings />} />
-    <Route path="updates" element={<UpdatesSettings />} />
-
-    {/* Gestion des documents */}
-    <Route path="document-layouts" element={<DocumentLayoutsSettings />} />
-    <Route path="report-templates" element={<ReportTemplatesSettings />} />
-    <Route path="printers" element={<PrintersSettings />} />
-
-    {/* Intégrations */}
-    <Route path="payment-providers" element={<PaymentProvidersSettings />} />
-    <Route path="shipping-methods" element={<ShippingMethodsSettings />} />
-    <Route path="external-services" element={<ExternalServicesSettings />} />
-    {/* Nouveaux paramètres */}
-    <Route path="notifications" element={<NotificationSettings />} />
-    <Route path="audit" element={<AuditSettings />} />
-    <Route path="backup" element={<BackupSettings />} />
-    <Route path="appearance" element={<AppearanceSettings />} />
-    <Route path="workflows" element={<WorkflowSettings />} />
-    <Route path="compliance" element={<ComplianceSettings />} />
-    <Route path="import-export" element={<ImportExportSettings />} />
-    <Route path="calendar" element={<CalendarSettings />} />
-    <Route path="sequences" element={<SequenceSettings />} />
-    <Route path="performance" element={<PerformanceSettings />} />
+    <Route index element={renderLazy(SettingsOverview)} />
+    {settingsRoutes.map(({ path, Component }) => (
+      <Route key={path} path={path} element={renderLazy(Component)} />
+    ))}
   </Route>
 );
 
-// Exporter les routes
 export default SettingsRoutes;
+
