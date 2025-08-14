@@ -2,11 +2,20 @@ import axios from 'axios';
 
 // Configuration de base d'axios
 const api = axios.create({
-  baseURL: 'http://164.160.40.182:3001/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Gestion globale des erreurs
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Erreur API:', error);
+    return Promise.reject(error);
+  }
+);
 
 // Exporter api comme exportation nommée
 export { api };
