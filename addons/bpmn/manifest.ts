@@ -67,6 +67,7 @@ const manifest: AddonManifest = {
         { name: 'schema', type: 'string', required: true, label: 'Schéma JSON' },
         { name: 'public', type: 'boolean', required: true, label: 'Public', default: false }
       ]
+
     },
     {
       name: 'bpmn.variable',
@@ -90,6 +91,39 @@ const manifest: AddonManifest = {
         { name: 'encrypted', type: 'boolean', required: true, label: 'Chiffré', default: false }
       ]
     }
+
+      },
+    {
+      name: 'bpmn.event',
+      displayName: 'Événement',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'type', type: 'string', required: true, label: 'Type' },
+        { name: 'payload', type: 'string', required: false, label: 'Données' },
+        { name: 'status', type: 'string', required: true, label: 'Statut', default: 'pending' }
+      ]
+    },
+    {
+      name: 'bpmn.job',
+      displayName: 'Job',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'type', type: 'string', required: true, label: 'Type' },
+        { name: 'scheduled_at', type: 'datetime', required: false, label: 'Planifié pour' },
+        { name: 'status', type: 'string', required: true, label: 'Statut', default: 'pending' },
+        { name: 'data', type: 'string', required: false, label: 'Données' }
+      ]
+    },
+    {
+      name: 'bpmn.transaction',
+      displayName: 'Transaction',
+      fields: [
+        { name: 'instance_id', type: 'many2one', required: true, label: 'Instance', relation: 'bpmn.instance' },
+        { name: 'status', type: 'string', required: true, label: 'Statut', default: 'started' },
+        { name: 'started_at', type: 'datetime', required: false, label: 'Début' },
+        { name: 'ended_at', type: 'datetime', required: false, label: 'Fin' }
+      ]
+    },
   ],
 
   // Menus définis par l'addon
