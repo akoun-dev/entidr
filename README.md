@@ -89,10 +89,10 @@ Ce projet est construit avec :
 
 ```sh
 # Cloner le dépôt
-git clone https://github.com/akoun-dev/entir.git
+git clone https://github.com/akoun-dev/entidr.git
 
 # Naviguer vers le répertoire du projet
-cd ENTIDR
+cd entidr
 
 # Installer les dépendances
 npm install
