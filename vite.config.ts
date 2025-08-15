@@ -1,5 +1,5 @@
 import { defineConfig, type ConfigEnv } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import { default as react } from '@vitejs/plugin-react';
 import path from "path";
 
 export default defineConfig(({ mode }: ConfigEnv) => {
@@ -14,7 +14,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     optimizeDeps: {
       exclude: ['ioredis', 'redis-errors', 'redis-parser'],
       include: ['react', 'react-dom', 'react-router-dom'],
-      force: true
+      force: true,
     },
     build: {
       rollupOptions: {
@@ -35,9 +35,9 @@ export default defineConfig(({ mode }: ConfigEnv) => {
             if (id.includes('/addons/') && id.includes('/index.ts')) {
               return 'addons';
             }
-          }
-        }
-      }
+          },
+        },
+      },
     },
     server: {
       host: "::",

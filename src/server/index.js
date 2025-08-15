@@ -45,15 +45,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // });
 
 // Import routes
-const userRoutes = require('./api/v1/users');
-const groupRoutes = require('./api/v1/groups');
-const parameterRoutes = require('./api/v1/parameters');
-const moduleRoutes = require('./api/v1/modules');
-
-app.use('/api/users', userRoutes);
-app.use('/api/groups', groupRoutes);
-app.use('/api/parameters', parameterRoutes);
-app.use('/api/modules', moduleRoutes);
+const apiV1Router = require('./api/v1');
+app.use('/api', apiV1Router);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {

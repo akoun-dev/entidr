@@ -1,62 +1,15 @@
-Optimisation des performances :
-Implémenter un système de préchargement des modules critiques
-Adopter le Selective Hydration de React 18
-Utiliser React.lazy avec des fallbacks personnalisés
-Mettre en place du code splitting plus granulaire
+Diagnostic initial :
 
-Amélioration du système de modules :
-Ajouter un système de dépendances versionnées
-Implémenter un mécanisme de isolation CSS/JS
-Prévoir un sandbox pour les addons tiers
-Standardiser l'API des modules
+Identification des endpoints défaillants (404/500)
+Analyse des logs serveur pour comprendre l'origine des erreurs
+Vérification de la chaîne complète :
 
-Routing :
-Simplifier la déclaration des routes
-Ajouter un système de permissions intégré
-Prévoir du lazy loading basé sur la visibilité
-Unifier la gestion des erreurs 404
+Route API (fichier dans src/server/api/v1/)
+Contrôleur associé (dans src/server/controllers/)
+Modèle Sequelize (dans src/models/)
+Migration correspondante (dans src/migrations/)
+Correction des incohérences :
 
-DX (Developer Experience) :
-Créer des templates/modèles pour les addons
-Ajouter un CLI pour la génération de code
-Documenter les APIs avec Swagger/OpenAPI
-Mettre en place des outils de debug avancés
-
-Maintenance :
-Standardiser les conventions de code
-Automatiser les migrations de données
-Implémenter des métriques de performance
-Prévoir un système de rétrocompatibilité
-
-Exemple concret pour le routing :
-
-// Avant (dans manifest.ts)
-routes: [
-  {
-    path: '/finance',
-    component: FinanceDashboardView,
-    protected: true,
-    title: 'Tableau de bord Finance',
-    icon: 'BarChart'
-  }
-]
-
-// Après (proposition améliorée)
-routes: [
-  {
-    path: '/finance',
-    component: FinanceDashboardView,
-    metadata: {
-      title: 'Tableau de bord Finance',
-      icon: 'BarChart',
-      permissions: ['finance.access'],
-      loadStrategy: 'eager', // ou 'lazy'
-      preload: ['finance-data']
-    }
-  }
-]
-
-typescript
-
-
-Ces améliorations garderaient les forces actuelles tout en adressant les limitations.
+Alignement modèle/migration (champs manquants, types différents)
+Ajout des imports manquants dans src/models/index.js
+Vérification du montage des routes dans src/server/api/v1/index.js

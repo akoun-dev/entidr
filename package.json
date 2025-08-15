@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Entidr application",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "generate": "ts-node --esm --experimental-specifier-resolution=node scripts/cli/generator.ts",
     "generate-docs": "ts-node scripts/cli/documentation.ts",
@@ -61,7 +61,6 @@
     "@types/ioredis": "^4.28.10",
     "@types/kafkajs": "^1.8.2",
     "@types/semver": "^7.7.0",
-    "@types/vue-router": "^2.0.0",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^2.2.0",
@@ -95,7 +94,6 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
-    "vue-router": "^4.5.1",
     "ws": "^8.17.0",
     "zod": "^3.23.8"
   },
@@ -115,8 +113,9 @@
     "@types/inquirer": "^9.0.9",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.17.2",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^5.0.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
@@ -140,7 +139,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1",
+    "vite": "^5.4.19",
     "vitest": "^3.2.4"
   }
 }
