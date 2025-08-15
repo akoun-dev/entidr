@@ -4,9 +4,10 @@ import {
   Settings, Building2, Users, Globe, Database,
   FileText, Layers, CreditCard, Languages, DollarSign,
   Server, Shield, Mail, Workflow, FileSpreadsheet, Printer,
-  ShoppingCart, Truck, Bell, HardDrive, Cloud, Lock,
-  Palette, Moon, Calendar,
-  Hash, Gauge, Activity
+  ShoppingCart, Truck, Bell, HardDrive, Cloud, Lock, Clock,
+  Palette, Moon, Calendar, Zap, RefreshCw,
+  Hash, Gauge, Activity,
+  Network
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -16,40 +17,23 @@ import { Link } from 'react-router-dom';
  */
 const SettingsOverview: React.FC = () => {
   // Catégories de paramètres
+  // Groupes thématiques pour une meilleure organisation
   const settingsCategories = [
+    // 1. Paramètres de base
     {
-      id: 'general',
-      name: 'Général',
-      icon: <Settings className="w-8 h-8 text-ivory-orange" />,
-      description: 'Paramètres généraux de l\'application',
+      id: 'core',
+      name: 'Configuration de base',
+      icon: <Settings className="w-8 h-8 text-blue-500" />,
+      description: 'Paramètres fondamentaux du système',
       items: [
         { id: 'company', name: 'Société', icon: <Building2 className="w-4 h-4" />, route: '/settings/general/company' },
         { id: 'users', name: 'Utilisateurs', icon: <Users className="w-4 h-4" />, route: '/settings/general/users' },
-        { id: 'groups', name: 'Groupes d\'utilisateurs', icon: <Users className="w-4 h-4" />, route: '/settings/general/groups' }
-      ]
-    },
-    {
-      id: 'localization',
-      name: 'Localisation',
-      icon: <Globe className="w-8 h-8 text-blue-500" />,
-      description: 'Paramètres régionaux et formats',
-      items: [
-        { id: 'languages', name: 'Langues', icon: <Languages className="w-4 h-4" />, route: '/settings/localization/languages' },
-        { id: 'currencies', name: 'Devises', icon: <DollarSign className="w-4 h-4" />, route: '/settings/localization/currencies' },
-        { id: 'countries', name: 'Pays', icon: <Globe className="w-4 h-4" />, route: '/settings/localization/countries' }
-      ]
-    },
-    {
-      id: 'technical',
-      name: 'Technique',
-      icon: <Database className="w-8 h-8 text-purple-500" />,
-      description: 'Paramètres techniques et base de données',
-      items: [
-        { id: 'database', name: 'Base de données', icon: <Database className="w-4 h-4" />, route: '/settings/system/database' },
-        { id: 'email', name: 'Serveurs de messagerie', icon: <Mail className="w-4 h-4" />, route: '/settings/system/email' },
+        { id: 'groups', name: 'Groupes', icon: <Users className="w-4 h-4" />, route: '/settings/general/groups' },
         { id: 'security', name: 'Sécurité', icon: <Shield className="w-4 h-4" />, route: '/settings/system/security' }
       ]
     },
+    
+    
     {
       id: 'modules',
       name: 'Modules',
@@ -57,7 +41,8 @@ const SettingsOverview: React.FC = () => {
       description: 'Gestion des modules et applications',
       items: [
         { id: 'modules_list', name: 'Modules installés', icon: <Layers className="w-4 h-4" />, route: '/settings/modules/list' },
-        { id: 'apps_store', name: 'Boutique d\'applications', icon: <ShoppingCart className="w-4 h-4" />, route: '/settings/modules/store' }
+        { id: 'apps_store', name: 'Boutique d\'applications', icon: <ShoppingCart className="w-4 h-4" />, route: '/settings/modules/store' },
+        { id: 'updates', name: 'Mises à jour', icon: <RefreshCw className="w-4 h-4" />, route: '/settings/modules/updates' }
       ]
     },
     {
@@ -67,100 +52,91 @@ const SettingsOverview: React.FC = () => {
       description: 'Gestion des documents et rapports',
       items: [
         { id: 'document_layouts', name: 'Mise en page', icon: <FileText className="w-4 h-4" />, route: '/settings/documents/layouts' },
-        { id: 'report_templates', name: 'Modèles', icon: <FileSpreadsheet className="w-4 h-4" />, route: '/settings/documents/templates' }
+        { id: 'report_templates', name: 'Modèles', icon: <FileSpreadsheet className="w-4 h-4" />, route: '/settings/documents/templates' },
+        { id: 'printers', name: 'Imprimantes', icon: <Printer className="w-4 h-4" />, route: '/settings/documents/printers' }
       ]
     },
+    // 5. Intégrations
     {
       id: 'integrations',
-      name: 'Intégrations',
-      icon: <CreditCard className="w-8 h-8 text-red-500" />,
-      description: 'Intégrations avec des services externes',
+      name: 'Connecteurs',
+      icon: <Network className="w-8 h-8 text-orange-500" />,
+      description: 'Connexions avec services externes',
       items: [
-        { id: 'payment_providers', name: 'Paiements', icon: <CreditCard className="w-4 h-4" />, route: '/settings/integrations/payments' },
-        { id: 'shipping_methods', name: 'Expéditions', icon: <Truck className="w-4 h-4" />, route: '/settings/integrations/shipping' }
+        { id: 'payments', name: 'Paiements', icon: <CreditCard className="w-4 h-4" />, route: '/settings/integrations/payments' },
+        { id: 'shipping', name: 'Expéditions', icon: <Truck className="w-4 h-4" />, route: '/settings/integrations/shipping' },
+        { id: 'external', name: 'Services externes', icon: <Globe className="w-4 h-4" />, route: '/settings/integrations/external' },
+        { id: 'notifications', name: 'Notifications', icon: <Bell className="w-4 h-4" />, route: '/settings/integrations/notifications' }
       ]
     },
+    // 4. Automatisation
     {
-      id: 'notifications',
-      name: 'Notifications',
-      icon: <Bell className="w-8 h-8 text-pink-500" />,
-      description: 'Configuration des canaux et modèles de notification',
+      id: 'automation',
+      name: 'Automatisation',
+      icon: <Zap className="w-8 h-8 text-yellow-500" />,
+      description: 'Automatisation des processus métier',
       items: [
-        { id: 'notifications', name: 'Paramètres', icon: <Bell className="w-4 h-4" />, route: '/settings/notifications' }
+        { id: 'workflows', name: 'Workflows', icon: <Workflow className="w-4 h-4" />, route: '/settings/workflows' },
+        { id: 'automation', name: 'Règles', icon: <Zap className="w-4 h-4" />, route: '/settings/system/automation' },
+        { id: 'sequences', name: 'Numérotation', icon: <Hash className="w-4 h-4" />, route: '/settings/sequences' }
       ]
     },
+    // Paramètres système avancés
     {
-      id: 'backup',
-      name: 'Sauvegarde',
-      icon: <HardDrive className="w-8 h-8 text-indigo-500" />,
-      description: 'Gestion des sauvegardes et restauration',
+      id: 'advanced-system',
+      name: 'Système avancé',
+      icon: <Server className="w-8 h-8 text-gray-500" />,
+      description: 'Configuration avancée du système',
       items: [
-        { id: 'backup', name: 'Configuration', icon: <Cloud className="w-4 h-4" />, route: '/settings/backup' }
+        { id: 'backup', name: 'Sauvegarde', icon: <Cloud className="w-4 h-4" />, route: '/settings/backup' },
+        { id: 'compliance', name: 'Conformité', icon: <Shield className="w-4 h-4" />, route: '/settings/compliance' },
+        { id: 'import-export', name: 'Import/Export', icon: <FileText className="w-4 h-4" />, route: '/settings/data/import-export' },
+        { id: 'sequences', name: 'Numération', icon: <Hash className="w-4 h-4" />, route: '/settings/sequences' },
+        { id: 'performance', name: 'Performance', icon: <Activity className="w-4 h-4" />, route: '/settings/performance' }
       ]
     },
+
+    // 2. Personnalisation
     {
-      id: 'appearance',
-      name: 'Apparence',
+      id: 'customization',
+      name: 'Personnalisation',
       icon: <Palette className="w-8 h-8 text-teal-500" />,
-      description: 'Personnalisation de l\'interface utilisateur',
+      description: 'Personnalisation de l\'interface et notifications',
       items: [
-        { id: 'appearance', name: 'Thèmes', icon: <Moon className="w-4 h-4" />, route: '/settings/appearance' }
+        { id: 'theme', name: 'Thèmes', icon: <Moon className="w-4 h-4" />, route: '/settings/appearance/themes' },
+        { id: 'notifications', name: 'Notifications', icon: <Bell className="w-4 h-4" />, route: '/settings/integrations/notifications' },
+        { id: 'calendar', name: 'Calendrier', icon: <Calendar className="w-4 h-4" />, route: '/settings/calendar' }
       ]
     },
+
+    // 3. Internationalisation
     {
-      id: 'workflows',
-      name: 'Workflows',
-      icon: <Workflow className="w-8 h-8 text-cyan-500" />,
-      description: 'Configuration des flux de travail automatisés',
+      id: 'i18n',
+      name: 'Internationalisation',
+      icon: <Globe className="w-8 h-8 text-green-500" />,
+      description: 'Paramètres multilingues et régionaux',
       items: [
-        { id: 'workflows', name: 'Gestion', icon: <Workflow className="w-4 h-4" />, route: '/settings/workflows' }
+        { id: 'languages', name: 'Langues', icon: <Languages className="w-4 h-4" />, route: '/settings/localization/languages' },
+        { id: 'translations', name: 'Traductions', icon: <Languages className="w-4 h-4" />, route: '/settings/localization/translations' },
+        { id: 'countries', name: 'Pays', icon: <Globe className="w-4 h-4" />, route: '/settings/localization/countries' },
+        { id: 'currencies', name: 'Devises', icon: <DollarSign className="w-4 h-4" />, route: '/settings/localization/currencies' },
+        { id: 'formats', name: 'Formats', icon: <Calendar className="w-4 h-4" />, route: '/settings/localization/date-formats' }
       ]
     },
+    // 3. Données et système
     {
-      id: 'compliance',
-      name: 'Conformité',
-      icon: <Shield className="w-8 h-8 text-amber-500" />,
-      description: 'Gestion de la conformité réglementaire',
+      id: 'system',
+      name: 'Données & Système',
+      icon: <Database className="w-8 h-8 text-purple-500" />,
+      description: 'Gestion des données et infrastructure',
       items: [
-        { id: 'compliance', name: 'Paramètres', icon: <Shield className="w-4 h-4" />, route: '/settings/compliance' }
+        { id: 'database', name: 'Base de données', icon: <Database className="w-4 h-4" />, route: '/settings/system/database' },
+        { id: 'backup', name: 'Sauvegarde', icon: <HardDrive className="w-4 h-4" />, route: '/settings/system/backup' },
+        { id: 'api', name: 'API', icon: <Cloud className="w-4 h-4" />, route: '/settings/system/api' },
+        { id: 'email', name: 'Email', icon: <Mail className="w-4 h-4" />, route: '/settings/system/email' },
+        { id: 'logging', name: 'Journaux', icon: <FileText className="w-4 h-4" />, route: '/settings/system/logging' }
       ]
     },
-    {
-      id: 'import-export',
-      name: 'Import/Export',
-      icon: <FileText className="w-8 h-8 text-blue-500" />,
-      description: 'Outils d\'échange de données',
-      items: [
-        { id: 'import-export', name: 'Configuration', icon: <FileText className="w-4 h-4" />, route: '/settings/import-export' }
-      ]
-    },
-    {
-      id: 'calendar',
-      name: 'Calendrier',
-      icon: <Calendar className="w-8 h-8 text-red-500" />,
-      description: 'Configuration des calendriers et plannings',
-      items: [
-        { id: 'calendar', name: 'Paramètres', icon: <Calendar className="w-4 h-4" />, route: '/settings/calendar' }
-      ]
-    },
-    {
-      id: 'sequences',
-      name: 'Numération',
-      icon: <Hash className="w-8 h-8 text-purple-500" />,
-      description: 'Gestion des séquences de numérotation',
-      items: [
-        { id: 'sequences', name: 'Configuration', icon: <Hash className="w-4 h-4" />, route: '/settings/sequences' }
-      ]
-    },
-    {
-      id: 'performance',
-      name: 'Performance',
-      icon: <Gauge className="w-8 h-8 text-green-500" />,
-      description: 'Optimisation des performances du système',
-      items: [
-        { id: 'performance', name: 'Paramètres', icon: <Activity className="w-4 h-4" />, route: '/settings/performance' }
-      ]
-    }
   ];
 
   return (

@@ -9,11 +9,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Label } from '../../components/ui/label';
 import { Checkbox } from '../../components/ui/checkbox';
-import { Users, Search, Plus, Pencil, Trash2, UserPlus, Mail, Lock, Shield, Loader2, UserX } from 'lucide-react';
+import { Users, Search, Plus, Pencil, Trash2, UserPlus, Mail, Lock, Shield, Loader2, UserX, ChevronLeft } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { userService, groupService, User as ApiUser } from '../../services';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import { useGroups } from '../../hooks/useReferenceData';
+import { Group } from '../../types/group';
 
 // Types pour les utilisateurs
 interface User {
@@ -243,6 +244,15 @@ const UsersSettings: React.FC = () => {
 
   return (
     <div className="p-6">
+      <Button
+        variant="ghost"
+        className="mb-6"
+        onClick={() => window.history.back()}
+      >
+        <ChevronLeft className="h-4 w-4 mr-2" />
+        Retour
+      </Button>
+
       {/* En-tête */}
       <div className="flex items-center gap-3 mb-6">
         <Users className="h-8 w-8 text-ivory-orange" />
@@ -442,7 +452,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onSave, onCancel, saving }) =
   const [selectedGroups, setSelectedGroups] = useState<string[]>(user.groups || []);
 
   // Utiliser le hook useGroups pour récupérer les groupes
-  const { data: availableGroups, loading: loadingGroups } = useGroups();
+  const { data: availableGroups = [] as Group[], loading: loadingGroups } = useGroups();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -562,13 +572,13 @@ const UserForm: React.FC<UserFormProps> = ({ user, onSave, onCancel, saving }) =
               </div>
             ) : availableGroups && availableGroups.length > 0 ? (
               availableGroups.map(group => (
-                <div key={group.name} className="flex items-center space-x-2">
+                <div key={group.id} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`group-${group.name}`}
-                    checked={selectedGroups.includes(group.name)}
-                    onCheckedChange={() => handleGroupToggle(group.name)}
+                    id={`group-${group.id}`}
+                    checked={selectedGroups.includes(group.id)}
+                    onCheckedChange={() => handleGroupToggle(group.id)}
                   />
-                  <Label htmlFor={`group-${group.name}`} className="cursor-pointer">
+                  <Label htmlFor={`group-${group.id}`} className="cursor-pointer">
                     {group.name}
                   </Label>
                 </div>

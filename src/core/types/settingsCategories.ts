@@ -5,7 +5,8 @@ import {
   Calendar, CreditCard, Printer, Clock, Box,
   Truck, Hash, Layers, Network, Key, Lock,
   MessageSquare, AlertCircle, Workflow, FileSpreadsheet,
-  ShoppingCart, Server, BarChart, DollarSign
+  ShoppingCart, Server, BarChart, DollarSign,
+  Palette, Moon, Activity
 } from 'lucide-react';
 import type { SettingsCategory } from './settingsTypes';
 
@@ -37,24 +38,30 @@ export const settingsCategories: SettingsCategory[] = [
       }
     ]
   },
-  // Catégorie Apparence
+  // Catégorie Personnalisation
   {
-    id: 'appearance',
-    name: 'Apparence',
-    icon: Globe,
-    description: 'Personnalisation de l\'interface',
+    id: 'customization',
+    name: 'Personnalisation',
+    icon: Palette,
+    description: 'Personnalisation de l\'interface et notifications',
     items: [
       {
         id: 'themes',
         name: 'Thèmes',
-        icon: Settings,
+        icon: Moon,
         route: '/settings/appearance/themes'
       },
       {
-        id: 'languages',
-        name: 'Langues',
-        icon: Languages,
-        route: '/settings/appearance/languages'
+        id: 'notifications',
+        name: 'Notifications',
+        icon: Bell,
+        route: '/settings/integrations/notifications'
+      },
+      {
+        id: 'calendar',
+        name: 'Calendrier',
+        icon: Calendar,
+        route: '/settings/calendar'
       }
     ]
   },
@@ -229,6 +236,46 @@ export const settingsCategories: SettingsCategory[] = [
   },
 
 
+  // Catégorie Système Avancé
+  {
+    id: 'advanced-system',
+    name: 'Système Avancé',
+    icon: Server,
+    description: 'Configuration avancée du système',
+    items: [
+      {
+        id: 'backup',
+        name: 'Sauvegarde',
+        icon: Database,
+        route: '/settings/data/backup'
+      },
+      {
+        id: 'compliance',
+        name: 'Conformité',
+        icon: Shield,
+        route: '/settings/compliance'
+      },
+      {
+        id: 'import-export',
+        name: 'Import/Export',
+        icon: Layers,
+        route: '/settings/data/import-export'
+      },
+      {
+        id: 'sequences',
+        name: 'Numération',
+        icon: Hash,
+        route: '/settings/sequences'
+      },
+      {
+        id: 'performance',
+        name: 'Performance',
+        icon: Activity,
+        route: '/settings/performance'
+      }
+    ]
+  },
+
   // Catégorie Audit
   {
     id: 'audit',
@@ -256,21 +303,21 @@ export const settingsCategories: SettingsCategory[] = [
         id: 'backup_settings',
         name: 'Paramètres de sauvegarde',
         icon: Database,
-        route: '/settings/backup'
+        route: '/settings/data/backup'
       }
     ]
   },
 
   // Catégorie Workflow
   {
-    id: 'workflow',
-    name: 'Workflow',
+    id: 'workflows',
+    name: 'Workflows',
     icon: Workflow,
     description: 'Configuration des flux de travail automatisés',
     items: [
       {
-        id: 'workflow_settings',
-        name: 'Paramètres de workflow',
+        id: 'workflows',
+        name: 'Gestion',
         icon: Workflow,
         route: '/settings/workflows'
       }
@@ -391,6 +438,12 @@ export const settingsCategories: SettingsCategory[] = [
         name: 'Calendriers',
         icon: Calendar,
         route: '/settings/integrations/calendar'
+      },
+      {
+        id: 'notifications',
+        name: 'Notifications',
+        icon: Bell,
+        route: '/settings/integrations/notifications'
       }
     ]
   },

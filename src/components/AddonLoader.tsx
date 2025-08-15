@@ -90,29 +90,16 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
     return <div style={{ padding: 20 }}>Aucun module disponible</div>;
   }
 
-  const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
-    const [hasError, setHasError] = useState(false);
-    
-    useEffect(() => {
-      const errorHandler = () => setHasError(true);
-      window.addEventListener('error', errorHandler);
-      return () => window.removeEventListener('error', errorHandler);
-    }, []);
-    
-    if (hasError) {
-      return <div style={{ padding: 20 }}>Erreur de chargement d'un module</div>;
-    }
-    
-    return <>{children}</>;
-  };
+  // Vérifier si React est correctement initialisé
+  if (typeof React.useState !== 'function') {
+    return <div style={{ padding: 20 }}>Erreur d'initialisation React</div>;
+  }
 
   return (
     <>
       {children}
       <Suspense fallback={<Fallback />}>
-        <ErrorBoundary>
-          {modules}
-        </ErrorBoundary>
+        {React.isValidElement(modules) ? modules : null}
       </Suspense>
     </>
   );

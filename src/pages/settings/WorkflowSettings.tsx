@@ -101,14 +101,27 @@ const WorkflowSettings: React.FC = () => {
         setError(null);
 
         // Récupérer tous les workflows
-        const response = await axios.get('/api/workflows');
-        const workflowsData = response.data;
+        const response = await axios.get<Workflow[]>('/api/workflows', {
+          timeout: 5000 // Timeout de 5 secondes
+        });
+        const workflowsData: Workflow[] = response.data;
 
         // Pour chaque workflow, récupérer ses étapes et conditions
         const workflowsWithDetails = await Promise.all(
           workflowsData.map(async (workflow: any) => {
-            const detailResponse = await axios.get(`/api/workflows/${workflow.id}`);
-            return detailResponse.data;
+            try {
+              const detailResponse = await axios.get<Workflow>(`/api/workflows/${workflow.id}`, {
+                timeout: 5000 // Timeout de 5 secondes
+              });
+              return detailResponse.data;
+            } catch (err) {
+              console.error(`Erreur lors du chargement du workflow ${workflow.id}:`, err);
+              return {
+                ...workflow,
+                steps: [],
+                error: `Erreur de chargement des détails`
+              };
+            }
           })
         );
 
@@ -122,7 +135,13 @@ const WorkflowSettings: React.FC = () => {
         setLoading(false);
       } catch (err) {
         console.error('Erreur lors du chargement des workflows:', err);
-        setError('Erreur lors du chargement des workflows. Veuillez réessayer.');
+        if (err.response) {
+          setError(`Erreur serveur (${err.response.status}): ${err.response.data?.message || 'Veuillez réessayer'}`);
+        } else if (err.request) {
+          setError('Le serveur ne répond pas. Vérifiez votre connexion ou que le serveur est démarré.');
+        } else {
+          setError('Erreur lors du chargement des workflows. Veuillez réessayer.');
+        }
         setLoading(false);
       }
     };
@@ -176,7 +195,7 @@ const WorkflowSettings: React.FC = () => {
 
       if (isEditing && workflowForm.id) {
         // Mettre à jour le workflow existant
-        const response = await axios.put(`/api/workflows/${workflowForm.id}`, {
+        const response = await axios.put<Workflow>(`/api/workflows/${workflowForm.id}`, {
           name: workflowForm.name,
           description: workflowForm.description,
           entityType: workflowForm.entityType,
@@ -185,9 +204,10 @@ const WorkflowSettings: React.FC = () => {
         });
 
         // Mettre à jour la liste des workflows
-        const updatedWorkflow = response.data;
-        const existingWorkflow = workflows.find(w => w.id === workflowForm.id);
-        updatedWorkflow.steps = existingWorkflow?.steps || []; // Conserver les étapes existantes
+        const updatedWorkflow: Workflow = {
+          ...response.data,
+          steps: workflows.find(w => w.id === workflowForm.id)?.steps || []
+        };
 
         setWorkflows(workflows.map(w => w.id === workflowForm.id ? updatedWorkflow : w));
 
@@ -196,7 +216,7 @@ const WorkflowSettings: React.FC = () => {
         setEditingWorkflowId(null);
       } else {
         // Créer un nouveau workflow
-        const response = await axios.post('/api/workflows', {
+        const response = await axios.post<Workflow>('/api/workflows', {
           name: workflowForm.name,
           description: workflowForm.description,
           entityType: workflowForm.entityType,
@@ -323,7 +343,7 @@ const WorkflowSettings: React.FC = () => {
       }
 
       // Créer l'étape via l'API
-      const response = await axios.post('/api/workflowsteps', {
+      const response = await axios.post<WorkflowStep>('/api/workflowsteps', {
         workflowId: selectedWorkflow,
         name: stepForm.name,
         type: stepForm.type,
@@ -383,26 +403,59 @@ const WorkflowSettings: React.FC = () => {
   };
 
   // Fonction pour formater une condition en texte lisible
-  const formatCondition = (condition: WorkflowCondition | string): string => {
-    if (typeof condition === 'string') {
-      return condition;
+  const formatCondition = (condition: WorkflowCondition | string | null | undefined): string => {
+    try {
+      // Gestion des cas null/undefined
+      if (!condition) return '';
+      
+      // Si c'est une chaîne, vérifier qu'elle est valide
+      if (typeof condition === 'string') {
+        return condition.trim();
+      }
+
+      // Vérification approfondie de la structure de l'objet
+      if (typeof condition !== 'object' ||
+          condition === null ||
+          Array.isArray(condition)) {
+        return 'Condition invalide';
+      }
+
+      // Vérification des propriétés obligatoires avec leurs types
+      if (typeof condition.field !== 'string' ||
+          typeof condition.operator !== 'string' ||
+          !condition.field.trim() ||
+          !condition.operator.trim()) {
+        return 'Condition invalide';
+      }
+
+      // Gestion sécurisée de la valeur
+      const value = (condition.value !== undefined && condition.value !== null)
+        ? String(condition.value).trim()
+        : '';
+
+      const operatorMap: Record<string, string> = {
+        'equals': '=',
+        'not_equals': '≠',
+        'greater_than': '>',
+        'less_than': '<',
+        'greater_than_or_equal': '≥',
+        'less_than_or_equal': '≤',
+        'contains': 'contient',
+        'not_contains': 'ne contient pas',
+        'starts_with': 'commence par',
+        'ends_with': 'finit par'
+      };
+
+      // Vérification que l'opérateur existe dans la map
+      const operator = (condition.operator in operatorMap)
+        ? operatorMap[condition.operator]
+        : condition.operator;
+
+      return `${condition.field.trim()} ${operator} ${value}`.trim();
+    } catch (err) {
+      console.error('Erreur critique dans formatCondition:', err);
+      return 'Format invalide';
     }
-
-    const operatorMap: Record<string, string> = {
-      'equals': '=',
-      'not_equals': '≠',
-      'greater_than': '>',
-      'less_than': '<',
-      'greater_than_or_equal': '≥',
-      'less_than_or_equal': '≤',
-      'contains': 'contient',
-      'not_contains': 'ne contient pas',
-      'starts_with': 'commence par',
-      'ends_with': 'finit par'
-    };
-
-    const operator = operatorMap[condition.operator] || condition.operator;
-    return `${condition.field} ${operator} ${condition.value}`;
   };
 
   // Trouver le workflow sélectionné

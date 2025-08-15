@@ -95,8 +95,17 @@ const settingsRoutes = [
   { path: 'documents/templates', Component: ReportTemplatesSettings },
   { path: 'documents/printers', Component: PrintersSettings },
 
-  // Appearance
+  // Customization
   { path: 'appearance/themes', Component: AppearanceSettings },
+  { path: 'integrations/notifications', Component: NotificationSettings },
+  { path: 'calendar', Component: CalendarSettings },
+  
+  // Advanced System
+  { path: 'backup', Component: BackupSettings },
+  { path: 'compliance', Component: ComplianceSettings },
+  { path: 'data/import-export', Component: ImportExportSettings },
+  { path: 'sequences', Component: SequenceSettings },
+  { path: 'performance', Component: PerformanceSettings },
   
   // Integrations
   { path: 'integrations/payments', Component: PaymentProvidersSettings },

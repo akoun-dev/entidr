@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Button } from '../../components/ui/button';
 import { Separator } from '../../components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Layers } from 'lucide-react';
+import { Layers, ChevronLeft } from 'lucide-react';
 import ModulesSettings from '../../components/settings/ModulesSettings';
 
 /**
@@ -13,8 +14,17 @@ import ModulesSettings from '../../components/settings/ModulesSettings';
 const ModulesListSettings: React.FC = () => {
   return (
     <div className="p-6">
-        {/* En-tête */}
-        <div className="flex items-center gap-3 mb-6">
+      <Button
+        variant="ghost"
+        className="mb-6"
+        onClick={() => window.history.back()}
+      >
+        <ChevronLeft className="h-4 w-4 mr-2" />
+        Retour
+      </Button>
+
+      {/* En-tête */}
+      <div className="flex items-center gap-3 mb-6">
           <Layers className="h-8 w-8 text-ivory-orange" />
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Modules installés</h1>

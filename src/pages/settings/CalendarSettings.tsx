@@ -5,7 +5,7 @@ import { Input } from '../../components/ui/input';
 import { Switch } from '../../components/ui/switch';
 import { Badge } from '../../components/ui/badge';
 import { Label } from '../../components/ui/label';
-import { Calendar, Clock, Globe, CalendarDays, CalendarCheck, Plus, Loader2, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Globe, CalendarDays, CalendarCheck, Plus, Loader2, AlertTriangle, AlertCircle, ChevronLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
@@ -98,7 +98,7 @@ const CalendarSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer la configuration du calendrier
-        const configResponse = await axios.get(`${API_BASE_URL}/calendarconfig`);
+        const configResponse = await axios.get<CalendarConfig>(`${API_BASE_URL}/calendarconfig`);
         setCalendarConfig(configResponse.data);
         setTimezone(configResponse.data.timezone);
         setWorkHours({
@@ -108,11 +108,11 @@ const CalendarSettings: React.FC = () => {
         setWeekStart(configResponse.data.weekStart);
 
         // Récupérer les jours fériés
-        const holidaysResponse = await axios.get(`${API_BASE_URL}/holidays`);
+        const holidaysResponse = await axios.get<Holiday[]>(`${API_BASE_URL}/holidays`);
         setHolidays(holidaysResponse.data);
 
         // Récupérer les intégrations de calendrier
-        const integrationsResponse = await axios.get(`${API_BASE_URL}/calendarintegrations`);
+        const integrationsResponse = await axios.get<CalendarIntegration[]>(`${API_BASE_URL}/calendarintegrations`);
         setIntegrations(integrationsResponse.data);
 
         setLoading(false);
@@ -165,7 +165,7 @@ const CalendarSettings: React.FC = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(`${API_BASE_URL}/holidays`, newHoliday);
+      const response = await axios.post<Holiday>(`${API_BASE_URL}/holidays`, newHoliday);
       setHolidays([...holidays, response.data]);
 
       // Réinitialiser le formulaire et fermer la boîte de dialogue
@@ -238,6 +238,15 @@ const CalendarSettings: React.FC = () => {
 
   return (
     <div className="p-6">
+      <Button
+        variant="ghost"
+        className="mb-6"
+        onClick={() => window.history.back()}
+      >
+        <ChevronLeft className="h-4 w-4 mr-2" />
+        Retour
+      </Button>
+      
       <div className="flex items-center gap-3 mb-6">
         <Calendar className="h-8 w-8 text-ivory-orange" />
         <div>
@@ -341,7 +350,7 @@ const CalendarSettings: React.FC = () => {
                     <Badge variant={holiday.recurring ? 'default' : 'outline'}>
                       {holiday.recurring ? 'Récurrent' : 'Ponctuel'}
                     </Badge>
-                    <Badge variant={holiday.active ? 'success' : 'destructive'}>
+                    <Badge variant={holiday.active ? 'default' : 'destructive'}>
                       {holiday.active ? 'Actif' : 'Inactif'}
                     </Badge>
                     <Button
@@ -392,7 +401,7 @@ const CalendarSettings: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <Badge variant={integration.active ? 'success' : 'outline'}>
+                    <Badge variant={integration.active ? 'default' : 'outline'}>
                       {integration.active ? 'Actif' : 'Inactif'}
                     </Badge>
                     <Button variant="outline" className="ml-2">

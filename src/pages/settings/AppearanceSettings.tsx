@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { useToast } from '../../components/ui/use-toast';
 import { api } from '../../services';
+import { BackButton } from '../../components/common/BackButton';
 
 interface ThemeConfig {
   id?: string;
@@ -48,13 +49,13 @@ const AppearanceSettings: React.FC = () => {
       setError(null);
 
       try {
-        const response = await api.get('/themeconfig');
+        const response = await api.get<ThemeConfig>('/themeconfig');
 
         // Mettre à jour la configuration avec le thème actuel
         setConfig({
           ...response.data,
           mode: theme // Utiliser le thème actuel du système
-        });
+        } as ThemeConfig);
       } catch (err) {
         console.error('Erreur lors du chargement de la configuration du thème:', err);
         setError('Impossible de charger la configuration du thème. Veuillez réessayer plus tard.');
@@ -77,8 +78,8 @@ const AppearanceSettings: React.FC = () => {
         mode: theme
       };
 
-      const response = await api.put('/themeconfig', updatedConfig);
-      setConfig(response.data);
+      const response = await api.put<ThemeConfig>('/themeconfig', updatedConfig);
+      setConfig(response.data as ThemeConfig);
 
       toast({
         title: "Configuration sauvegardée",
@@ -107,6 +108,8 @@ const AppearanceSettings: React.FC = () => {
 
   return (
     <div className="p-6">
+      <BackButton className="mb-6" />
+      
       <div className="flex items-center gap-3 mb-6">
         <Palette className="h-8 w-8 text-ivory-orange" />
         <div>
@@ -115,7 +118,7 @@ const AppearanceSettings: React.FC = () => {
         </div>
       </div>
 
-      {/* Message d'erreur */}
+      {/* Reste du code inchangé... */}
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />

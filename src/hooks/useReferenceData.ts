@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useDeepCompareEffect } from './useDeepCompareEffect';
 import ReferenceDataService from '../services/ReferenceDataService';
+import { Group } from '../types/group';
 
 /**
  * Hook générique pour récupérer des données de référence
@@ -57,8 +58,8 @@ export function useUsers(params = {}) {
 /**
  * Hook pour récupérer la liste des groupes
  */
-export function useGroups(params = {}) {
-  return useReferenceData(ReferenceDataService.getGroups.bind(ReferenceDataService), params);
+export function useGroups<T = Group>(params = {}) {
+  return useReferenceData<T[]>(ReferenceDataService.getGroups.bind(ReferenceDataService), params);
 }
 
 /**
