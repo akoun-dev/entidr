@@ -1,5 +1,0 @@
-Pour utiliser ces fonctionnalités, vous devrez :
-
-Exécuter npm run setup-db pour initialiser la base de données avec les tables et les données initiales
-Démarrer le serveur API avec npm run server
-Démarrer l'application frontend avec npm run dev

@@ -1,40 +1,108 @@
 /**
  * Registre des modules de l'application
- *
- * ATTENTION: Ce fichier est généré automatiquement par le script generateModuleRegistry.js
- * Ne pas modifier manuellement ce fichier, il sera écrasé à la prochaine génération.
+ * Version améliorée avec cache, chargement parallèle et hooks
  */
+import { Addon, AddonManifest, RouteDefinition } from '../types/addon';
+import logger from '../utils/logger';
+import { getCachedManifests, cacheManifests, discoverModules } from '../services/moduleCacheService';
+import DependencyResolver from './DependencyResolver';
+import { HealthChecker } from './HealthChecker';
+import { DeploymentManager } from './DeploymentManager';
 
-import { Addon } from '../types/addon';
+// Cache des modules chargés
+const moduleCache = new Map<string, any>();
+
+// Hooks système
+const hooksRegistry = new Map<string, Function[]>();
+
+// Routes actives (pour tree-shaking)
+const activeRoutes = new Set<string>();
+
+// Enregistre les routes actives d'un module
+function registerActiveRoutes(manifest: AddonManifest): void {
+  if (!manifest.routes) return;
+  
+  const walkRoutes = (routes: RouteDefinition[]) => {
+    routes.forEach(route => {
+      activeRoutes.add(route.path);
+      if (route.children) walkRoutes(route.children);
+    });
+  };
+
+  walkRoutes(manifest.routes);
+}
 
 // Liste des noms de modules disponibles
-// Cette liste est générée automatiquement en fonction des modules présents dans le dossier addons
-export const AVAILABLE_MODULE_NAMES = [
-  'project',
-  'inventory',
-  'hr',
-  'finance',
-  'crm',
-];
-
-// Fonction pour charger dynamiquement un module
-async function loadModule(moduleName: string): Promise<any> {
+export const getAvailableModuleNames = async (): Promise<string[]> => {
   try {
-    // Utilisation de l'import dynamique pour charger le module
-    return await import(`../../addons/${moduleName}/index.ts`);
+    // Vérifier d'abord le cache
+    const cached = await getCachedManifests();
+    if (cached) return cached.map(m => m.name);
+
+    // Découvrir les modules si pas dans le cache
+    const manifests = await discoverModules();
+    await cacheManifests(manifests);
+    
+    // Vérifier les dépendances
+    for (const manifest of manifests) {
+      const { valid, conflicts } = await DependencyResolver.resolveDependencies(manifest, manifests);
+      if (!valid) {
+        logger.warn(`Dependency issues for ${manifest.name}:`, conflicts);
+      }
+    }
+    
+    return manifests.map(m => m.name);
   } catch (error) {
-    console.error(`Erreur lors du chargement du module ${moduleName}:`, error);
-    return null;
+    logger.error('Error getting module names:', error);
+    return [];
   }
+};
+
+/**
+ * Enregistre un hook système
+ * @param hookName Nom du hook (ex: 'preModuleLoad')
+ * @param callback Fonction à exécuter
+ */
+// Alias pour compatibilité ascendante
+export function registerHook<T = any>(hookName: string, callback: (data: T) => void): void {
+  registerHook(hookName, callback);
 }
 
 /**
- * Récupère la liste des noms de modules disponibles
- * @returns Liste des noms de modules
+ * Déclenche un hook système
+ * @param hookName Nom du hook
+ * @param args Arguments à passer aux callbacks
  */
-export const getAvailableModuleNames = (): string[] => {
-  return AVAILABLE_MODULE_NAMES;
-};
+// Alias pour compatibilité ascendante
+async function triggerHook<T = any>(hookName: string, data: T): Promise<void> {
+  await triggerHook(hookName, data);
+}
+
+// Fonction optimisée pour charger dynamiquement un module avec lazy loading
+async function loadModule(moduleName: string): Promise<any> {
+  // Vérifier le cache
+  if (moduleCache.has(moduleName)) {
+    return moduleCache.get(moduleName);
+  }
+
+  try {
+    await triggerHook('preModuleLoad', moduleName);
+
+    // Implémentation du lazy loading avec préchargement
+    const module = await import(
+      /* webpackPrefetch: true */
+      `../../addons/${moduleName}/index.ts`
+    );
+    
+    moduleCache.set(moduleName, module);
+    await triggerHook('postModuleLoad', { moduleName, module });
+    return module;
+  } catch (error) {
+    logger.error(`Erreur lors du chargement du module ${moduleName}:`, error);
+    await triggerHook('moduleLoadError', { moduleName, error });
+    return null;
+  }
+}
 
 /**
  * Récupère un module par son nom
@@ -42,7 +110,8 @@ export const getAvailableModuleNames = (): string[] => {
  * @returns Promise résolvant vers le module ou null s'il n'existe pas
  */
 export const getModule = async (moduleName: string): Promise<any> => {
-  if (!AVAILABLE_MODULE_NAMES.includes(moduleName)) {
+  const availableModules = await getAvailableModuleNames();
+  if (!availableModules.includes(moduleName)) {
     return null;
   }
   return await loadModule(moduleName);
@@ -53,40 +122,74 @@ export const getModule = async (moduleName: string): Promise<any> => {
  * @returns Promise résolvant vers un tableau de modules sous forme d'objets Addon
  */
 export const getAllModules = async (): Promise<Addon[]> => {
-  const modulePromises = AVAILABLE_MODULE_NAMES.map(async (name) => {
-    const module = await loadModule(name);
-    if (!module) return null;
+  try {
+    await triggerHook('preAllModulesLoad', {});
 
-    // Vérifier que le module a un manifeste et des routes
-    if (!module.manifest || !module.routes) {
-      console.warn(`Le module ${name} n'a pas de manifeste ou de routes définis.`);
-      return null;
-    }
+    // Pré-compilation AOT des templates
+    await triggerHook('preCompileTemplates', {});
 
-    // Construire l'objet Addon
-    const addon: Addon = {
-      manifest: module.manifest,
-      routes: module.routes,
-    };
+    // Chargement parallèle optimisé
+    const modules = await Promise.allSettled(
+      (await getAvailableModuleNames()).map(async (name) => {
+        const module = await loadModule(name);
+        if (!module) return null;
 
-    // Ajouter les fonctions d'initialisation et de nettoyage si elles existent
-    if (typeof module.initialize === 'function') {
-      addon.initialize = module.initialize;
-    }
+        if (!module.manifest || !module.routes) {
+          logger.warn(`Module ${name} - manifeste ou routes manquants`);
+          return null;
+        }
 
-    if (typeof module.cleanup === 'function') {
-      addon.cleanup = module.cleanup;
-    }
+        const addon: Addon = {
+          manifest: module.manifest,
+          // Filtrage des routes inactives (tree-shaking)
+          routes: module.routes?.filter(route => activeRoutes.has(route.path)),
+          ...(module.initialize && { initialize: module.initialize }),
+          ...(module.cleanup && { cleanup: module.cleanup }),
+          ...(module.Components && { Components: module.Components }),
+        };
+        
+        // Initialisation du système de déploiement
+        const healthChecker = new HealthChecker();
+        const deploymentManager = new DeploymentManager(healthChecker);
+        
+        const deployModuleVersion = async (moduleName: string, version: string): Promise<boolean> => {
+          const manifests = await getCachedManifests();
+          const manifest = manifests.find(m => m.name === moduleName);
+          if (!manifest) {
+            throw new Error(`Module ${moduleName} not found`);
+          }
+        
+          return deploymentManager.deployBlueGreen(version);
+        };
+        
+        /**
+         * Récupère le graphe de dépendances des modules
+         */
+        const getDependencyGraph = async (): Promise<Record<string, string[]>> => {
+          const manifests = await getCachedManifests() || await discoverModules();
+          return DependencyResolver.generateDependencyGraph(manifests);
+        };
 
-    // Ajouter les composants si ils existent
-    if (module.Components) {
-      addon.Components = module.Components;
-    }
+        return addon;
+      })
+    );
 
-    return addon;
-  });
+    // Traitement des résultats
+    const result = modules
+      .map(m => m.status === 'fulfilled' ? m.value : null)
+      .filter((addon): addon is Addon => addon !== null);
 
-  // Attendre que tous les modules soient chargés et filtrer les nulls
-  const modules = await Promise.all(modulePromises);
-  return modules.filter((addon): addon is Addon => addon !== null);
+    await triggerHook('postAllModulesLoad', result);
+    return result;
+  } catch (error) {
+    await triggerHook('allModulesLoadError', error);
+    throw error;
+  }
+};
+
+/**
+ * Récupère les routes actives filtrées
+ */
+export const getActiveRoutes = (): string[] => {
+  return Array.from(activeRoutes);
 };

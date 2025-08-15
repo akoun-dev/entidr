@@ -1,124 +1,134 @@
-# ENTIDR - Système ERP Moderne
+**ENTIDR - Système ERP Moderne**
 
-## Présentation
+**ENTIDR** est un système ERP (Enterprise Resource Planning) moderne et modulaire développé avec les technologies web les plus récentes. Voici les caractéristiques principales de votre projet :
 
-ENTIDR est un système ERP (Enterprise Resource Planning) moderne développé avec les technologies web les plus récentes. Il offre une interface utilisateur intuitive et des fonctionnalités complètes pour la gestion d'entreprise.
+### **Architecture Technique**
 
-## Fonctionnalités principales
+**Technologies principales :**
+- **Frontend :** React 18.3.1 + TypeScript + Vite
+- **UI Framework :** shadcn-ui + Tailwind CSS + Radix UI
+- **Backend :** Node.js + Express + Sequelize ORM
+- **Base de données :** SQLite (configurable pour PostgreSQL, MySQL)
+- **State Management :** React Query (@tanstack/react-query)
+- **Routing :** React Router DOM
+- **Styling :** Tailwind CSS avec thème personnalisé inspiré de la Côte d'Ivoire
 
-- **Interface utilisateur moderne** - Basée sur React et Tailwind CSS
-- **Architecture modulaire** - Chargement dynamique des modules
-- **Personnalisation avancée** - Nombreuses options de configuration
-- **Multi-langues** - Support complet de l'internationalisation
-- **Responsive design** - Fonctionne sur tous les appareils
+### **Architecture Modulaire**
 
-## Modules disponibles
+Votre projet utilise une architecture de **modules/plugins** très avancée :
 
-- Ressources Humaines (HR)
-- CRM
-- Comptabilité
-- Ventes
-- Achats
-- Inventaire
-- Et plus encore...
+**1. Gestionnaire d'Addons ([`AddonManager.ts`](src/core/AddonManager.ts:1))**
+- Singleton qui gère le chargement, l'enregistrement et la vie des modules
+- Supporte l'initialisation et le nettoyage des modules
+- Gestion centralisée des routes et des menus
 
-## Section Paramètres
+**2. Registre des Modules ([`ModuleRegistry.ts`](src/core/ModuleRegistry.ts:1))**
+- Généré automatiquement par le script [`generateModuleRegistry.js`](scripts/generateModuleRegistry.js:1)
+- Découverte dynamique des modules dans le dossier `addons/`
+- Tri topologique des modules en fonction des dépendances
 
-Le système dispose d'une section de paramètres complète permettant une personnalisation poussée :
+**3. Structure des Modules**
+Chaque module suit une structure cohérente :
+- `manifest.ts` - Métadonnées et configuration
+- `index.ts` - Point d'entrée du module
+- `routes/` - Définition des routes
+- `views/` - Composants React
+- `models/` - Modèles de données (optionnel)
+- `services/` - Services métier (optionnel)
 
-### Paramètres généraux
-- Société
-- Utilisateurs
-- Groupes d'utilisateurs
+### **Modules Disponibles**
 
-### Localisation
-- Langues
-- Devises
-- Pays
-- Traductions
-- Formats de date
-- Formats d'heure
-- Formats de nombre
+**1. Ressources Humaines ([`addons/hr/`](addons/hr/))**
+- Gestion des employés, départements, congés
+- Contrats, formations, recrutement
+- Modèles : `hr.employee`, `hr.department`, `hr.leave`
 
-### Technique
-- Base de données
-- Serveurs de messagerie
-- Sécurité
-- Actions automatisées
-- API & Intégrations
-- Journalisation
+**2. CRM ([`addons/crm/`](addons/crm/))**
+- Gestion des clients, leads, opportunités
+- Activités et suivi commercial
+- Modèles : `crm.lead`, `crm.opportunity`, `crm.customer`
 
-### Modules
-- Modules installés
-- Boutique d'applications
-- Mises à jour
+**3. Finance ([`addons/finance/`](addons/finance/))**
+- Comptabilité, facturation, paiements
+- Rapports financiers
+- Modèles : `finance.invoice`, `finance.payment`
 
-### Documents
-- Mise en page des documents
-- Modèles de rapport
-- Imprimantes
+**4. Autres modules :**
+- **Inventaire** - Gestion des stocks
+- **Projets** - Gestion de projet
+- **BPMN** - Workflow et processus métier
 
-### Intégrations
-- Fournisseurs de paiement
-- Méthodes d'expédition
-- Services externes
+### **Fonctionnalités Clés**
 
-### Nouvelles configurations
-- Notifications
-- Audit et traçabilité
-- Sauvegarde et restauration
-- Apparence et thème
-- Workflows
-- Conformité et RGPD
-- Importation/Exportation
-- Calendrier et planification
-- Numération et séquences
-- Performance
+**1. Interface Utilisateur Moderne**
+- Design responsive avec inspirations ivoiriennes (couleurs orange et verte)
+- Thème clair/sombre avec [`next-themes`](package.json:62)
+- Composants UI réutilisables basés sur shadcn-ui
 
-## Technologies utilisées
+**2. Système de Configuration Complet**
+- Paramètres généraux, utilisateurs, groupes
+- Localisation (langues, devises, pays, formats)
+- Intégrations externes, API, sécurité
+- Notifications, audit, sauvegardes
 
-Ce projet est construit avec :
+**3. Internationalisation**
+- Support multi-langues
+- Gestion des traductions
+- Formats de date, heure, nombre personnalisables
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+**4. Architecture Extensible**
+- Modules installables/désinstallables
+- Boutique d'applications prévue
+- Mises à jour de modules
 
-## Installation et démarrage
+### **Système de Base de Données**
 
-```sh
-# Cloner le dépôt
-git clone https://github.com/akoun-dev/entidr.git
+**Modèle de données unifié :**
+- Utilise Sequelize ORM avec SQLite par défaut
+- Modèles centralisés dans [`src/models/`](src/models/)
+- Support des relations (many2one, one2many, many2many)
+- Migration et seeding via Sequelize CLI
 
-# Naviguer vers le répertoire du projet
-cd entidr
+### **Développement et Déploiement**
 
-# Installer les dépendances
-npm install
+**Scripts disponibles :**
+- `npm run dev` - Développement avec Vite
+- `npm run build` - Build pour production
+- `npm run server` - Démarrage du serveur backend
+- `npm run setup-db` - Configuration de la base de données
+- `npm run generate-modules` - Régénération du registre des modules
 
-# Démarrer le serveur de développement
-npm run dev
-```
+### **Architecture Scalable**
 
-## Variables d'environnement
+**1. Architecture Microservices :**
+- Découpage des modules critiques en services indépendants
+- Communication via bus d'événements
+- Déploiement isolé possible
 
-Le projet nécessite certaines variables d'environnement pour fonctionner correctement. Vous pouvez utiliser le fichier `.env.example` comme base.
+**2. Event Bus (Kafka) :**
+- Système de messages asynchrones
+- Topics par domaine métier
+- Producteurs/Consommateurs isolés
 
-- **VITE_API_BASE_URL** : URL de base de l'API utilisée par le front-end. Modifiez cette valeur dans `.env` pour changer l'URL cible.
-- **LOG_LEVEL** : Niveau de journalisation pour le backend et le frontend (`debug`, `info`, `warn`, `error`, `none`).
-- **PORT** : Port d'écoute du serveur backend (optionnel, `3001` par défaut).
-- **DB_USERNAME** : Nom d'utilisateur de la base de données.
-- **DB_PASSWORD** : Mot de passe de la base de données.
-- **DB_NAME** : Nom de la base de données.
-- **DB_HOST** : Hôte de la base de données.
-- **DB_DIALECT** : Dialecte Sequelize (ex. `sqlite`).
-- **DB_STORAGE** : Chemin du fichier de base de données pour SQLite.
+**3. API Gateway Modulaire :**
+- Agrégation des endpoints
+- Routing intelligent
+- Load balancing
 
-## Contribution
+**4. Points Forts :**
+- Modularité extrême (chaque fonctionnalité est un module indépendant)
+- Découverte automatique des modules
+- Gestion des dépendances entre services
+- Configuration centralisée
+- Extensibilité simplifiée
+- Design moderne et réactif
 
-Les contributions sont les bienvenues ! N'hésitez pas à soumettre des pull requests ou à ouvrir des issues pour améliorer le projet.
+### **Potentiel d'Amélioration**
 
-## Licence
+1. **Déploiement Kubernetes** - Orchestration des microservices
+2. **Monitoring** - Observabilité des services
+3. **Sécurité** - RBAC avancé et chiffrement
+4. **Tests** - Couverture de tests étendue
+5. **CI/CD** - Pipeline automatisé
 
-Ce projet est sous licence [MIT](LICENSE).
+C'est un projet ERP très bien structuré, moderne et extensible, avec une architecture de modules qui le rend particulièrement adaptable aux besoins des entreprises africaines et internationales.

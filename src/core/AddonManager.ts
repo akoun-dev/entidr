@@ -10,6 +10,7 @@ class AddonManager {
   private static instance: AddonManager;
   private addons: Map<string, Addon> = new Map();
   private menus: MenuDefinition[] = [];
+  private hooks: Map<string, Function[]> = new Map();
 
   /**
    * Obtient l'instance unique du gestionnaire d'addons (Singleton)
@@ -25,25 +26,74 @@ class AddonManager {
    * Enregistre un addon dans le gestionnaire
    * @param addon L'addon à enregistrer
    */
-  public registerAddon(addon: Addon): void {
-    if (this.addons.has(addon.manifest.name)) {
-      logger.warn(`L'addon ${addon.manifest.name} est déjà enregistré. Il sera remplacé.`);
+  public async registerAddon(addon: Addon): Promise<void> {
+    const { name } = addon.manifest;
+    
+    if (this.addons.has(name)) {
+      logger.warn(`Addon ${name} déjà enregistré - remplacement en cours`);
+      await this.unregisterAddon(name);
     }
 
-    this.addons.set(addon.manifest.name, addon);
+    try {
+      // Appeler les hooks pré-enregistrement
+      await this.triggerHook('preAddonRegister', addon);
 
-    // Initialiser l'addon si une fonction d'initialisation est fournie
-    if (addon.initialize) {
-      addon.initialize();
+      this.addons.set(name, addon);
+
+      // Initialisation conditionnelle
+      if (addon.initialize) {
+        await addon.initialize();
+      }
+
+      // Gestion des menus
+      if (addon.manifest.menus) {
+        this.menus = [...this.menus, ...addon.manifest.menus];
+      }
+
+      logger.info(`Addon ${name} enregistré avec succès`);
+      await this.triggerHook('postAddonRegister', addon);
+    } catch (error) {
+      logger.error(`Erreur lors de l'enregistrement de l'addon ${name}:`, error);
+      await this.triggerHook('addonRegisterError', addon, error);
+      throw error;
     }
+  }
 
-    // Ajouter les menus de l'addon
-    if (addon.manifest.menus) {
-      this.menus = [...this.menus, ...addon.manifest.menus];
+  /**
+   * Désenregistre un addon
+   * @param name Nom de l'addon
+   */
+  public async unregisterAddon(name: string): Promise<void> {
+    const addon = this.addons.get(name);
+    if (!addon) return;
+
+    try {
+      await this.triggerHook('preAddonUnregister', addon);
+
+      if (addon.cleanup) {
+        await addon.cleanup();
+      }
+
+      // Supprimer les menus associés
+      this.menus = this.menus.filter(menu => !('module' in menu) || menu.module !== name);
+      this.addons.delete(name);
+
+      await this.triggerHook('postAddonUnregister', name);
+    } catch (error) {
+      logger.error(`Erreur lors du désenregistrement de l'addon ${name}:`, error);
+      await this.triggerHook('addonUnregisterError', name, error);
+      throw error;
     }
+  }
 
-    logger.info(`Addon ${addon.manifest.name} enregistré avec succès.`);
-
+  /**
+   * Déclenche un hook interne
+   * @param hookName Nom du hook
+   * @param args Arguments
+   */
+  private async triggerHook(hookName: string, ...args: any[]): Promise<void> {
+    const hooks = this.hooks.get(hookName) || [];
+    await Promise.all(hooks.map(hook => hook(...args)));
   }
 
   /**

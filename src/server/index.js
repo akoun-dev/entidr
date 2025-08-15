@@ -10,9 +10,6 @@ const { Server } = require('ws');
 const userRoutes = require('./routes/users');
 const groupRoutes = require('./routes/groups');
 const parameterRoutes = require('./routes/parameters');
-const bpmnAnalytics = require('./routes/bpmnAnalytics');
-
-const bpmnRoutes = require('./routes/bpmn');
 
 const { sequelize } = require('../models');
 const logger = require('../utils/logger');
@@ -23,9 +20,6 @@ const server = http.createServer(app);
 const wss = new Server({ server, path: '/ws/analytics' });
 
 wss.on('connection', ws => {
-  const sendMetrics = () => {
-    ws.send(JSON.stringify(bpmnAnalytics.generateMetrics()));
-  };
   const interval = setInterval(sendMetrics, 5000);
   ws.on('close', () => clearInterval(interval));
   sendMetrics();
@@ -40,10 +34,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/parameters', parameterRoutes);
-app.use('/api/bpmn/analytics', bpmnAnalytics.router);
-=======
-app.use('/api/bpmn', bpmnRoutes);
-
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {

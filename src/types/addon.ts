@@ -10,6 +10,7 @@ export interface AddonManifest {
   // Métadonnées de base
   name: string;
   version: string;
+  isCore?: boolean; // Indique si c'est un module core
   versions?: string[];
   displayName: string;
   summary: string;
@@ -34,7 +35,9 @@ export interface AddonManifest {
   menus?: MenuDefinition[];
   
   // Dépendances
-  dependencies?: string[];
+  dependencies?: Record<string, string>; // { "module-name": "^1.0.0" }
+  peerDependencies?: Record<string, string>;
+  conflicts?: string[];
 }
 
 /**
