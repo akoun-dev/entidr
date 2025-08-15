@@ -1,11 +1,8 @@
-import { defineConfig } from "vite";
+import { defineConfig, type ConfigEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-// Désactivé temporairement en raison de problèmes de compatibilité ESM/CommonJS
-// import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode }: ConfigEnv) => {
   const apiBaseUrl = process.env.VITE_API_BASE_URL;
   const proxyTarget = apiBaseUrl ? new URL(apiBaseUrl).origin : "";
 
@@ -18,6 +15,29 @@ export default defineConfig(({ mode }) => {
       exclude: ['ioredis', 'redis-errors', 'redis-parser'],
       include: ['react', 'react-dom', 'react-router-dom'],
       force: true
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: (id: string) => {
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+              return 'react';
+            }
+            if (id.includes('node_modules/react-router-dom')) {
+              return 'router';
+            }
+            if (id.includes('node_modules/@radix-ui')) {
+              return 'ui';
+            }
+            if (id.includes('node_modules/lodash') || id.includes('node_modules/axios')) {
+              return 'vendor';
+            }
+            if (id.includes('/addons/') && id.includes('/index.ts')) {
+              return 'addons';
+            }
+          }
+        }
+      }
     },
     server: {
       host: "::",
@@ -32,9 +52,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      // Désactivé temporairement en raison de problèmes de compatibilité ESM/CommonJS
-      // mode === 'development' && componentTagger(),
-    ].filter(Boolean),
+    ],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
