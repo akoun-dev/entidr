@@ -92,9 +92,13 @@ export interface MenuDefinition {
 export interface Addon {
   manifest: AddonManifest;
   routes: ReactNode;
-  initialize?: () => void;
-  cleanup?: () => void;
+  initialize?: () => Promise<void>;
+  cleanup?: () => Promise<void>;
   Components?: Record<string, React.ComponentType<any>>;
+  sandbox?: {
+    execute: (code: string) => Promise<any>;
+    destroy: () => void;
+  };
 }
 
 /**

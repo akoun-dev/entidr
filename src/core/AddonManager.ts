@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { Addon, AddonManifest, MenuDefinition } from '../types/addon';
 import { debug, info, warn, error } from '../utils/logger';
+import { ModuleConfig, validateModuleConfig } from './ModuleConfig';
+import { createSandbox } from './ModuleSandbox';
 
 /**
  * Gestionnaire des addons de l'application
@@ -27,7 +29,18 @@ class AddonManager {
    * @param addon L'addon à enregistrer
    */
   public async registerAddon(addon: Addon): Promise<void> {
-    const { name } = addon.manifest;
+    const config = validateModuleConfig(addon.manifest);
+    const { name } = config;
+
+    // Initialize sandbox if required
+    if (config.sandbox) {
+      addon.sandbox = createSandbox(config);
+    }
+
+    // Apply CSS scoping
+    if (config.scopedStyles) {
+      this.applyStyleScoping(config.name);
+    }
     
     if (this.addons.has(name)) {
       warn(`Addon ${name} déjà enregistré - remplacement en cours`);
@@ -137,6 +150,13 @@ class AddonManager {
     return this.menus;
   }
 
+  private applyStyleScoping(moduleName: string): void {
+    const styleSheets = document.querySelectorAll(`link[data-module="${moduleName}"]`);
+    styleSheets.forEach(sheet => {
+      sheet.setAttribute('scoped', '');
+    });
+  }
+
   /**
    * Enregistre un hook pour un événement spécifique
    * @param hookName Nom du hook
@@ -156,6 +176,9 @@ class AddonManager {
     this.addons.forEach(addon => {
       if (addon.cleanup) {
         addon.cleanup();
+      }
+      if (addon.sandbox) {
+        addon.sandbox.destroy();
       }
     });
 
