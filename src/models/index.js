@@ -38,7 +38,7 @@ Object.keys(db).forEach(modelName => {
 });
 
 // Import models explicitly
-const DocumentLayout = require('./documentLayout')(sequelize, Sequelize.DataTypes);
+const DocumentLayout = require('./DocumentLayout')(sequelize, Sequelize.DataTypes);
 const ReportTemplate = require('./reporttemplate')(sequelize, Sequelize.DataTypes);
 db.DocumentLayout = DocumentLayout;
 db.ReportTemplate = ReportTemplate;
