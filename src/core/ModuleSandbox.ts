@@ -1,7 +1,12 @@
 import { ModuleConfig } from './ModuleConfig';
 import { debug, error } from '../utils/logger';
 
-export function createSandbox(config: ModuleConfig) {
+export interface ModuleSandbox {
+  execute<T>(code: string): Promise<T>;
+  destroy(): void;
+}
+
+export function createSandbox(config: ModuleConfig): ModuleSandbox {
   return {
     execute: (code: string): Promise<any> => {
       return new Promise((resolve, reject) => {
