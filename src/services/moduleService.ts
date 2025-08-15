@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Module } from '../types/module';
 import { API_BASE_URL } from '../config/api';
+import SettingsService from './settingsService';
 
 /**
  * Service pour interagir avec l'API des modules
@@ -12,7 +13,7 @@ const moduleService = {
    */
   async getAllModules(): Promise<Module[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/modules`);
+      const response = await axios.get<Module[]>(`${API_BASE_URL}/modules`);
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des modules:', error);
@@ -27,7 +28,7 @@ const moduleService = {
    */
   async getModuleByName(name: string): Promise<Module> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/modules/${name}`);
+      const response = await axios.get<Module>(`${API_BASE_URL}/modules/${name}`);
       return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération du module ${name}:`, error);
@@ -43,7 +44,7 @@ const moduleService = {
    */
   async toggleModuleStatus(name: string, active: boolean): Promise<Module> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/modules/${name}/status`, { active });
+      const response = await axios.put<{module: Module}>(`${API_BASE_URL}/modules/${name}/status`, { active });
       return response.data.module;
     } catch (error) {
       console.error(`Erreur lors de la modification du statut du module ${name}:`, error);
@@ -58,7 +59,7 @@ const moduleService = {
    */
   async installModule(name: string): Promise<Module> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/modules/${name}/install`);
+      const response = await axios.post<{module: Module}>(`${API_BASE_URL}/modules/${name}/install`);
       return response.data.module;
     } catch (error) {
       console.error(`Erreur lors de l'installation du module ${name}:`, error);
@@ -73,7 +74,7 @@ const moduleService = {
    */
   async uninstallModule(name: string): Promise<Module> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/modules/${name}/uninstall`);
+      const response = await axios.post<{module: Module}>(`${API_BASE_URL}/modules/${name}/uninstall`);
       return response.data.module;
     } catch (error) {
       console.error(`Erreur lors de la désinstallation du module ${name}:`, error);

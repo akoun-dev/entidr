@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Addon, AddonManifest, MenuDefinition } from '../types/addon';
-import logger from '../utils/logger';
+import { debug, info, warn, error } from '../utils/logger';
 
 /**
  * Gestionnaire des addons de l'application
@@ -30,7 +30,7 @@ class AddonManager {
     const { name } = addon.manifest;
     
     if (this.addons.has(name)) {
-      logger.warn(`Addon ${name} déjà enregistré - remplacement en cours`);
+      warn(`Addon ${name} déjà enregistré - remplacement en cours`);
       await this.unregisterAddon(name);
     }
 
@@ -50,10 +50,10 @@ class AddonManager {
         this.menus = [...this.menus, ...addon.manifest.menus];
       }
 
-      logger.info(`Addon ${name} enregistré avec succès`);
+      info(`Addon ${name} enregistré avec succès`);
       await this.triggerHook('postAddonRegister', addon);
     } catch (error) {
-      logger.error(`Erreur lors de l'enregistrement de l'addon ${name}:`, error);
+      error(`Erreur lors de l'enregistrement de l'addon ${name}:`, error);
       await this.triggerHook('addonRegisterError', addon, error);
       throw error;
     }
@@ -80,7 +80,7 @@ class AddonManager {
 
       await this.triggerHook('postAddonUnregister', name);
     } catch (error) {
-      logger.error(`Erreur lors du désenregistrement de l'addon ${name}:`, error);
+      error(`Erreur lors du désenregistrement de l'addon ${name}:`, error);
       await this.triggerHook('addonUnregisterError', name, error);
       throw error;
     }
@@ -138,6 +138,18 @@ class AddonManager {
   }
 
   /**
+   * Enregistre un hook pour un événement spécifique
+   * @param hookName Nom du hook
+   * @param callback Fonction de callback
+   */
+  public registerHook(hookName: string, callback: Function): void {
+    if (!this.hooks.has(hookName)) {
+      this.hooks.set(hookName, []);
+    }
+    this.hooks.get(hookName)?.push(callback);
+  }
+
+  /**
    * Nettoie tous les addons et réinitialise le gestionnaire
    */
   public cleanup(): void {
@@ -149,6 +161,7 @@ class AddonManager {
 
     this.addons.clear();
     this.menus = [];
+    this.hooks.clear();
   }
 }
 

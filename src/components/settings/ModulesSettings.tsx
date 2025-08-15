@@ -27,7 +27,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Loader2, Trash2, Power, RefreshCw } from 'lucide-react';
 import { Module } from '../../types/module';
 
-import { API_BASE_URL } from '../../config/api';
 // Utilise l'URL de base de l'API définie dans les variables d'environnement, avec un
 // repli local identique au reste du projet pour éviter toute adresse codée en dur.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';

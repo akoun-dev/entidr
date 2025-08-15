@@ -1,13 +1,10 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { watchModules } from './services/moduleCacheService'
-import logger from './utils/logger'
+import { watchModules } from './server/services/moduleCacheService'
+import { info } from './utils/logger'
 
-// Initialiser le watcher pour détecter les changements de modules
-watchModules(() => {
-  logger.info('Module change detected - reloading application')
-  window.location.reload()
-})
+// TODO: Implémenter un système de notification des changements de modules via WebSocket
+// Actuellement désactivé pour éviter les dépendances backend dans le frontend
 
 createRoot(document.getElementById("root")!).render(<App />);

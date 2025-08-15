@@ -5,10 +5,11 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Database, HardDrive, Server, RefreshCw, Archive } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { SettingsService } from '../../services/settingsService.ts';
+import SettingsService from '../../services/settingsService.ts';
+import type { DatabaseConnectionParams } from '../../services/settingsService.ts';
 
 const DatabaseSettings: React.FC = () => {
-  const [connection, setConnection] = useState({
+  const [connection, setConnection] = useState<DatabaseConnectionParams>({
     host: 'localhost',
     port: '5432',
     name: 'erp_db',
@@ -25,7 +26,7 @@ const DatabaseSettings: React.FC = () => {
 
   const handleTestConnection = async () => {
     try {
-      await SettingsService.testDatabaseConnection(connection);
+      await SettingsService.Database.testDatabaseConnection(connection);
       toast({
         title: 'Connexion réussie',
         description: 'La connexion à la base de données a été vérifiée avec succès.'
@@ -42,7 +43,25 @@ const DatabaseSettings: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      await SettingsService.saveSettings('database', connection);
+      await SettingsService.Database.save({
+        ...connection,
+        module: 'database',
+        data: {
+          type: 'postgresql',
+          host: connection.host,
+          port: parseInt(connection.port),
+          name: connection.name,
+          user: connection.user,
+          backup: {
+            frequency: 'daily',
+            retention: 7
+          },
+          performance: {
+            poolSize: 10,
+            timeout: 5000
+          }
+        }
+      });
       toast({
         title: 'Paramètres sauvegardés',
         description: 'La configuration de la base de données a été enregistrée.'

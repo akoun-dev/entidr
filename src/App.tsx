@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import AddonLoader from "./components/AddonLoader";
 import AddonManager from "./core/AddonManager";
 import SettingsRoutes from "./routes/SettingsRoutes";
-import logger from "./utils/logger";
+import { debug, error } from "./utils/logger";
 
 // Création du client de requête
 const queryClient = new QueryClient();
@@ -35,17 +35,14 @@ const AppRoutes = () => {
     const addonManager = AddonManager.getInstance();
     const routes = addonManager.getAllRoutes();
 
-    setAddonRoutes(routes);
-  }, []);
-
-    logger.debug("Routes chargées:", routes);
+    debug("Routes chargées:", routes);
 
     // Vérifier si les routes sont correctement chargées
     if (routes.length === 0) {
-      logger.error("Aucune route n'a été chargée depuis les modules");
+      error("Aucune route n'a été chargée depuis les modules");
     } else {
       routes.forEach((route, index) => {
-        logger.debug(`Route ${index}:`, route);
+        debug(`Route ${index}:`, route);
       });
     }
 
@@ -53,7 +50,7 @@ const AppRoutes = () => {
   }, []);
 
   // Afficher les routes dans la console pour le débogage
-  logger.debug("Rendu des routes:", addonRoutes);
+  debug("Rendu des routes:", addonRoutes);
   return (
     <BrowserRouter>
       <Routes>
@@ -63,7 +60,7 @@ const AppRoutes = () => {
           {/* Routes des addons */}
           {addonRoutes.map((route, index) => {
 
-            logger.debug(`Rendu de la route ${index}:`, route);
+            debug(`Rendu de la route ${index}:`, route);
 
             // Si la route est un élément React valide, on le rend directement
             if (React.isValidElement(route)) {

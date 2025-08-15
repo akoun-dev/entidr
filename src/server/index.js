@@ -10,9 +10,10 @@ const { Server } = require('ws');
 const userRoutes = require('./routes/users');
 const groupRoutes = require('./routes/groups');
 const parameterRoutes = require('./routes/parameters');
+const moduleRoutes = require('./routes/modules');
 
 const { sequelize } = require('../models');
-const logger = require('../utils/logger');
+const logger = require('../utils/logger.server');
 
 // Créer l'application Express
 const app = express();
@@ -34,6 +35,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/parameters', parameterRoutes);
+app.use('/api/modules', moduleRoutes);
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {

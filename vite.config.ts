@@ -12,6 +12,12 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       'import.meta.env.LOG_LEVEL': JSON.stringify(process.env.LOG_LEVEL || 'info'),
+      'process.env.NODE_ENV': JSON.stringify(mode),
+    },
+    optimizeDeps: {
+      exclude: ['ioredis', 'redis-errors', 'redis-parser'],
+      include: ['react', 'react-dom', 'react-router-dom'],
+      force: true
     },
     server: {
       host: "::",

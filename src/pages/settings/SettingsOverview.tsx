@@ -23,9 +23,9 @@ const SettingsOverview: React.FC = () => {
       icon: <Settings className="w-8 h-8 text-ivory-orange" />,
       description: 'Paramètres généraux de l\'application',
       items: [
-        { id: 'company', name: 'Société', icon: <Building2 className="w-4 h-4" />, route: '/settings/company' },
-        { id: 'users', name: 'Utilisateurs', icon: <Users className="w-4 h-4" />, route: '/settings/users' },
-        { id: 'groups', name: 'Groupes d\'utilisateurs', icon: <Users className="w-4 h-4" />, route: '/settings/groups' }
+        { id: 'company', name: 'Société', icon: <Building2 className="w-4 h-4" />, route: '/settings/general/company' },
+        { id: 'users', name: 'Utilisateurs', icon: <Users className="w-4 h-4" />, route: '/settings/general/users' },
+        { id: 'groups', name: 'Groupes d\'utilisateurs', icon: <Users className="w-4 h-4" />, route: '/settings/general/groups' }
       ]
     },
     {
@@ -34,9 +34,9 @@ const SettingsOverview: React.FC = () => {
       icon: <Globe className="w-8 h-8 text-blue-500" />,
       description: 'Paramètres régionaux et formats',
       items: [
-        { id: 'languages', name: 'Langues', icon: <Languages className="w-4 h-4" />, route: '/settings/languages' },
-        { id: 'currencies', name: 'Devises', icon: <DollarSign className="w-4 h-4" />, route: '/settings/currencies' },
-        { id: 'countries', name: 'Pays', icon: <Globe className="w-4 h-4" />, route: '/settings/countries' }
+        { id: 'languages', name: 'Langues', icon: <Languages className="w-4 h-4" />, route: '/settings/localization/languages' },
+        { id: 'currencies', name: 'Devises', icon: <DollarSign className="w-4 h-4" />, route: '/settings/localization/currencies' },
+        { id: 'countries', name: 'Pays', icon: <Globe className="w-4 h-4" />, route: '/settings/localization/countries' }
       ]
     },
     {
@@ -45,9 +45,9 @@ const SettingsOverview: React.FC = () => {
       icon: <Database className="w-8 h-8 text-purple-500" />,
       description: 'Paramètres techniques et base de données',
       items: [
-        { id: 'database', name: 'Base de données', icon: <Database className="w-4 h-4" />, route: '/settings/database' },
-        { id: 'email', name: 'Serveurs de messagerie', icon: <Mail className="w-4 h-4" />, route: '/settings/email' },
-        { id: 'security', name: 'Sécurité', icon: <Shield className="w-4 h-4" />, route: '/settings/security' }
+        { id: 'database', name: 'Base de données', icon: <Database className="w-4 h-4" />, route: '/settings/system/database' },
+        { id: 'email', name: 'Serveurs de messagerie', icon: <Mail className="w-4 h-4" />, route: '/settings/system/email' },
+        { id: 'security', name: 'Sécurité', icon: <Shield className="w-4 h-4" />, route: '/settings/system/security' }
       ]
     },
     {
@@ -56,8 +56,8 @@ const SettingsOverview: React.FC = () => {
       icon: <Layers className="w-8 h-8 text-green-500" />,
       description: 'Gestion des modules et applications',
       items: [
-        { id: 'modules_list', name: 'Modules installés', icon: <Layers className="w-4 h-4" />, route: '/settings/modules-list' },
-        { id: 'apps_store', name: 'Boutique d\'applications', icon: <ShoppingCart className="w-4 h-4" />, route: '/settings/apps-store' }
+        { id: 'modules_list', name: 'Modules installés', icon: <Layers className="w-4 h-4" />, route: '/settings/modules/list' },
+        { id: 'apps_store', name: 'Boutique d\'applications', icon: <ShoppingCart className="w-4 h-4" />, route: '/settings/modules/store' }
       ]
     },
     {
@@ -66,8 +66,8 @@ const SettingsOverview: React.FC = () => {
       icon: <FileText className="w-8 h-8 text-amber-500" />,
       description: 'Gestion des documents et rapports',
       items: [
-        { id: 'document_layouts', name: 'Mise en page', icon: <FileText className="w-4 h-4" />, route: '/settings/document-layouts' },
-        { id: 'report_templates', name: 'Modèles de rapport', icon: <FileSpreadsheet className="w-4 h-4" />, route: '/settings/report-templates' }
+        { id: 'document_layouts', name: 'Mise en page', icon: <FileText className="w-4 h-4" />, route: '/settings/documents/layouts' },
+        { id: 'report_templates', name: 'Modèles', icon: <FileSpreadsheet className="w-4 h-4" />, route: '/settings/documents/templates' }
       ]
     },
     {
@@ -76,8 +76,8 @@ const SettingsOverview: React.FC = () => {
       icon: <CreditCard className="w-8 h-8 text-red-500" />,
       description: 'Intégrations avec des services externes',
       items: [
-        { id: 'payment_providers', name: 'Fournisseurs de paiement', icon: <CreditCard className="w-4 h-4" />, route: '/settings/payment-providers' },
-        { id: 'shipping_methods', name: 'Méthodes d\'expédition', icon: <Truck className="w-4 h-4" />, route: '/settings/shipping-methods' }
+        { id: 'payment_providers', name: 'Paiements', icon: <CreditCard className="w-4 h-4" />, route: '/settings/integrations/payments' },
+        { id: 'shipping_methods', name: 'Expéditions', icon: <Truck className="w-4 h-4" />, route: '/settings/integrations/shipping' }
       ]
     },
     {
