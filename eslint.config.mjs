@@ -23,9 +23,20 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
+      // Règles de style
+      "indent": ["error", 2],
+      "quotes": ["error", "single"],
+      "semi": ["error", "always"],
+      "comma-dangle": ["error", "always-multiline"],
+      // Règles TypeScript
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/explicit-function-return-type": "error",
+      // Bonnes pratiques
+      "eqeqeq": "error",
+      "no-multi-spaces": "error",
+      "no-trailing-spaces": "error",
     },
   }
 );

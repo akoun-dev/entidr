@@ -37,13 +37,13 @@ program
         type: 'list',
         name: 'type',
         message: 'Select addon type:',
-        choices: ['Component', 'Service', 'Full Module']
+        choices: ['Component', 'Service', 'Full Module'],
       },
       {
         type: 'confirm',
         name: 'withTests',
-        message: 'Include test stubs?'
-      }
+        message: 'Include test stubs?',
+      },
     ]);
 
     const templatePath = path.join(__dirname, '../../templates/addon-template');
@@ -51,7 +51,7 @@ program
 
     try {
       await fs.copy(templatePath, destPath);
-      
+
       // Customize based on options
       if (!answers.withTests) {
         await fs.remove(path.join(destPath, 'tests'));
@@ -63,19 +63,19 @@ program
     }
   });
 
-async function generateAddon(name: string) {
+async function generateAddon(name: string): Promise<boolean> {
   const answers = await inquirer.prompt([
     {
       type: 'list',
       name: 'type',
       message: 'Select addon type:',
-      choices: ['Component', 'Service', 'Full Module']
+      choices: ['Component', 'Service', 'Full Module'],
     },
     {
       type: 'confirm',
       name: 'withTests',
-      message: 'Include test stubs?'
-    }
+      message: 'Include test stubs?',
+    },
   ]);
 
   const templatePath = path.join(__dirname, '../../templates/addon-template');
@@ -83,7 +83,7 @@ async function generateAddon(name: string) {
 
   try {
     await fs.copy(templatePath, destPath);
-    
+
     if (!answers.withTests) {
       await fs.remove(path.join(destPath, 'tests'));
     }

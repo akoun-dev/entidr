@@ -7,10 +7,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('ws');
-const userRoutes = require('./routes/users');
-const groupRoutes = require('./routes/groups');
-const parameterRoutes = require('./routes/parameters');
-const moduleRoutes = require('./routes/modules');
+const v1Routes = require('./api/v1');
+const v2Routes = require('./api/v2');
 
 const { sequelize } = require('../models');
 const logger = require('../utils/logger.server');
@@ -27,11 +25,24 @@ wss.on('connection', ws => {
 });
 
 // Middleware
+const { metricsMiddleware } = require('./middlewares/metricsMiddleware');
 app.use(cors());
+app.use(metricsMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes API
+const { metricExporter } = require('../../config/metrics');
+app.get('/metrics', async (req, res) => {
+  try {
+    const metrics = await metricExporter.getMetricsRequest();
+    res.set('Content-Type', metricExporter.getContentType());
+    res.end(metrics);
+  } catch (err) {
+    res.status(500).end(err);
+  }
+});
+
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/parameters', parameterRoutes);
@@ -54,7 +65,7 @@ async function startServer() {
     // Vérifier la connexion à la base de données
     await sequelize.authenticate();
     logger.info('Connexion à la base de données établie avec succès.');
-    
+
     // Démarrer le serveur HTTP et WebSocket
     server.listen(PORT, () => {
       logger.info(`Serveur démarré sur le port ${PORT}`);
