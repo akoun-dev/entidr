@@ -68,11 +68,46 @@ const moduleController = {
    */
   async getAllModules(req, res) {
     try {
-      const modules = await Module.findAll({
-        order: [['displayName', 'ASC']]
-      });
-      
-      return res.status(200).json(modules);
+      console.log('Tentative de récupération des modules depuis la base de données');
+
+      // Vérifier la connexion à la base de données
+      try {
+        await Module.sequelize.authenticate();
+        console.log('Connexion à la base de données établie avec succès');
+      } catch (authError) {
+        console.error('Erreur de connexion à la base de données:', authError);
+        throw authError;
+      }
+
+      // Vérifier la synchronisation du modèle
+      try {
+        const description = await Module.describe();
+        console.log('Description de la table Modules:', description);
+      } catch (descError) {
+        console.error('Erreur lors de la description de la table:', {
+          message: descError.message,
+          stack: descError.stack,
+          name: descError.name
+        });
+        throw descError;
+      }
+
+      try {
+        const modules = await Module.findAll({
+          order: [['displayName', 'ASC']]
+        });
+        console.log('Modules récupérés avec succès:', modules.length);
+        return res.status(200).json(modules);
+      } catch (findError) {
+        console.error('Erreur lors de la récupération des modules:', {
+          message: findError.message,
+          stack: findError.stack,
+          name: findError.name,
+          sql: findError.sql,
+          parameters: findError.parameters
+        });
+        throw findError;
+      }
     } catch (error) {
       console.error('Erreur lors de la récupération des modules:', error);
       return res.status(500).json({
@@ -99,13 +134,13 @@ const moduleController = {
       const module = await Module.findOne({
         where: { name }
       });
-      
+
       if (!module) {
         return res.status(404).json({
           message: `Le module ${name} n'existe pas`
         });
       }
-      
+
       return res.status(200).json(module);
     } catch (error) {
       console.error(`Erreur lors de la récupération du module ${req.params.name}:`, error);
@@ -135,13 +170,13 @@ const moduleController = {
       const module = await Module.findOne({
         where: { name }
       });
-      
+
       if (!module) {
         return res.status(404).json({
           message: `Le module ${name} n'existe pas`
         });
       }
-      
+
       // Vérifier les dépendances si on désactive le module
       if (active === false) {
         const dependentModules = await Module.findAll({
@@ -149,13 +184,13 @@ const moduleController = {
             active: true
           }
         });
-        
+
         // Vérifier si d'autres modules dépendent de celui-ci
         const dependents = dependentModules.filter(m => {
           const deps = m.dependencies || [];
           return deps.includes(name);
         });
-        
+
         if (dependents.length > 0) {
           return res.status(400).json({
             message: `Impossible de désactiver le module ${name} car d'autres modules en dépendent`,
@@ -163,11 +198,11 @@ const moduleController = {
           });
         }
       }
-      
+
       // Mettre à jour le statut du module
       module.active = active;
       await module.save();
-      
+
       return res.status(200).json({
         message: `Le module ${name} a été ${active ? 'activé' : 'désactivé'} avec succès`,
         module
@@ -199,47 +234,47 @@ const moduleController = {
       const module = await Module.findOne({
         where: { name }
       });
-      
+
       if (!module) {
         return res.status(404).json({
           message: `Le module ${name} n'existe pas`
         });
       }
-      
+
       if (module.installed) {
         return res.status(400).json({
           message: `Le module ${name} est déjà installé`
         });
       }
-      
+
       // Vérifier que le dossier du module existe
       if (!fs.existsSync(modulePath)) {
         return res.status(400).json({
           message: `Le dossier du module ${name} n'existe pas`
         });
       }
-      
+
       // Vérifier les dépendances
       const dependencies = module.dependencies || [];
       const missingDependencies = [];
-      
+
       for (const dep of dependencies) {
         const dependency = await Module.findOne({
           where: { name: dep, installed: true }
         });
-        
+
         if (!dependency) {
           missingDependencies.push(dep);
         }
       }
-      
+
       if (missingDependencies.length > 0) {
         return res.status(400).json({
           message: `Impossible d'installer le module ${name} car certaines dépendances ne sont pas installées`,
           missingDependencies
         });
       }
-      
+
       // Exécuter les migrations du module si elles existent
       const migrationsPath = path.join(modulePath, 'migrations');
       if (fs.existsSync(migrationsPath)) {
@@ -269,12 +304,12 @@ const moduleController = {
           });
         }
       }
-      
+
       // Mettre à jour le statut du module
       module.installed = true;
       module.installedAt = new Date();
       await module.save();
-      
+
       return res.status(200).json({
         message: `Le module ${name} a été installé avec succès`,
         module
@@ -305,44 +340,44 @@ const moduleController = {
       const module = await Module.findOne({
         where: { name }
       });
-      
+
       if (!module) {
         return res.status(404).json({
           message: `Le module ${name} n'existe pas`
         });
       }
-      
+
       if (!module.installed) {
         return res.status(400).json({
           message: `Le module ${name} n'est pas installé`
         });
       }
-      
+
       // Vérifier les dépendances
       const dependentModules = await Module.findAll({
         where: {
           installed: true
         }
       });
-      
+
       // Vérifier si d'autres modules dépendent de celui-ci
       const dependents = dependentModules.filter(m => {
         const deps = m.dependencies || [];
         return deps.includes(name);
       });
-      
+
       if (dependents.length > 0) {
         return res.status(400).json({
           message: `Impossible de désinstaller le module ${name} car d'autres modules en dépendent`,
           dependents: dependents.map(m => m.name)
         });
       }
-      
+
       // Mettre à jour le statut du module
       module.installed = false;
       module.active = false;
       await module.save();
-      
+
       return res.status(200).json({
         message: `Le module ${name} a été désinstallé avec succès`,
         module

@@ -25,23 +25,30 @@ wss.on('connection', ws => {
 });
 
 // Middleware
-const { metricsMiddleware } = require('./middlewares/metricsMiddleware');
+const { metricsMiddleware } = require('./middlewares/metricsMiddleware.js');
 app.use(cors());
 app.use(metricsMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes API
-const { metricExporter } = require('../../config/metrics');
-app.get('/metrics', async (req, res) => {
-  try {
-    const metrics = await metricExporter.getMetricsRequest();
-    res.set('Content-Type', metricExporter.getContentType());
-    res.end(metrics);
-  } catch (err) {
-    res.status(500).end(err);
-  }
-});
+// Temporarily disabled metrics endpoint
+// const { metricExporter } = require('../../config/metrics');
+// app.get('/metrics', async (req, res) => {
+//   try {
+//     const metrics = await metricExporter.getMetricsRequest();
+//     res.set('Content-Type', metricExporter.getContentType());
+//     res.end(metrics);
+//   } catch (err) {
+//     res.status(500).end(err);
+//   }
+// });
+
+// Import routes
+const userRoutes = require('./api/v1/users');
+const groupRoutes = require('./api/v1/groups');
+const parameterRoutes = require('./api/v1/parameters');
+const moduleRoutes = require('./api/v1/modules');
 
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
