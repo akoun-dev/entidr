@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
-  const addonManager = AddonManager.getInstance();
-  const addons = addonManager.getAllManifests();
+  const addons = AddonManager.listAddons();
 
   return (
     <div className="py-8 px-4 md:px-8">

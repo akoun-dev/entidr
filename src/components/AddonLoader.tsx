@@ -10,34 +10,28 @@ interface AddonLoaderProps {
   children: React.ReactNode;
 }
 
-// Composant de fallback pour le lazy loading
 const Fallback = () => <LoadingAnimation />;
 
-/**
- * Composant qui charge tous les addons au démarrage de l'application
- */
 const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
   const [modules, setModules] = useState<React.ReactElement[]>([]);
   const [hasModules, setHasModules] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadAddons = async () => {
       try {
-        const addonManager = AddonManager.getInstance();
-
-        addonManager.registerHook('preModuleLoad', (moduleName: string) =>
+        AddonManager.registerHook('preModuleLoad', (moduleName: string) =>
           debug(`Chargement du module ${moduleName} démarré`));
 
-        addonManager.registerHook('postModuleLoad', (moduleName: string) =>
+        AddonManager.registerHook('postModuleLoad', (moduleName: string) =>
           debug(`Module ${moduleName} chargé avec succès`));
 
         let dbModules: Module[] = [];
         try {
           dbModules = await moduleService.getAllModules();
-        } catch (error) {
-          warn("Erreur DB modules:", error);
+        } catch (err) {
+          warn("Erreur DB modules:", err);
         }
 
         const registryModules = await getAllModules();
@@ -61,9 +55,9 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
 
         setModules(lazyModules);
         setHasModules(activeModules.length > 0);
-      } catch (error) {
-        setError('Erreur de chargement des modules');
-        error("Erreur modules:", error);
+      } catch (err) {
+        setLoadError('Erreur de chargement des modules');
+        error("Erreur modules:", err);
       } finally {
         setIsLoading(false);
       }
@@ -71,10 +65,8 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
 
     loadAddons();
 
-    // Nettoyage lors du démontage du composant
     return () => {
-      const addonManager = AddonManager.getInstance();
-      addonManager.cleanup();
+      AddonManager.cleanup();
     };
   }, []);
 
@@ -82,17 +74,12 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
     return <Fallback />;
   }
 
-  if (error) {
-    return <div style={{ padding: 20 }}>{error}</div>;
+  if (loadError) {
+    return <div style={{ padding: 20 }}>{loadError}</div>;
   }
 
   if (!hasModules) {
     return <div style={{ padding: 20 }}>Aucun module disponible</div>;
-  }
-
-  // Vérifier si React est correctement initialisé
-  if (typeof React.useState !== 'function') {
-    return <div style={{ padding: 20 }}>Erreur d'initialisation React</div>;
   }
 
   return (

@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AddonLoader from "./components/AddonLoader";
 import AddonManager from "./core/AddonManager";
+import { RouteDefinition } from "./types/addon";
 import SettingsRoutes from "./routes/SettingsRoutes";
 import { debug, error } from "./utils/logger";
 
@@ -28,12 +29,11 @@ const App = () => {
 
 // Composant séparé pour les routes qui sera rendu après le chargement des modules
 const AppRoutes = () => {
-  const [addonRoutes, setAddonRoutes] = useState<React.ReactNode[]>([]);
+  const [addonRoutes, setAddonRoutes] = useState<RouteDefinition[]>([]);
 
   useEffect(() => {
     // Récupérer les routes des addons une fois que l'AddonLoader a chargé les modules
-    const addonManager = AddonManager.getInstance();
-    const routes = addonManager.getAllRoutes();
+    const routes = AddonManager.getAllRoutes();
 
     debug("Routes chargées:", routes);
 
@@ -59,18 +59,14 @@ const AppRoutes = () => {
           <Route path="/" element={<Index />} />
           {/* Routes des addons */}
           {addonRoutes.map((route, index) => {
-
             debug(`Rendu de la route ${index}:`, route);
 
-            // Si la route est un élément React valide, on le rend directement
-            if (React.isValidElement(route)) {
-              return React.cloneElement(route, { key: `addon-route-${index}` });
-            }
-            // Sinon, on l'enveloppe dans un fragment
             return (
-              <React.Fragment key={`addon-route-${index}`}>
-                {route}
-              </React.Fragment>
+              <Route
+                key={`addon-route-${index}`}
+                path={route.path}
+                element={React.createElement(route.component)}
+              />
             );
           })}
 

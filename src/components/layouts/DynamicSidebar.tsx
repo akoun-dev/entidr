@@ -22,19 +22,18 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [rootMenus, setRootMenus] = useState<MenuDefinition[]>([]);
   const [childMenus, setChildMenus] = useState<Record<string, MenuDefinition[]>>({});
-  
+
   // Charger les menus au démarrage
   useEffect(() => {
-    const addonManager = AddonManager.getInstance();
-    const allMenus = addonManager.getAllMenus();
-    
+    const allMenus = AddonManager.getAllMenus();
+
     // Trier les menus par séquence
     const sortedMenus = [...allMenus].sort((a, b) => a.sequence - b.sequence);
-    
+
     // Séparer les menus racines et les menus enfants
     const roots: MenuDefinition[] = [];
     const children: Record<string, MenuDefinition[]> = {};
-    
+
     sortedMenus.forEach(menu => {
       if (!menu.parent) {
         roots.push(menu);
@@ -45,19 +44,19 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
         children[menu.parent].push(menu);
       }
     });
-    
+
     // Trier les menus enfants par séquence
     Object.keys(children).forEach(parentId => {
       children[parentId].sort((a, b) => a.sequence - b.sequence);
     });
-    
+
     setRootMenus(roots);
     setChildMenus(children);
-    
+
     // Déterminer quelles sections doivent être ouvertes par défaut
     const initialOpenSections: Record<string, boolean> = {};
     const currentPath = location.pathname;
-    
+
     // Ouvrir la section si le chemin actuel correspond à un menu enfant
     Object.keys(children).forEach(parentId => {
       const hasActiveChild = children[parentId].some(
@@ -65,29 +64,29 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
       );
       initialOpenSections[parentId] = hasActiveChild;
     });
-    
+
     // Ouvrir également la section si le chemin actuel correspond à un menu racine
     roots.forEach(root => {
       if (root.route && currentPath.startsWith(root.route)) {
         initialOpenSections[root.id] = true;
       }
     });
-    
+
     setOpenSections(initialOpenSections);
   }, [location.pathname]);
-  
+
   // Vérifier si un menu est actif
   const isMenuActive = (route?: string) => {
     if (!route) return false;
     return location.pathname.startsWith(route);
   };
-  
+
   // Vérifier si une section a un enfant actif
   const hasSectionActiveChild = (parentId: string) => {
     const children = childMenus[parentId] || [];
     return children.some(child => isMenuActive(child.route));
   };
-  
+
   // Gérer l'ouverture/fermeture d'une section
   const toggleSection = (sectionId: string) => {
     setOpenSections(prev => ({
@@ -95,9 +94,9 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
       [sectionId]: !prev[sectionId]
     }));
   };
-  
+
   return (
-    <aside 
+    <aside
       className={cn(
         "fixed inset-y-0 left-0 z-30 bg-sidebar transition-all duration-300 shadow-md border-r border-sidebar-border flex flex-col",
         isOpen ? "w-64" : "w-16"
@@ -116,10 +115,10 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
               </div>
               <span className="text-xl font-medium text-sidebar-foreground">ENTIDR</span>
             </Link>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={onToggle} 
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggle}
               className="h-8 w-8 text-sidebar-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -131,7 +130,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
           </Button>
         )}
       </div>
-      
+
       {/* Contenu du menu */}
       <div className="flex-1 overflow-y-auto py-4 px-3">
         {/* Menus racines */}
@@ -145,11 +144,11 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
                   onOpenChange={() => toggleSection(menu.id)}
                 >
                   <CollapsibleTrigger asChild>
-                    <div 
+                    <div
                       className={cn(
                         "flex items-center justify-between px-3 py-2 rounded-md cursor-pointer text-sm font-medium",
                         hasSectionActiveChild(menu.id) || isMenuActive(menu.route)
-                          ? "text-sidebar-foreground" 
+                          ? "text-sidebar-foreground"
                           : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
                       )}
                     >
@@ -172,7 +171,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
                             to={menu.route}
                             className={({ isActive }) => cn(
                               "flex items-center px-3 py-2 rounded-md text-sm",
-                              isActive 
+                              isActive
                                 ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                             )}
@@ -182,7 +181,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
                           </NavLink>
                         </li>
                       )}
-                      
+
                       {/* Afficher les menus enfants */}
                       {childMenus[menu.id]?.map(childMenu => (
                         <li key={childMenu.id}>
@@ -190,7 +189,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
                             to={childMenu.route || '#'}
                             className={({ isActive }) => cn(
                               "flex items-center px-3 py-2 rounded-md text-sm",
-                              isActive 
+                              isActive
                                 ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                             )}
@@ -209,7 +208,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
                   to={menu.route || '#'}
                   className={({ isActive }) => cn(
                     "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                    isActive 
+                    isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                   )}
@@ -239,10 +238,10 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
             )}
           </div>
         ))}
-        
+
         {/* Séparateur */}
         <div className="mx-3 h-px bg-sidebar-border my-4" />
-        
+
         {/* Menu de configuration */}
         {isOpen ? (
           <div className="px-3 py-2">
@@ -253,7 +252,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
               to="/settings"
               className={({ isActive }) => cn(
                 "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                isActive 
+                isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               )}
@@ -269,7 +268,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
                 to="/settings"
                 className={cn(
                   "flex justify-center items-center p-2 rounded-md",
-                  location.pathname === '/settings' 
+                  location.pathname === '/settings'
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 )}
@@ -281,7 +280,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
           </Tooltip>
         )}
       </div>
-      
+
       {/* Footer avec profil utilisateur */}
       <div className={cn(
         "border-t border-sidebar-border p-4",
