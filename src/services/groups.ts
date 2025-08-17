@@ -12,10 +12,15 @@ export interface Group {
 
 // Service pour les groupes
 export const groupService = {
-  // Récupérer tous les groupes
-  async getAll(): Promise<Group[]> {
-    const response = await api.get('/groups');
-    return response.data;
+  // Récupérer tous les groupes avec pagination
+  async getAll(page = 1, limit = 10): Promise<{data: Group[], pagination: any}> {
+    const response = await api.get('/groups', {
+      params: { page, limit }
+    });
+    return {
+      data: response.data.data,
+      pagination: response.data.meta
+    };
   },
 
   // Récupérer un groupe par son ID

@@ -2,7 +2,7 @@
  * Hooks personnalisés pour accéder aux données de référence
  * Ces hooks facilitent l'utilisation des données de référence dans les composants React
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDeepCompareEffect } from './useDeepCompareEffect';
 import ReferenceDataService from '../services/ReferenceDataService';
 import { Group } from '../types/group';
@@ -29,7 +29,7 @@ export function useReferenceData<T>(
       try {
         setLoading(true);
         setError(null);
-        
+
         const result = await fetchFunction(params);
         setData(result);
       } catch (err) {
@@ -58,8 +58,32 @@ export function useUsers(params = {}) {
 /**
  * Hook pour récupérer la liste des groupes
  */
-export function useGroups<T = Group>(params = {}) {
-  return useReferenceData<T[]>(ReferenceDataService.getGroups.bind(ReferenceDataService), params);
+export function useGroups<T = Group>(params = {}, pagination = { page: 1, limit: 10 }) {
+  const [paginationData, setPaginationData] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    itemsPerPage: 10
+  });
+
+  const { data, loading, error } = useReferenceData<T[]>(
+    ReferenceDataService.getGroups.bind(ReferenceDataService),
+    { ...params, ...pagination }
+  );
+
+  useEffect(() => {
+    if (data?.pagination) {
+      setPaginationData(data.pagination);
+    }
+  }, [data?.pagination]);
+
+  return {
+    data: data?.data || [],
+    loading,
+    error,
+    pagination: paginationData,
+    setPage: (page: number) => setPaginationData(prev => ({ ...prev, currentPage: page }))
+  };
 }
 
 /**

@@ -6,6 +6,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const http = require('http');
+const { swaggerUi, specs } = require('../config/swagger');
 const { Server } = require('ws');
 const v1Routes = require('./api/v1');
 const v2Routes = require('./api/v2');
@@ -30,19 +31,22 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Documentation Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 // Import routes
 const apiV1Router = require('./api/v1');
 app.use('/api', apiV1Router);
 
 
-// Gestion des erreurs
-app.use((err, req, res, next) => {
-  logger.error(err.stack);
-  res.status(500).json({
-    message: 'Une erreur est survenue',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
+// Import middlewares
+const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware');
+
+// Routes non trouvées
+app.use(notFoundHandler);
+
+// Gestion des erreurs centralisée
+app.use(errorHandler);
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 3001;
