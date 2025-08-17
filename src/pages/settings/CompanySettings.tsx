@@ -7,7 +7,8 @@ import { Textarea } from '../../components/ui/textarea';
 import { Button } from '../../components/ui/button';
 import { Building2, MapPin, Phone, Mail, Globe, FileText, Upload, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
-import { parameterService } from '../../services';
+import companyService from '../../services/companyService';
+import { Company } from '@/types/company';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 /**
@@ -16,19 +17,19 @@ import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
  */
 const CompanySettings: React.FC = () => {
   // État pour les paramètres de l'entreprise
-  const [companyParams, setCompanyParams] = useState({
-    company_name: '',
-    company_trading_name: '',
-    company_description: '',
-    company_industry: '',
-    company_foundation_date: '',
-    company_address: '',
-    company_postal_code: '',
-    company_city: '',
-    company_country: '',
-    company_phone: '',
-    company_email: '',
-    company_website: ''
+  const [company, setCompany] = useState<Company>({
+    name: '',
+    trading_name: '',
+    description: '',
+    industry: '',
+    foundation_date: '',
+    address: '',
+    postal_code: '',
+    city: '',
+    country: '',
+    phone: '',
+    email: '',
+    website: ''
   });
 
   // État pour le chargement
@@ -40,42 +41,31 @@ const CompanySettings: React.FC = () => {
   const [isResetting, setIsResetting] = useState(false);
 
   // État pour stocker les paramètres originaux
-  const [originalParams, setOriginalParams] = useState({...companyParams});
+  const [originalParams, setOriginalParams] = useState<Company>({...company});
 
   // Toast pour les notifications
   const { toast } = useToast();
 
   // Charger les paramètres de l'entreprise
   useEffect(() => {
-    const fetchCompanyParams = async () => {
+    const fetchCompanyData = async () => {
       try {
-        const params = await parameterService.getByCategory('company');
-
-        // Mettre à jour l'état avec les paramètres récupérés
-        const newParams = { ...companyParams };
-        params.forEach(param => {
-          // @ts-ignore
-          if (newParams.hasOwnProperty(param.key)) {
-            // @ts-ignore
-            newParams[param.key] = param.value;
-          }
-        });
-
-        setCompanyParams(newParams);
-        setOriginalParams({...newParams});
+        const companyData = await companyService.get();
+        setCompany(companyData);
+        setOriginalParams({...companyData});
         setLoading(false);
       } catch (error) {
-        console.error('Erreur lors du chargement des paramètres:', error);
+        console.error('Erreur lors du chargement des données:', error);
         toast({
           title: 'Erreur',
-          description: 'Impossible de charger les paramètres de l\'entreprise',
+          description: 'Impossible de charger les données de l\'entreprise',
           variant: 'destructive'
         });
         setLoading(false);
       }
     };
 
-    fetchCompanyParams();
+    fetchCompanyData();
   }, []);
 
   // Gérer les changements dans les champs
@@ -83,7 +73,7 @@ const CompanySettings: React.FC = () => {
     const { id, value } = e.target;
     const key = id.replace(/-/g, '_'); // Convertir les tirets en underscores pour correspondre aux clés
 
-    setCompanyParams(prev => ({
+    setCompany((prev: Company) => ({
       ...prev,
       [key]: value
     }));
@@ -94,28 +84,20 @@ const CompanySettings: React.FC = () => {
     setSaving(true);
 
     try {
-      // Préparer les paramètres à mettre à jour
-      const paramsToUpdate = Object.entries(companyParams).map(([key, value]) => ({
-        key,
-        value: value || ''
-      }));
-
-      // Mettre à jour les paramètres
-      await parameterService.updateBatch(paramsToUpdate);
-
-      // Mettre à jour les paramètres originaux
-      setOriginalParams({...companyParams});
+      const updatedCompany = await companyService.update(company);
+      setCompany(updatedCompany);
+      setOriginalParams({...updatedCompany});
 
       toast({
         title: 'Succès',
-        description: 'Les paramètres de l\'entreprise ont été enregistrés',
+        description: 'Les informations ont été enregistrées',
         variant: 'default'
       });
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement des paramètres:', error);
+      console.error('Erreur lors de l\'enregistrement:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible d\'enregistrer les paramètres de l\'entreprise',
+        description: 'Impossible d\'enregistrer les informations',
         variant: 'destructive'
       });
     } finally {
@@ -126,7 +108,7 @@ const CompanySettings: React.FC = () => {
   // Ouvrir la boîte de dialogue de confirmation de réinitialisation
   const openResetDialog = () => {
     // Vérifier s'il y a des modifications non enregistrées
-    const hasChanges = JSON.stringify(companyParams) !== JSON.stringify(originalParams);
+    const hasChanges = JSON.stringify(company) !== JSON.stringify(originalParams);
 
     if (hasChanges) {
       setIsResetDialogOpen(true);
@@ -146,7 +128,7 @@ const CompanySettings: React.FC = () => {
 
     try {
       // Restaurer les paramètres originaux
-      setCompanyParams({...originalParams});
+      setCompany({...originalParams});
 
       toast({
         title: 'Succès',
@@ -208,7 +190,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_name"
                         placeholder="Entrez le nom de votre entreprise"
-                        value={companyParams.company_name}
+                        value={company.name}
                         onChange={handleChange}
                       />
                     </div>
@@ -217,7 +199,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_trading_name"
                         placeholder="Nom commercial (si différent)"
-                        value={companyParams.company_trading_name}
+                        value={company.trading_name || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -228,7 +210,7 @@ const CompanySettings: React.FC = () => {
                       id="company_description"
                       placeholder="Brève description de votre entreprise"
                       className="min-h-[100px]"
-                      value={companyParams.company_description}
+                      value={company.description || ''}
                       onChange={handleChange}
                     />
                   </div>
@@ -238,7 +220,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_industry"
                         placeholder="Ex: Technologie, Santé, etc."
-                        value={companyParams.company_industry}
+                        value={company.industry || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -247,7 +229,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_foundation_date"
                         type="date"
-                        value={companyParams.company_foundation_date}
+                        value={company.foundation_date || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -278,7 +260,7 @@ const CompanySettings: React.FC = () => {
                       id="company_address"
                       placeholder="Adresse complète"
                       className="min-h-[80px]"
-                      value={companyParams.company_address}
+                      value={company.address || ''}
                       onChange={handleChange}
                     />
                   </div>
@@ -288,7 +270,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_postal_code"
                         placeholder="Code postal"
-                        value={companyParams.company_postal_code}
+                        value={company.postal_code || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -297,7 +279,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_city"
                         placeholder="Ville"
-                        value={companyParams.company_city}
+                        value={company.city || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -306,7 +288,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_country"
                         placeholder="Pays"
-                        value={companyParams.company_country}
+                        value={company.country || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -317,7 +299,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_phone"
                         placeholder="Numéro de téléphone"
-                        value={companyParams.company_phone}
+                        value={company.phone || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -327,7 +309,7 @@ const CompanySettings: React.FC = () => {
                         id="company_email"
                         type="email"
                         placeholder="Email de contact"
-                        value={companyParams.company_email}
+                        value={company.email || ''}
                         onChange={handleChange}
                       />
                     </div>
@@ -338,7 +320,7 @@ const CompanySettings: React.FC = () => {
                       <Input
                         id="company_website"
                         placeholder="https://www.example.com"
-                        value={companyParams.company_website}
+                        value={company.website || ''}
                         onChange={handleChange}
                       />
                     </div>

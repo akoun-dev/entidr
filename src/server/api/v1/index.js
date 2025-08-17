@@ -9,6 +9,7 @@ const parameters = require('./parameters');
 const modules = require('./modules');
 const documentlayouts = require('./documentlayouts');
 const reporttemplates = require('./reporttemplates');
+const company = require('./company');
 
 router.use('/users', users);
 router.use('/groups', groups);
@@ -16,5 +17,6 @@ router.use('/parameters', parameters);
 router.use('/modules', modules);
 router.use('/documentlayouts', documentlayouts);
 router.use('/reporttemplates', reporttemplates);
+router.use('/companies', company);
 
 module.exports = router;

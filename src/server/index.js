@@ -25,28 +25,15 @@ wss.on('connection', ws => {
 });
 
 // Middleware
-const { metricsMiddleware } = require('./middlewares/metricsMiddleware.js');
+
 app.use(cors());
-app.use(metricsMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Routes API
-// Temporarily disabled metrics endpoint
-// const { metricExporter } = require('../../config/metrics');
-// app.get('/metrics', async (req, res) => {
-//   try {
-//     const metrics = await metricExporter.getMetricsRequest();
-//     res.set('Content-Type', metricExporter.getContentType());
-//     res.end(metrics);
-//   } catch (err) {
-//     res.status(500).end(err);
-//   }
-// });
 
 // Import routes
 const apiV1Router = require('./api/v1');
 app.use('/api', apiV1Router);
+
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {
@@ -65,6 +52,10 @@ async function startServer() {
     // Vérifier la connexion à la base de données
     await sequelize.authenticate();
     logger.info('Connexion à la base de données établie avec succès.');
+
+    // Synchroniser les modèles
+    await sequelize.sync({ force: false, logging: console.log });
+    logger.info('Modèles synchronisés avec la base de données');
 
     // Démarrer le serveur HTTP et WebSocket
     server.listen(PORT, () => {
