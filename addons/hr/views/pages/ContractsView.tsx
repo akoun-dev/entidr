@@ -36,6 +36,14 @@ import {
 } from '../../../../src/components/ui/card';
 import { Button } from '../../../../src/components/ui/button';
 import { Input } from '../../../../src/components/ui/input';
+import { Label } from '../../../../src/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '../../../../src/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +54,7 @@ import {
 } from '../../../../src/components/ui/dropdown-menu';
 import { Badge } from '../../../../src/components/ui/badge';
 import { Contract } from '../../models/types';
+import { contractService } from '../../services';
 import { Skeleton } from '../../../../src/components/ui/skeleton';
 
 /**
@@ -57,91 +66,32 @@ const ContractsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [currentTab, setCurrentTab] = useState('all');
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Contract | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    employee_id: '',
+    contract_type: 'CDI',
+    date_start: new Date().toISOString().slice(0,10),
+    date_end: '',
+    wage: '',
+    state: 'running'
+  });
 
-  // Fonction pour obtenir les données des contrats
+  // Charger les contrats depuis l'API réelle
   useEffect(() => {
     const fetchContracts = async () => {
       setLoading(true);
       try {
-        // Simulation de données (à remplacer par un appel API réel)
-        const mockContracts: Contract[] = [
-          {
-            id: 1,
-            name: 'CDI-001',
-            employee_id: 1,
-            employee_name: 'Kouamé Konan',
-            contract_type: 'CDI',
-            date_start: '2023-03-15',
-            wage: 650000,
-            state: 'running',
-            notes: 'Contrat standard avec période d\'essai de 3 mois',
-            created_at: '2023-03-10',
-            updated_at: '2023-03-10'
-          },
-          {
-            id: 2,
-            name: 'CDD-021',
-            employee_id: 2,
-            employee_name: 'Aminata Touré',
-            contract_type: 'CDD',
-            date_start: '2022-10-01',
-            date_end: '2023-10-01',
-            wage: 450000,
-            state: 'running',
-            created_at: '2022-09-25',
-            updated_at: '2022-09-25'
-          },
-          {
-            id: 3,
-            name: 'Stage-005',
-            employee_id: 3,
-            employee_name: 'Jean Konaté',
-            contract_type: 'Stage',
-            date_start: '2023-01-15',
-            date_end: '2023-07-15',
-            wage: 150000,
-            state: 'running',
-            created_at: '2023-01-10',
-            updated_at: '2023-01-10'
-          },
-          {
-            id: 4,
-            name: 'CDI-002',
-            employee_id: 4,
-            employee_name: 'Marie Diallo',
-            contract_type: 'CDI',
-            date_start: '2022-05-01',
-            wage: 550000,
-            state: 'running',
-            created_at: '2022-04-25',
-            updated_at: '2022-04-25'
-          },
-          {
-            id: 5,
-            name: 'CDD-018',
-            employee_id: 5,
-            employee_name: 'Pascal Ouattara',
-            contract_type: 'CDD',
-            date_start: '2023-02-01',
-            date_end: '2023-08-01',
-            wage: 400000,
-            state: 'expired',
-            created_at: '2023-01-25',
-            updated_at: '2023-08-02'
-          }
-        ];
-
-        // Délai simulé pour montrer le chargement
-        setTimeout(() => {
-          setContracts(mockContracts);
-          setLoading(false);
-        }, 1000);
+        const data = await contractService.getAll();
+        setContracts(data);
       } catch (error) {
         console.error('Erreur lors du chargement des contrats', error);
+      } finally {
         setLoading(false);
       }
     };
-
     fetchContracts();
   }, []);
 
@@ -203,6 +153,7 @@ const ContractsView: React.FC = () => {
 
   return (
     <HrLayout>
+      <>
       <div className="w-full">
         {/* En-tête avec fil d'Ariane */}
         <div className="mb-6">
@@ -267,7 +218,14 @@ const ContractsView: React.FC = () => {
             </DropdownMenu>
           </div>
 
-          <Button className="bg-ivory-orange hover:bg-amber-600 flex items-center gap-2 w-full md:w-auto">
+          <Button
+            className="bg-ivory-orange hover:bg-amber-600 flex items-center gap-2 w-full md:w-auto"
+            onClick={() => {
+              setEditing(null);
+              setForm({ name: '', employee_id: '', contract_type: 'CDI', date_start: new Date().toISOString().slice(0,10), date_end: '', wage: '', state: 'running' });
+              setShowForm(true);
+            }}
+          >
             <Plus className="h-4 w-4" />
             Nouveau contrat
           </Button>
@@ -307,6 +265,76 @@ const ContractsView: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Modifier un contrat' : 'Nouveau contrat'}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-sm">Nom</Label>
+              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-sm">Employé ID</Label>
+              <Input value={form.employee_id} onChange={e => setForm({ ...form, employee_id: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-sm">Type</Label>
+              <Input value={form.contract_type} onChange={e => setForm({ ...form, contract_type: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-sm">Début</Label>
+              <Input type="date" value={form.date_start} onChange={e => setForm({ ...form, date_start: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-sm">Fin</Label>
+              <Input type="date" value={form.date_end} onChange={e => setForm({ ...form, date_end: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-sm">Salaire</Label>
+              <Input value={form.wage} onChange={e => setForm({ ...form, wage: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-sm">Statut</Label>
+              <Input value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
+            <Button onClick={async () => {
+              try {
+                setSaving(true);
+                const payload: any = {
+                  name: form.name,
+                  employee_id: Number(form.employee_id),
+                  contract_type: form.contract_type,
+                  date_start: form.date_start,
+                  date_end: form.date_end || null,
+                  wage: form.wage ? Number(form.wage) : null,
+                  state: form.state,
+                };
+                if (editing) {
+                  const updated = await contractService.update(editing.id, payload);
+                  setContracts(prev => prev.map(c => c.id === editing.id ? updated : c));
+                } else {
+                  const created = await contractService.create(payload);
+                  setContracts(prev => [created, ...prev]);
+                }
+                setShowForm(false);
+                setEditing(null);
+              } catch (e) {
+                console.error('Save failed', e);
+                alert('Enregistrement impossible');
+              } finally {
+                setSaving(false);
+              }
+            }} disabled={saving}>{editing ? 'Mettre à jour' : 'Créer'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </>
     </HrLayout>
   );
 
@@ -439,6 +467,25 @@ const ContractsView: React.FC = () => {
                     className="ml-2"
                   >
                     Détails
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditing(contract);
+                      setForm({
+                        name: contract.name,
+                        employee_id: String(contract.employee_id || ''),
+                        contract_type: contract.contract_type,
+                        date_start: contract.date_start,
+                        date_end: contract.date_end || '',
+                        wage: contract.wage != null ? String(contract.wage) : '',
+                        state: contract.state,
+                      });
+                      setShowForm(true);
+                    }}
+                  >
+                    Modifier
                   </Button>
                 </div>
               </div>
