@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../src/components/ui/card';
@@ -7,48 +7,33 @@ import { Building2, Users, Plus, FolderTree, Settings, ChevronRight, Search } fr
 import { HrLayout } from '../components';
 import { Input } from '../../../../src/components/ui/input';
 
+import { departmentService, employeeService } from '../../services';
+import { Department, Employee } from '../../models/types';
+
 /**
  * Page de liste des départements et hiérarchies
  */
 const DepartmentsView: React.FC = () => {
-  // Données simulées pour les départements
-  const departments = [
-    {
-      id: 1,
-      name: 'Direction',
-      manager: 'Jean Dupont',
-      employeeCount: 3,
-      subDepartments: 4
-    },
-    {
-      id: 2,
-      name: 'Ressources Humaines',
-      manager: 'Marie Martin',
-      employeeCount: 5,
-      subDepartments: 0
-    },
-    {
-      id: 3,
-      name: 'Développement',
-      manager: 'Pierre Durand',
-      employeeCount: 12,
-      subDepartments: 2
-    },
-    {
-      id: 4,
-      name: 'Marketing',
-      manager: 'Sophie Petit',
-      employeeCount: 8,
-      subDepartments: 0
-    },
-    {
-      id: 5,
-      name: 'Finance',
-      manager: 'Thomas Leroy',
-      employeeCount: 6,
-      subDepartments: 0
-    }
-  ];
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [deps, emps] = await Promise.all([
+          departmentService.getAll(),
+          employeeService.getAllEmployees(),
+        ]);
+        setDepartments(deps);
+        setEmployees(emps);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   return (
     <HrLayout>
@@ -90,7 +75,10 @@ const DepartmentsView: React.FC = () => {
 
       {/* Liste des départements */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {departments.map(dept => (
+        {departments.map(dept => {
+          const managerName = employees.find(e => e.id === (dept.manager_id as any))?.name || '—';
+          const employeeCount = employees.filter(e => e.department_id === dept.id).length;
+          return (
           <Card key={dept.id} className="bg-white/80 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/30">
             <CardHeader className="pb-2 border-b border-border/30 bg-muted/10">
               <div className="flex justify-between items-start">
@@ -98,18 +86,18 @@ const DepartmentsView: React.FC = () => {
                 <Building2 className="h-5 w-5 text-ivory-orange" />
               </div>
               <CardDescription>
-                Manager: {dept.manager}
+                Manager: {managerName}
               </CardDescription>
             </CardHeader>
             <CardContent className="py-4">
               <div className="flex justify-between text-sm">
                 <div className="flex items-center gap-1.5">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>{dept.employeeCount} employés</span>
+                  <span>{employeeCount} employés</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <FolderTree className="h-4 w-4 text-muted-foreground" />
-                  <span>{dept.subDepartments} sous-départements</span>
+                  <span>—</span>
                 </div>
               </div>
             </CardContent>
@@ -122,7 +110,7 @@ const DepartmentsView: React.FC = () => {
               </Button>
             </CardFooter>
           </Card>
-        ))}
+        );})}
       </div>
 
       {/* Fonctionnalités supplémentaires */}

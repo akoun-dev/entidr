@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Department, Manager, ParentDepartment, Company } from '../types/department';
+import { departmentService, employeeService } from '../services';
+import { useToast } from '../../../src/components/ui/use-toast';
 
 // Additional types for jobs and employees
 export interface Job {
@@ -20,6 +22,7 @@ export interface Employee {
 export const useDepartmentForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const isEditMode = !!id;
 
   // Department state
@@ -39,74 +42,42 @@ export const useDepartmentForm = () => {
     code: ''
   });
 
-  // Mock data - in a real app, these would likely come from API calls
-  const [managers] = useState<Manager[]>([
-    { id: '1', name: 'Jean Dupont', job_title: 'Directeur Général' },
-    { id: '2', name: 'Marie Martin', job_title: 'Responsable RH' },
-    { id: '3', name: 'Pierre Durand', job_title: 'Directeur Technique' },
-    { id: '4', name: 'Sophie Lefebvre', job_title: 'Directrice Marketing' },
-    { id: '5', name: 'Thomas Bernard', job_title: 'Directeur Financier' }
-  ]);
+  const [managers, setManagers] = useState<Manager[]>([]);
 
-  const [parentDepartments] = useState<ParentDepartment[]>([
-    { id: '1', name: 'Direction', complete_name: 'Direction' },
-    { id: '2', name: 'Ressources Humaines', complete_name: 'Direction / Ressources Humaines' },
-    { id: '3', name: 'Informatique', complete_name: 'Direction / Informatique' },
-    { id: '4', name: 'Finance', complete_name: 'Direction / Finance' },
-    { id: '5', name: 'Marketing', complete_name: 'Direction / Marketing' }
-  ]);
+  const [parentDepartments, setParentDepartments] = useState<ParentDepartment[]>([]);
 
-  const [companies] = useState<Company[]>([
-    { id: '1', name: 'Ma Société' },
-    { id: '2', name: 'Filiale 1' },
-    { id: '3', name: 'Filiale 2' }
-  ]);
+  const [companies] = useState<Company[]>([]);
 
-  const [jobs] = useState<Job[]>([
-    { id: '1', name: 'Développeur Frontend', department_id: '3' },
-    { id: '2', name: 'Développeur Backend', department_id: '3' },
-    { id: '3', name: 'Chef de projet', department_id: '3' },
-    { id: '4', name: 'Responsable RH', department_id: '2' },
-    { id: '5', name: 'Assistant RH', department_id: '2' },
-    { id: '6', name: 'Comptable', department_id: '4' },
-    { id: '7', name: 'Responsable Marketing', department_id: '5' }
-  ]);
+  const [jobs] = useState<Job[]>([]);
 
-  const [employees] = useState<Employee[]>([
-    { id: '1', name: 'Jean Dupont', job_title: 'Directeur Général', department_id: '1' },
-    { id: '2', name: 'Marie Martin', job_title: 'Responsable RH', department_id: '2' },
-    { id: '3', name: 'Pierre Durand', job_title: 'Directeur Technique', department_id: '3' },
-    { id: '4', name: 'Sophie Lefebvre', job_title: 'Directrice Marketing', department_id: '5' },
-    { id: '5', name: 'Thomas Bernard', job_title: 'Directeur Financier', department_id: '4' },
-    { id: '6', name: 'Julie Moreau', job_title: 'Développeur Frontend', department_id: '3' },
-    { id: '7', name: 'Lucas Petit', job_title: 'Développeur Backend', department_id: '3' },
-    { id: '8', name: 'Emma Leroy', job_title: 'Chef de projet', department_id: '3' },
-    { id: '9', name: 'Hugo Roux', job_title: 'Comptable', department_id: '4' },
-    { id: '10', name: 'Camille Girard', job_title: 'Assistant RH', department_id: '2' }
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   // Load department data if in edit mode
   useEffect(() => {
-    if (isEditMode) {
-      // Simulate loading from API
-      const mockDepartment = {
-        id: id || '',
-        name: 'Informatique',
-        complete_name: 'Direction / Informatique',
-        active: true,
-        company_id: '1',
-        parent_id: '1',
-        manager_id: '3',
-        total_employee: 5,
-        note: 'Département informatique responsable du développement et de la maintenance des systèmes d\'information.',
-        color: 2,
-        parent_path: '1/3',
-        master_department_id: '1',
-        code: 'IT'
-      };
-
-      setDepartment(mockDepartment);
-    }
+    const load = async () => {
+      try {
+        // charger les départements pour la liste parent
+        const deps = await departmentService.getAll();
+        setParentDepartments(deps.map((d: any) => ({ id: String(d.id), name: d.name, complete_name: d.name })));
+        const emps = await employeeService.getAllEmployees();
+        setEmployees(emps.map((e: any) => ({ id: String(e.id), name: e.name, job_title: e.job_title, department_id: String(e.department_id || '') })));
+        setManagers(emps.map((e: any) => ({ id: String(e.id), name: e.name, job_title: e.job_title })) as any);
+        if (isEditMode && id) {
+          const d = await departmentService.getById(id);
+          setDepartment(prev => ({
+            ...prev,
+            id: String(d.id),
+            name: d.name,
+            active: d.active,
+            parent_id: String(d.parent_id || ''),
+            manager_id: String(d.manager_id || ''),
+          } as any));
+        }
+      } catch (e) {
+        toast({ title: 'Erreur', description: 'Impossible de charger les données', variant: 'destructive' });
+      }
+    };
+    load();
   }, [id, isEditMode]);
 
   // Form handlers
@@ -123,12 +94,19 @@ export const useDepartmentForm = () => {
     setDepartment(prev => ({ ...prev, [name]: checked }));
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-
-    // Simulate a successful save
-    alert(`Département ${isEditMode ? 'modifié' : 'créé'} avec succès !`);
-    navigate('/hr/departments');
+    try {
+      if (isEditMode && id) {
+        await departmentService.update(id, { name: department.name, manager_id: Number(department.manager_id) || undefined, active: department.active } as any);
+      } else {
+        await departmentService.create({ name: department.name, manager_id: Number(department.manager_id) || undefined, active: department.active } as any);
+      }
+      toast({ title: 'Succès', description: `Département ${isEditMode ? 'modifié' : 'créé'} avec succès` });
+      navigate('/hr/departments');
+    } catch (e) {
+      toast({ title: 'Erreur', description: `Impossible d'enregistrer le département`, variant: 'destructive' });
+    }
   };
 
   return {

@@ -1,10 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { departments } from '../data/departments';
 import { managers } from '../data/managers';
 import { employmentTypes } from '../data/employmentTypes';
-import { useToast } from '../../../src/hooks/use-toast';
+import { useToast } from '../../../src/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { employeeService } from '../services';
 
 /**
  * Hook pour gérer l'état et les actions du formulaire d'employé
@@ -35,50 +36,25 @@ export const useEmployeeForm = (employeeId?: string) => {
   // Chargement des données de l'employé par ID
   const loadEmployeeData = async (id: string) => {
     try {
-      // Simulation de chargement des données
-      if (id === '1') {
-        // Exemple de données pour l'employé avec ID 1
-        setEmployee({
-          id: '1',
-          name: 'Kouamé Konan',
-          job_title: 'Développeur Web',
-          department_id: '7',
-          work_email: 'kouame.konan@example.com',
-          work_phone: '+225 07 12 34 56',
-          mobile_phone: '+225 05 12 34 56',
-          address: 'Abidjan, Cocody',
-          birth_date: '1990-05-15',
-          hire_date: '2021-10-01',
-          employment_type: 'full-time',
-          manager_id: '3',
-          notes: 'Expert en JavaScript et React',
-          is_active: true
-        });
-      } else {
-        // Données génériques pour les autres IDs
-        setEmployee({
-          id,
-          name: 'Employé ' + id,
-          job_title: 'Poste indéfini',
-          department_id: '',
-          work_email: 'employee' + id + '@example.com',
-          work_phone: '',
-          mobile_phone: '',
-          address: '',
-          birth_date: '',
-          hire_date: '',
-          employment_type: '',
-          manager_id: '',
-          notes: '',
-          is_active: true
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les données de l\'employé',
-        variant: 'destructive'
+      const data = await employeeService.getEmployeeById(Number(id));
+      setEmployee({
+        id: String(data.id),
+        name: data.name,
+        job_title: data.job_title || '',
+        department_id: String(data.department_id || ''),
+        work_email: data.work_email || '',
+        work_phone: data.work_phone || '',
+        mobile_phone: (data as any).mobile_phone || '',
+        address: (data as any).address || '',
+        birth_date: (data as any).birth_date || '',
+        hire_date: (data as any).hire_date || '',
+        employment_type: (data as any).employment_type || '',
+        manager_id: String((data as any).parent_id || ''),
+        notes: (data as any).notes || '',
+        is_active: (data as any).active ?? true,
       });
+    } catch (error) {
+      toast({ title: 'Erreur', description: 'Impossible de charger les données de l\'employé', variant: 'destructive' });
     }
   };
 
@@ -87,13 +63,41 @@ export const useEmployeeForm = (employeeId?: string) => {
     e.preventDefault();
     
     try {
-      // Simulation d'un délai de sauvegarde
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: isNewEmployee ? 'Employé créé' : 'Employé mis à jour',
-        description: `Les informations de ${employee.name} ont été enregistrées avec succès.`
-      });
+      if (isNewEmployee) {
+        await employeeService.createEmployee({
+          name: employee.name,
+          job_title: employee.job_title,
+          department_id: Number(employee.department_id) || undefined,
+          work_email: employee.work_email,
+          work_phone: employee.work_phone,
+          mobile_phone: employee.mobile_phone,
+          address: employee.address,
+          birth_date: employee.birth_date,
+          hire_date: employee.hire_date,
+          employment_type: employee.employment_type,
+          parent_id: Number(employee.manager_id) || undefined,
+          notes: employee.notes,
+          active: employee.is_active,
+        } as any);
+      } else {
+        await employeeService.updateEmployee(Number(employee.id), {
+          name: employee.name,
+          job_title: employee.job_title,
+          department_id: Number(employee.department_id) || undefined,
+          work_email: employee.work_email,
+          work_phone: employee.work_phone,
+          mobile_phone: employee.mobile_phone,
+          address: employee.address,
+          birth_date: employee.birth_date,
+          hire_date: employee.hire_date,
+          employment_type: employee.employment_type,
+          parent_id: Number(employee.manager_id) || undefined,
+          notes: employee.notes,
+          active: employee.is_active,
+        } as any);
+      }
+
+      toast({ title: isNewEmployee ? 'Employé créé' : 'Employé mis à jour', description: `Les informations de ${employee.name} ont été enregistrées avec succès.` });
       
       // Redirection vers la liste des employés
       navigate('/hr/employees');
@@ -119,15 +123,24 @@ export const useEmployeeForm = (employeeId?: string) => {
   };
 
   // Fonction pour gérer la suppression
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    if (!employee.id) return;
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet employé ?')) {
-      toast({
-        title: 'Suppression',
-        description: `L'employé ${employee.name} a été supprimé.`
-      });
-      navigate('/hr/employees');
+      try {
+        await employeeService.deleteEmployee(Number(employee.id));
+        toast({ title: 'Suppression', description: `L'employé ${employee.name} a été supprimé.` });
+        navigate('/hr/employees');
+      } catch (e) {
+        toast({ title: 'Erreur', description: `Impossible de supprimer l'employé`, variant: 'destructive' });
+      }
     }
   };
+
+  // Charger si edit mode
+  useEffect(() => {
+    if (employeeId) loadEmployeeData(employeeId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employeeId]);
 
   return {
     employee,

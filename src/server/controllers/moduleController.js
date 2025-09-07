@@ -379,12 +379,19 @@ const moduleController = {
       // Exécuter les migrations du module si elles existent
       const migrationsPath = path.join(modulePath, 'migrations');
       if (fs.existsSync(migrationsPath)) {
+        const strictMigrations = String(process.env.ADDONS_STRICT_MIGRATIONS || '').toLowerCase() === 'true';
         try {
           // Exécuter les migrations
           await runCommand('npx', ['sequelize-cli', 'db:migrate', '--migrations-path', migrationsPath]);
         } catch (error) {
-          console.error(`Erreur lors de l'exécution des migrations du module ${name}:`, error);
-          return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de l'exécution des migrations du module ${name}` } });
+          // Rendez l'installation plus résiliente: en mode non-strict, on journalise et on poursuit
+          const stderr = (error && error.stderr) ? error.stderr : '';
+          console.error(`Erreur lors de l'exécution des migrations du module ${name}:`, stderr || error);
+          if (strictMigrations) {
+            return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de l'exécution des migrations du module ${name}` } });
+          } else {
+            console.warn(`[Modules] Migration error ignored for ${name} (non-strict). Continuing installation.`);
+          }
         }
       }
 
@@ -398,6 +405,16 @@ const moduleController = {
           console.error(`Erreur lors de l'exécution des seeders du module ${name}:`, error);
           return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de l'exécution des seeders du module ${name}` } });
         }
+      }
+
+      // Monter dynamiquement les modèles et routes du module et synchroniser le schéma
+      try {
+        const apiV1Router = require('../api/v1');
+        const { mountAddonToRouter } = require('../utils/moduleApiLoader');
+        await mountAddonToRouter(apiV1Router, name, { syncAfterMount: true, alterSchema: false });
+      } catch (dynErr) {
+        console.error(`Erreur lors du montage dynamique du module ${name}:`, dynErr);
+        return res.status(500).json({ data: null, error: { message: `Le module ${name} a été partiellement installé mais l'API n'a pas pu être montée`, details: String(dynErr?.message || dynErr) } });
       }
 
       // Mettre à jour le statut du module
@@ -456,6 +473,14 @@ const moduleController = {
 
       if (dependents.length > 0) {
         return res.status(400).json({ data: null, error: { message: `Impossible de désinstaller le module ${name} car d'autres modules en dépendent`, dependents: dependents.map(m => m.name) } });
+      }
+
+      // Drop addon DB tables before toggling status
+      try {
+        const { dropAddonModels } = require('../utils/moduleApiLoader');
+        await dropAddonModels(name);
+      } catch (e) {
+        console.warn(`[Modules] Failed to drop addon tables for ${name}:`, e?.message || e);
       }
 
       // Mettre à jour le statut du module

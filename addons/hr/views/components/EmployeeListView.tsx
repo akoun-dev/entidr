@@ -43,7 +43,7 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
+
   // State for sorting
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -64,15 +64,15 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
   const sortedEmployees = [...employees].sort((a, b) => {
     const aValue = a[sortField] || '';
     const bValue = b[sortField] || '';
-    
+
     if (typeof aValue === 'boolean') {
-      return sortDirection === 'asc' 
-        ? (aValue === bValue ? 0 : aValue ? -1 : 1) 
+      return sortDirection === 'asc'
+        ? (aValue === bValue ? 0 : aValue ? -1 : 1)
         : (aValue === bValue ? 0 : aValue ? 1 : -1);
     }
 
-    return sortDirection === 'asc' 
-      ? String(aValue).localeCompare(String(bValue)) 
+    return sortDirection === 'asc'
+      ? String(aValue).localeCompare(String(bValue))
       : String(bValue).localeCompare(String(aValue));
   });
 
@@ -129,7 +129,7 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
-              <TableHead 
+              <TableHead
                 className="w-[200px] cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('name')}
               >
@@ -137,7 +137,7 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
                   Nom {renderSortIcon('name')}
                 </div>
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('job_title')}
               >
@@ -145,7 +145,7 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
                   Poste {renderSortIcon('job_title')}
                 </div>
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('department_name')}
               >
@@ -153,7 +153,7 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
                   Département {renderSortIcon('department_name')}
                 </div>
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('work_email')}
               >
@@ -161,7 +161,7 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
                   Email {renderSortIcon('work_email')}
                 </div>
               </TableHead>
-              <TableHead 
+              <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('active')}
               >
@@ -216,9 +216,9 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
                       <span className="sr-only">Modifier</span>
                     </Link>
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={(e) => {
                       e.preventDefault();
                       onDelete(employee.id);
@@ -241,16 +241,15 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
+                <PaginationPrevious
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'} size={undefined}                />
               </PaginationItem>
 
               {/* First page */}
               {currentPage > 2 && (
                 <PaginationItem>
-                  <PaginationLink onClick={() => setCurrentPage(1)}>1</PaginationLink>
+                  <PaginationLink onClick={() => setCurrentPage(1)} size={undefined}>1</PaginationLink>
                 </PaginationItem>
               )}
 
@@ -264,7 +263,7 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
               {/* Current page and adjacent */}
               {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
                 let pageNum;
-                
+
                 if (currentPage === 1) {
                   pageNum = i + 1;
                 } else if (currentPage === totalPages) {
@@ -272,14 +271,13 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
                 } else {
                   pageNum = currentPage - 1 + i;
                 }
-                
+
                 if (pageNum > 0 && pageNum <= totalPages) {
                   return (
                     <PaginationItem key={i}>
-                      <PaginationLink 
+                      <PaginationLink
                         isActive={pageNum === currentPage}
-                        onClick={() => setCurrentPage(pageNum)}
-                      >
+                        onClick={() => setCurrentPage(pageNum)} size={undefined}                      >
                         {pageNum}
                       </PaginationLink>
                     </PaginationItem>
@@ -298,17 +296,16 @@ export const EmployeeListView: React.FC<EmployeeListViewProps> = ({
               {/* Last page */}
               {currentPage < totalPages - 1 && (
                 <PaginationItem>
-                  <PaginationLink onClick={() => setCurrentPage(totalPages)}>
+                  <PaginationLink onClick={() => setCurrentPage(totalPages)} size={undefined}>
                     {totalPages}
                   </PaginationLink>
                 </PaginationItem>
               )}
 
               <PaginationItem>
-                <PaginationNext 
+                <PaginationNext
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'} size={undefined}                />
               </PaginationItem>
             </PaginationContent>
           </Pagination>

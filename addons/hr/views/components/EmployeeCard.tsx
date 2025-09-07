@@ -65,7 +65,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onDelete }
                   <Link to={`/hr/employees/${employee.id}`}>Voir le profil</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to={`/hr/employees/${employee.id}/edit`}>
+                  <Link to={`/hr/employees/edit/${employee.id}`}>
                     <Edit className="h-4 w-4 mr-2" /> Modifier
                   </Link>
                 </DropdownMenuItem>
@@ -76,7 +76,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onDelete }
             </DropdownMenu>
           </div>
         </div>
-        
+
         <div className="absolute -bottom-12 left-6">
           {employee.image ? (
             <img
@@ -131,7 +131,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onDelete }
               <Link to={`/hr/employees/${employee.id}`}>Voir le profil</Link>
             </Button>
             <Button variant="outline" size="sm" asChild className="flex-1 bg-ivory-orange/10 hover:bg-ivory-orange/20 border-ivory-orange/20">
-              <Link to={`/hr/employees/${employee.id}/edit`}>Modifier</Link>
+              <Link to={`/hr/employees/edit/${employee.id}`}>Modifier</Link>
             </Button>
           </div>
         </div>

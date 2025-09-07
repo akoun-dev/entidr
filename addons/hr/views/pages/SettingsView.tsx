@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../../../../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../src/components/ui/card';
 import { Settings, Save, Users, Building2, FileText, Shield, Bell, ChevronRight, Clock, LogOut, Award } from 'lucide-react';
-import { HrDashboardMenu, HrSettingsSidebar } from '../components';
+import { HrSettingsSidebar } from '../components';
 import { Switch } from '../../../../src/components/ui/switch';
 import { Label } from '../../../../src/components/ui/label';
 
@@ -219,9 +219,6 @@ const SettingsView: React.FC = () => {
               </Button>
             </div>
           </div>
-
-          {/* Menu de navigation */}
-          <HrDashboardMenu />
 
           {/* Contenu de l'onglet actif */}
           <div className="mt-8">

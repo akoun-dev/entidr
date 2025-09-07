@@ -51,6 +51,9 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
           }
         });
 
+        // Notifier que le chargement des modules est terminé (pour permettre aux routes d'être ré-évaluées)
+        try { AddonManager.triggerHook('postModuleLoad', 'all'); } catch {}
+
         const lazyModules = activeModules.map(addon => {
           const LazyComponent = lazy(() =>
             import(`../../addons/${addon.manifest.name}/views/index.ts`)

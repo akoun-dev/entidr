@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../../../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../src/components/ui/card';
 import { Settings, Save, Plus, Trash2, Edit, ArrowLeft } from 'lucide-react';
-import { HrDashboardMenu, HrConfigSidebar } from '../components';
+import { HrConfigSidebar } from '../components';
 import { Input } from '../../../../src/components/ui/input';
 import { Label } from '../../../../src/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../src/components/ui/tabs';
@@ -195,7 +195,7 @@ const ConfigView: React.FC = () => {
           </div>
 
           {/* Menu de navigation */}
-          <HrDashboardMenu />
+          {/* Navigation HR gérée globalement par HrLayout */}
 
           {/* Contenu de la configuration */}
           <Card>

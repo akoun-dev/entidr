@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { Button } from '../../../../src/components/ui/button';
-import { HrDashboardMenu } from '../components';
+// Navigation is handled by HrLayout; no need to import HrDashboardMenu here
 import { DepartmentFormHeader } from '../../components/department';
 import DepartmentTabs from '../../components/department/DepartmentTabs';
 import { useDepartmentForm } from '../../hooks/useDepartmentForm';
+import { departmentService } from '../../services';
 import { ArrowLeft, Save } from 'lucide-react';
 
 /**
@@ -31,11 +32,21 @@ const DepartmentFormView: React.FC = () => {
       {/* En-tête avec actions */}
       <DepartmentFormHeader 
         isEditMode={isEditMode} 
-        onSubmit={handleSubmit} 
+        onSubmit={handleSubmit}
+        onDelete={async () => {
+          if (!isEditMode || !department.id) return;
+          if (!window.confirm('Supprimer ce département ?')) return;
+          try {
+            await departmentService.remove(department.id);
+            navigate('/hr/departments');
+          } catch (e) {
+            console.error('Erreur suppression département', e);
+            alert('Suppression impossible');
+          }
+        }}
       />
 
-      {/* Menu de navigation */}
-      <HrDashboardMenu />
+      {/* Menu de navigation géré par HrLayout pour cohérence */}
 
       {/* Formulaire */}
       <form onSubmit={handleSubmit} className="mt-8">

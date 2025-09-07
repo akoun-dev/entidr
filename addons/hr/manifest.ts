@@ -2,17 +2,27 @@ import { AddonManifest } from '../../src/types/addon';
 import {
   HrDashboardView,
   EmployeesView,
+  EmployeeFormView,
+  EmployeeDetailView,
   DepartmentsView,
+  DepartmentFormView,
+  DepartmentDetailView,
   DocumentsView,
-  SettingsView
+  ContractsView,
+  ContractFormView,
+  ContractDetailView,
+  DocumentFormView,
+  DocumentDetailView,
+  OnboardingView,
+  OffboardingView,
 } from './views/pages';
 const manifest: AddonManifest = {
   // Métadonnées de base
   name: 'hr',
   version: '1.0.0',
   displayName: 'Ressources Humaines',
-  summary: 'Gestion des ressources humaines',
-  description: 'Module de gestion des ressources humaines pour la gestion des employés, départements, congés et feuilles de temps',
+  summary: 'Gestion du personnel (noyau central)',
+  description: 'Administration de base des employés: fiches, coordonnées, informations professionnelles, documents, contrats, historique RH et suivi des départs.',
 
   // Configuration
   application: true,
@@ -36,11 +46,81 @@ const manifest: AddonManifest = {
       icon: 'UsersIcon'
     },
     {
+      path: '/hr/employees/new',
+      component: EmployeeFormView,
+      protected: true,
+      title: 'Nouvel employé',
+      icon: 'PlusIcon'
+    },
+    {
+      path: '/hr/employees/:id',
+      component: EmployeeDetailView,
+      protected: true,
+      title: 'Détail employé',
+      icon: 'UserIcon'
+    },
+    {
+      path: '/hr/employees/edit/:id',
+      component: EmployeeFormView,
+      protected: true,
+      title: 'Modifier employé',
+      icon: 'PencilIcon'
+    },
+    {
       path: '/hr/departments',
       component: DepartmentsView,
       protected: true,
       title: 'Départements',
       icon: 'FolderIcon'
+    },
+    {
+      path: '/hr/departments/new',
+      component: DepartmentFormView,
+      protected: true,
+      title: 'Nouveau département',
+      icon: 'PlusIcon'
+    },
+    {
+      path: '/hr/departments/:id',
+      component: DepartmentDetailView,
+      protected: true,
+      title: 'Détail département',
+      icon: 'FolderIcon'
+    },
+    {
+      path: '/hr/departments/edit/:id',
+      component: DepartmentFormView,
+      protected: true,
+      title: 'Modifier département',
+      icon: 'PencilIcon'
+    },
+    {
+      path: '/hr/contracts',
+      component: ContractsView,
+      protected: true,
+      title: 'Contrats',
+      icon: 'FileTextIcon'
+    },
+    {
+      path: '/hr/contracts/new',
+      component: ContractFormView,
+      protected: true,
+      title: 'Nouveau contrat',
+      icon: 'PlusIcon'
+    },
+    {
+      path: '/hr/contracts/:id',
+      component: ContractDetailView,
+      protected: true,
+      title: 'Détail contrat',
+      icon: 'FileTextIcon'
+    },
+    {
+      path: '/hr/contracts/edit/:id',
+      component: ContractFormView,
+      protected: true,
+      title: 'Modifier contrat',
+      icon: 'PencilIcon'
     },
     {
       path: '/hr/documents',
@@ -50,11 +130,39 @@ const manifest: AddonManifest = {
       icon: 'FileTextIcon'
     },
     {
-      path: '/hr/settings',
-      component: SettingsView,
+      path: '/hr/documents/new',
+      component: DocumentFormView,
       protected: true,
-      title: 'Configurations',
-      icon: 'SettingsIcon'
+      title: 'Nouveau document',
+      icon: 'PlusIcon'
+    },
+    {
+      path: '/hr/documents/:id',
+      component: DocumentDetailView,
+      protected: true,
+      title: 'Détail document',
+      icon: 'FileTextIcon'
+    },
+    {
+      path: '/hr/documents/edit/:id',
+      component: DocumentFormView,
+      protected: true,
+      title: 'Modifier document',
+      icon: 'PencilIcon'
+    },
+    {
+      path: '/hr/onboarding',
+      component: OnboardingView,
+      protected: true,
+      title: 'Onboarding',
+      icon: 'UsersIcon'
+    },
+    {
+      path: '/hr/offboarding',
+      component: OffboardingView,
+      protected: true,
+      title: 'Offboarding',
+      icon: 'UsersIcon'
     }
   ],
 
@@ -78,17 +186,6 @@ const manifest: AddonManifest = {
       fields: [
         { name: 'name', type: 'string', required: true, label: 'Nom' },
         { name: 'manager_id', type: 'many2one', required: false, label: 'Responsable', relation: 'hr.employee' }
-      ]
-    },
-    {
-      name: 'hr.leave',
-      displayName: 'Congé',
-      fields: [
-        { name: 'employee_id', type: 'many2one', required: true, label: 'Employé', relation: 'hr.employee' },
-        { name: 'date_from', type: 'date', required: true, label: 'Date de début' },
-        { name: 'date_to', type: 'date', required: true, label: 'Date de fin' },
-        { name: 'state', type: 'string', required: true, label: 'État', default: 'draft' },
-        { name: 'type', type: 'string', required: true, label: 'Type de congé' }
       ]
     }
   ],

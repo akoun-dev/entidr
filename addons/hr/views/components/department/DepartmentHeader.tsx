@@ -33,9 +33,10 @@ interface DepartmentHeaderProps {
     employee_count: number;
   };
   getInitials: (name: string) => string;
+  onDelete?: (id: string) => void;
 }
 
-const DepartmentHeader: React.FC<DepartmentHeaderProps> = ({ id, department, getInitials }) => {
+const DepartmentHeader: React.FC<DepartmentHeaderProps> = ({ id, department, getInitials, onDelete }) => {
   const navigate = useNavigate();
   
   return (
@@ -55,7 +56,12 @@ const DepartmentHeader: React.FC<DepartmentHeaderProps> = ({ id, department, get
             <Edit size={16} />
             Modifier
           </Button>
-          <Button variant="destructive" size="sm" className="flex items-center gap-2">
+          <Button
+            variant="destructive"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => onDelete && onDelete(id)}
+          >
             <Trash2 size={16} />
             Supprimer
           </Button>

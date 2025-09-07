@@ -28,12 +28,11 @@ import {
   DepartmentFormView,
   DepartmentDetailView,
   DocumentsView,
-  SettingsView,
-  ConfigView,
   ContractsView,
-  LeavesView,
-  TrainingView,
-  RecruitmentView
+  ContractFormView,
+  ContractDetailView,
+  DocumentFormView,
+  DocumentDetailView
 } from './views/pages';
 
 export const Components = {
@@ -45,12 +44,11 @@ export const Components = {
   DepartmentFormView,
   DepartmentDetailView,
   DocumentsView,
-  SettingsView,
-  ConfigView,
   ContractsView,
-  LeavesView,
-  TrainingView,
-  RecruitmentView
+  ContractFormView,
+  ContractDetailView,
+  DocumentFormView,
+  DocumentDetailView,
 };
 
 // Fonctions d'initialisation et de nettoyage

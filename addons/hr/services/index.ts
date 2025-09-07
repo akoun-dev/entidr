@@ -1,7 +1,9 @@
-import employeeService from './employeeService';
-import OdooHrService from './odooHrService';
+import employeeService from './employee.service';
+import departmentService from './department.service';
+import contractService from './contract.service';
+import documentService from './document.service';
+import taskService from './task.service';
+import signatureService from './signature.service';
+import workflowService from './workflow.service';
 
-export {
-  employeeService,
-  OdooHrService
-};
+export { employeeService, departmentService, contractService, documentService, taskService, signatureService, workflowService };

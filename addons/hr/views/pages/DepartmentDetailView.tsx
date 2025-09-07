@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { HrDashboardMenu } from '../components';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
   DepartmentHeader,
   DepartmentDescription,
@@ -9,6 +8,7 @@ import {
   EmployeesTable
 } from '../components/department';
 import { useDepartmentDetail } from '../../hooks/useDepartmentDetail';
+import { departmentService } from '../../services';
 import { Alert, AlertDescription } from '../../../../src/components/ui/alert';
 import { Skeleton } from '../../../../src/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
@@ -18,6 +18,7 @@ import { AlertCircle } from 'lucide-react';
  */
 const DepartmentDetailView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { 
     department, 
     employees, 
@@ -91,6 +92,17 @@ const DepartmentDetailView: React.FC = () => {
         id={id || ''} 
         department={department}
         getInitials={getInitials}
+        onDelete={async (depId) => {
+          if (!depId) return;
+          if (!window.confirm('Supprimer ce département ?')) return;
+          try {
+            await departmentService.remove(depId);
+            navigate('/hr/departments');
+          } catch (e) {
+            console.error('Erreur suppression département', e);
+            alert('Suppression impossible');
+          }
+        }}
       />
       
       {/* Menu de navigation */}

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { OdooHrService } from '../services';
+import { departmentService, employeeService } from '../services';
 
 interface Manager {
   id: string;
@@ -78,43 +78,21 @@ export const useDepartmentDetail = (departmentId: string) => {
         setIsLoading(true);
         setError(null);
         
-        // In a real implementation, we would call the API with the departmentId
-        // For now, we'll simulate an API call with a timeout
-        const hrService = OdooHrService.getInstance();
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Mock department data
-        const mockDepartment = {
-          id: departmentId,
-          name: 'Informatique',
-          code: 'IT',
-          manager: { id: '2', name: 'Marie Martin', job_title: 'Chef de projet', avatar_url: '' },
-          parent: { id: '1', name: 'Direction' },
-          description: 'Département informatique responsable du développement et de la maintenance des systèmes d\'information.',
-          is_active: true,
-          employee_count: 15
-        };
-        
-        // Mock employees data
-        const mockEmployees = [
-          { id: '1', name: 'Jean Dupont', job_title: 'Développeur Frontend', avatar_url: '', is_active: true },
-          { id: '2', name: 'Marie Martin', job_title: 'Chef de projet', avatar_url: '', is_active: true },
-          { id: '3', name: 'Pierre Durand', job_title: 'Développeur Backend', avatar_url: '', is_active: true },
-          { id: '4', name: 'Sophie Lefebvre', job_title: 'Designer UI/UX', avatar_url: '', is_active: true },
-          { id: '5', name: 'Thomas Bernard', job_title: 'Administrateur système', avatar_url: '', is_active: false }
-        ];
-        
-        // Mock sub-departments data
-        const mockSubDepartments = [
-          { id: '6', name: 'Développement Web', code: 'DEV-WEB', manager: { name: 'Jean Dupont' }, employee_count: 8, is_active: true },
-          { id: '7', name: 'Infrastructure', code: 'INFRA', manager: { name: 'Thomas Bernard' }, employee_count: 5, is_active: true }
-        ];
-        
-        setDepartment(mockDepartment);
-        setEmployees(mockEmployees);
-        setSubDepartments(mockSubDepartments);
+        const dep = await departmentService.getById(departmentId);
+        const emps = await employeeService.getAllEmployees();
+        const deptEmployees = emps.filter(e => String(e.department_id || '') === String(departmentId));
+        setDepartment({
+          id: String(dep.id),
+          name: dep.name,
+          code: '',
+          manager: { id: String(dep.manager_id || ''), name: '', job_title: '', avatar_url: '' },
+          parent: { id: '', name: '' },
+          description: '',
+          is_active: dep.active,
+          employee_count: deptEmployees.length
+        });
+        setEmployees(deptEmployees.map(e => ({ id: String(e.id), name: e.name, job_title: e.job_title || '', avatar_url: '', is_active: e.active })));
+        setSubDepartments([]);
       } catch (err) {
         console.error('Error fetching department data:', err);
         setError('Une erreur est survenue lors du chargement des données du département.');

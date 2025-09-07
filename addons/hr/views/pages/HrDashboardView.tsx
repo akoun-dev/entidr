@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../../../src/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../src/components/ui/tabs';
 import { HrDashboardStats } from '../../models/types';
-import { OdooHrService } from '../../services';
+import { employeeService, departmentService } from '../../services';
 import {
   Users,
   Building2,
@@ -36,32 +36,19 @@ const HrDashboardView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Données récentes d'activité (simulées)
-  const recentActivities = [
-    { id: 1, type: 'employee_created', user: 'Admin', userName: 'Admin', timestamp: '2025-05-07T09:30:00', subject: 'Marie Dupont', action: 'a créé un nouvel employé' },
-    { id: 2, type: 'contract_signed', user: 'JDupont', userName: 'Jean Dupont', timestamp: '2025-05-06T16:45:00', subject: 'Paul Martin', action: 'a signé son contrat' },
-    { id: 3, type: 'leave_request', user: 'LGomez', userName: 'Léa Gomez', timestamp: '2025-05-06T10:15:00', subject: 'Demande de congés', action: 'a soumis une demande de congés' },
-    { id: 4, type: 'department_updated', user: 'Admin', userName: 'Admin', timestamp: '2025-05-05T14:20:00', subject: 'Département Marketing', action: 'a mis à jour le département' },
-    { id: 5, type: 'employee_evaluation', user: 'JDupont', userName: 'Jean Dupont', timestamp: '2025-05-05T11:00:00', subject: 'Évaluation annuelle', action: 'a complété une évaluation' }
-  ];
-
-  // Prochains événements (simulés)
-  const upcomingEvents = [
-    { id: 1, title: 'Entretien annuel', date: '2025-05-10T10:00:00', type: 'meeting', employee: 'Marie Dupont' },
-    { id: 2, title: 'Fin de période d\'essai', date: '2025-05-15T00:00:00', type: 'deadline', employee: 'Lucas Bernard' },
-    { id: 3, title: 'Formation Excel', date: '2025-05-12T09:00:00', type: 'training', employee: 'Équipe Comptabilité' },
-    { id: 4, title: 'Entretien de recrutement', date: '2025-05-08T14:30:00', type: 'recruitment', employee: 'Poste Développeur' }
-  ];
+  // Sections de démo retirées: utiliser uniquement les stats calculées à partir des données réelles
+  // Placeholders vides pour éviter toute référence non définie dans le rendu
+  const recentActivities: any[] = [];
+  const upcomingEvents: any[] = [];
 
   useEffect(() => {
     const loadStats = async () => {
       setLoading(true);
       try {
         // Dans une implémentation réelle, cela viendrait d'un service
-        const odooService = OdooHrService.getInstance();
-        const employees = await odooService.getEmployees();
-        const departments = await odooService.getDepartments();
-        const leaves = await odooService.getLeaves();
+        const employees = await employeeService.getAllEmployees();
+        const departments = await departmentService.getAll();
+        const leaves: any[] = []; // non implémenté pour l'instant
 
         // Calculer les statistiques
         const departmentCounts: Record<string, number> = {};

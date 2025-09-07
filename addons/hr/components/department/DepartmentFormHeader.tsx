@@ -7,9 +7,10 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 interface DepartmentFormHeaderProps {
   isEditMode: boolean;
   onSubmit: () => void;
+  onDelete?: () => void;
 }
 
-const DepartmentFormHeader: React.FC<DepartmentFormHeaderProps> = ({ isEditMode, onSubmit }) => {
+const DepartmentFormHeader: React.FC<DepartmentFormHeaderProps> = ({ isEditMode, onSubmit, onDelete }) => {
   const navigate = useNavigate();
   
   return (
@@ -33,7 +34,7 @@ const DepartmentFormHeader: React.FC<DepartmentFormHeaderProps> = ({ isEditMode,
           Retour
         </Button>
         {isEditMode && (
-          <Button variant="destructive" size="sm" className="flex items-center gap-2">
+          <Button variant="destructive" size="sm" className="flex items-center gap-2" onClick={onDelete}>
             <Trash2 size={16} />
             Supprimer
           </Button>

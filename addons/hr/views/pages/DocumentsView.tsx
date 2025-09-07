@@ -1,59 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../../../../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../src/components/ui/card';
 import { FileText, Upload, Download, Plus, Search, Filter } from 'lucide-react';
-import { HrDashboardMenu } from '../components';
+// Navigation is handled by HrLayout; no need to import HrDashboardMenu here
+import { documentService } from '../../services';
+import { useNavigate } from 'react-router-dom';
+import type { HrDocument } from '../../services/document.service';
 import { Input } from '../../../../src/components/ui/input';
 
 /**
  * Page de gestion des documents RH
  */
 const DocumentsView: React.FC = () => {
-  // Données simulées pour les documents
-  const documents = [
-    {
-      id: 1,
-      name: 'Contrat de travail - Jean Dupont',
-      type: 'Contrat',
-      date: '15/03/2023',
-      size: '1.2 MB',
-      format: 'PDF'
-    },
-    {
-      id: 2,
-      name: 'Avenant - Marie Martin',
-      type: 'Avenant',
-      date: '22/05/2023',
-      size: '0.8 MB',
-      format: 'PDF'
-    },
-    {
-      id: 3,
-      name: 'Fiche de poste - Développeur',
-      type: 'Fiche de poste',
-      date: '10/01/2023',
-      size: '0.5 MB',
-      format: 'DOCX'
-    },
-    {
-      id: 4,
-      name: 'Règlement intérieur',
-      type: 'Règlement',
-      date: '01/01/2023',
-      size: '2.1 MB',
-      format: 'PDF'
-    },
-    {
-      id: 5,
-      name: 'Organigramme - Département Marketing',
-      type: 'Organigramme',
-      date: '05/04/2023',
-      size: '1.5 MB',
-      format: 'PNG'
-    }
-  ];
+  const [documents, setDocuments] = useState<HrDocument[]>([]);
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const docs = await documentService.getAll();
+        setDocuments(docs);
+      } catch (e) {
+        console.error('Erreur chargement documents', e);
+      }
+    };
+    load();
+  }, []);
 
   return (
+    <>
     <div className="container mx-auto px-4 py-6">
       {/* En-tête avec actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -73,8 +48,7 @@ const DocumentsView: React.FC = () => {
         </div>
       </div>
       
-      {/* Menu de navigation */}
-      <HrDashboardMenu />
+      {/* Menu de navigation géré par HrLayout pour cohérence */}
       
       {/* Barre de recherche et filtres */}
       <Card className="mb-8">
@@ -85,6 +59,8 @@ const DocumentsView: React.FC = () => {
               <Input
                 placeholder="Rechercher un document..."
                 className="pl-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
@@ -92,7 +68,12 @@ const DocumentsView: React.FC = () => {
                 <Filter size={16} />
                 Filtres
               </Button>
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => navigate('/hr/documents/new')}
+              >
                 <Plus size={16} />
                 Nouveau
               </Button>
@@ -121,7 +102,9 @@ const DocumentsView: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {documents.map(doc => (
+                {documents
+                  .filter(d => !search || d.name.toLowerCase().includes(search.toLowerCase()))
+                  .map(doc => (
                   <tr key={doc.id} className="border-b hover:bg-muted/50">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -129,17 +112,17 @@ const DocumentsView: React.FC = () => {
                         <span>{doc.name}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4">{doc.type}</td>
-                    <td className="py-3 px-4">{doc.date}</td>
-                    <td className="py-3 px-4">{doc.format}</td>
-                    <td className="py-3 px-4">{doc.size}</td>
+                    <td className="py-3 px-4">{doc.type || '—'}</td>
+                    <td className="py-3 px-4">{new Date(doc.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-4">{doc.mime_type || '—'}</td>
+                    <td className="py-3 px-4">{doc.size_bytes ? `${(doc.size_bytes/1024).toFixed(1)} KB` : '—'}</td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm">
                           <Download className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
-                          <Search className="h-4 w-4" />
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/hr/documents/edit/${doc.id}`)}>
+                          Modifier
                         </Button>
                       </div>
                     </td>
@@ -151,6 +134,9 @@ const DocumentsView: React.FC = () => {
         </CardContent>
       </Card>
     </div>
+
+    {/* Dialog removed: using dedicated views for create/edit */}
+    </>
   );
 };
 

@@ -3,7 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../../../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../src/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../src/components/ui/tabs';
-import { HrDashboardMenu } from '../components';
+import { employeeService, departmentService, contractService, documentService } from '../../services';
+import type { Contract } from '../../models/types';
+import type { HrDocument } from '../../services/document.service';
 import { ArrowLeft, Edit, Trash2, User, Mail, Phone, Building2, Calendar, FileText, Briefcase, Clock, Download } from 'lucide-react';
 import { Separator } from '../../../../src/components/ui/separator';
 import { Badge } from '../../../../src/components/ui/badge';
@@ -17,59 +19,30 @@ const EmployeeDetailView: React.FC = () => {
   const navigate = useNavigate();
   
   // État pour stocker les données de l'employé
-  const [employee, setEmployee] = useState({
-    id: '',
-    name: '',
-    job_title: '',
-    department: { id: '', name: '' },
-    work_email: '',
-    work_phone: '',
-    mobile_phone: '',
-    address: '',
-    birth_date: '',
-    hire_date: '',
-    employment_type: { id: '', name: '' },
-    manager: { id: '', name: '' },
-    notes: '',
-    is_active: true,
-    avatar_url: ''
-  });
+  const [employee, setEmployee] = useState<any>(null);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [documents, setDocuments] = useState<HrDocument[]>([]);
   
-  // Données simulées pour l'historique des contrats
-  const contracts = [
-    { id: '1', type: 'CDI', start_date: '2020-01-01', end_date: null, department: 'Informatique', job_title: 'Développeur Frontend' },
-    { id: '2', type: 'CDD', start_date: '2019-01-01', end_date: '2019-12-31', department: 'Informatique', job_title: 'Développeur Junior' }
-  ];
-  
-  // Données simulées pour les documents
-  const documents = [
-    { id: '1', name: 'Contrat de travail', date: '2020-01-01', type: 'Contrat', size: '1.2 MB' },
-    { id: '2', name: 'Avenant au contrat', date: '2021-06-15', type: 'Avenant', size: '0.8 MB' },
-    { id: '3', name: 'Fiche de poste', date: '2020-01-05', type: 'Fiche', size: '0.5 MB' }
-  ];
-  
-  // Charger les données de l'employé
+  // Charger les données de l'employé et ses éléments liés
   useEffect(() => {
-    // Simuler le chargement des données depuis une API
-    const mockEmployee = {
-      id: id || '',
-      name: 'Jean Dupont',
-      job_title: 'Développeur Frontend',
-      department: { id: '3', name: 'Informatique' },
-      work_email: 'jean.dupont@example.com',
-      work_phone: '01 23 45 67 89',
-      mobile_phone: '06 12 34 56 78',
-      address: '123 Rue de la Paix, 75001 Paris',
-      birth_date: '1990-01-01',
-      hire_date: '2020-01-01',
-      employment_type: { id: 'cdi', name: 'CDI' },
-      manager: { id: '2', name: 'Marie Martin' },
-      notes: 'Employé très compétent et motivé.',
-      is_active: true,
-      avatar_url: ''
+    const load = async () => {
+      if (!id) return;
+      try {
+        const emp = await employeeService.getEmployeeById(Number(id));
+        if (!emp) return;
+        setEmployee(emp);
+        // Charger contrats et documents liés
+        const [cs, ds] = await Promise.all([
+          contractService.getAll({ employee_id: emp.id }),
+          documentService.getAll({ employee_id: emp.id })
+        ]);
+        setContracts(cs);
+        setDocuments(ds);
+      } catch (e) {
+        console.error('Erreur chargement employé', e);
+      }
     };
-    
-    setEmployee(mockEmployee);
+    load();
   }, [id]);
   
   // Formater une date
@@ -118,46 +91,46 @@ const EmployeeDetailView: React.FC = () => {
       {/* En-tête de la fiche employé */}
       <div className="flex flex-col md:flex-row gap-6 items-start mt-8 mb-6">
         <Avatar className="h-24 w-24">
-          {employee.avatar_url ? (
-            <AvatarImage src={employee.avatar_url} alt={employee.name} />
+          {employee?.avatar_url ? (
+            <AvatarImage src={employee.avatar_url} alt={employee?.name || ''} />
           ) : (
-            <AvatarFallback className="text-2xl">{getInitials(employee.name)}</AvatarFallback>
+            <AvatarFallback className="text-2xl">{getInitials(employee?.name || '')}</AvatarFallback>
           )}
         </Avatar>
         
         <div className="flex-1">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <h2 className="text-2xl font-bold">{employee.name}</h2>
-            <Badge variant={employee.is_active ? "default" : "secondary"}>
-              {employee.is_active ? 'Actif' : 'Inactif'}
+            <h2 className="text-2xl font-bold">{employee?.name}</h2>
+            <Badge variant={employee?.active ? "default" : "secondary"}>
+              {employee?.active ? 'Actif' : 'Inactif'}
             </Badge>
           </div>
           
-          <div className="text-lg text-muted-foreground mt-1">{employee.job_title}</div>
+          <div className="text-lg text-muted-foreground mt-1">{employee?.job_title}</div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-muted-foreground" />
-              <span>{employee.department.name}</span>
+              <span>Département #{employee?.department_id || '—'}</span>
             </div>
             
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <a href={`mailto:${employee.work_email}`} className="text-primary hover:underline">
-                {employee.work_email}
+              <a href={`mailto:${employee?.work_email || ''}`} className="text-primary hover:underline">
+                {employee?.work_email}
               </a>
             </div>
             
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <a href={`tel:${employee.work_phone}`} className="hover:underline">
-                {employee.work_phone}
+              <a href={`tel:${employee?.work_phone || ''}`} className="hover:underline">
+                {employee?.work_phone}
               </a>
             </div>
             
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>Embauché le {formatDate(employee.hire_date)}</span>
+              <span>Embauché le {formatDate(employee?.hire_date as any)}</span>
             </div>
           </div>
         </div>
@@ -191,7 +164,7 @@ const EmployeeDetailView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">Date de naissance</div>
-                    <div>{formatDate(employee.birth_date)}</div>
+                    <div>{formatDate(employee?.birth_date as any)}</div>
                   </div>
                 </div>
                 
@@ -199,7 +172,7 @@ const EmployeeDetailView: React.FC = () => {
                 
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">Adresse</div>
-                  <div className="whitespace-pre-line">{employee.address}</div>
+                  <div className="whitespace-pre-line">{employee?.address || ''}</div>
                 </div>
                 
                 <Separator />
@@ -207,12 +180,12 @@ const EmployeeDetailView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">Téléphone professionnel</div>
-                    <div>{employee.work_phone}</div>
+                    <div>{employee?.work_phone || ''}</div>
                   </div>
                   
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">Téléphone mobile</div>
-                    <div>{employee.mobile_phone}</div>
+                    <div>{employee?.mobile_phone || ''}</div>
                   </div>
                 </div>
               </CardContent>
@@ -226,12 +199,12 @@ const EmployeeDetailView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">Département</div>
-                    <div>{employee.department.name}</div>
+                    <div>Département #{employee?.department_id || '—'}</div>
                   </div>
                   
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">Type de contrat</div>
-                    <div>{employee.employment_type.name}</div>
+                    <div>{employee?.employment_type || '—'}</div>
                   </div>
                 </div>
                 
@@ -240,7 +213,7 @@ const EmployeeDetailView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">Date d'embauche</div>
-                    <div>{formatDate(employee.hire_date)}</div>
+                    <div>{formatDate(employee?.hire_date as any)}</div>
                   </div>
                 </div>
                 
@@ -248,18 +221,18 @@ const EmployeeDetailView: React.FC = () => {
                 
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">Responsable</div>
-                  <div>{employee.manager.name}</div>
+                  <div>{employee?.parent_id ? `Manager #${employee.parent_id}` : '—'}</div>
                 </div>
               </CardContent>
             </Card>
             
-            {employee.notes && (
+            {employee?.notes && (
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>Notes</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="whitespace-pre-line">{employee.notes}</div>
+                  <div className="whitespace-pre-line">{employee?.notes}</div>
                 </CardContent>
               </Card>
             )}
@@ -275,21 +248,21 @@ const EmployeeDetailView: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {contracts.map((contract, index) => (
+                {contracts.map((contract) => (
                   <div key={contract.id} className="relative pl-6 pb-6 border-l border-border">
                     {/* Indicateur de chronologie */}
                     <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-primary"></div>
                     
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                       <div>
-                        <h3 className="font-medium">{contract.job_title}</h3>
-                        <p className="text-sm text-muted-foreground">{contract.department}</p>
+                        <h3 className="font-medium">{contract.name}</h3>
+                        <p className="text-sm text-muted-foreground">{contract.contract_type}</p>
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">{contract.type}</Badge>
+                        <Badge variant="outline">{contract.state}</Badge>
                         <span className="text-sm">
-                          {formatDate(contract.start_date)} - {contract.end_date ? formatDate(contract.end_date) : 'Présent'}
+                          {formatDate(contract.date_start)} - {contract.date_end ? formatDate(contract.date_end) : 'Présent'}
                         </span>
                       </div>
                     </div>
@@ -308,7 +281,25 @@ const EmployeeDetailView: React.FC = () => {
                 <CardTitle>Documents</CardTitle>
                 <CardDescription>Documents liés à l'employé</CardDescription>
               </div>
-              <Button size="sm" className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={async () => {
+                  try {
+                    if (!employee?.id) return;
+                    const name = window.prompt('Nom du document');
+                    if (!name) return;
+                    const file_url = window.prompt('URL du fichier');
+                    if (!file_url) return;
+                    const type = window.prompt('Type de document (ex: Contrat, Avenant)') || '';
+                    const created = await documentService.create({ name, file_url, type, employee_id: employee.id } as any);
+                    setDocuments(prev => [created as any, ...prev]);
+                  } catch (e) {
+                    console.error('Erreur ajout document', e);
+                    alert('Ajout impossible');
+                  }
+                }}
+              >
                 <FileText className="h-4 w-4" />
                 Ajouter un document
               </Button>
@@ -322,7 +313,7 @@ const EmployeeDetailView: React.FC = () => {
                       <div>
                         <div className="font-medium">{doc.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {doc.type} • {formatDate(doc.date)} • {doc.size}
+                          {doc.type || '—'} • {formatDate(doc.created_at as any)} • {(doc.size_bytes ? `${(doc.size_bytes/1024).toFixed(1)} KB` : '—')}
                         </div>
                       </div>
                     </div>

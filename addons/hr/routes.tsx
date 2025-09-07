@@ -10,12 +10,16 @@ import {
   DepartmentFormView,
   DepartmentDetailView,
   DocumentsView,
-  SettingsView,
-  ConfigView,
   ContractsView,
-  LeavesView,
-  TrainingView,
-  RecruitmentView
+  ContractFormView,
+  ContractDetailView,
+  DocumentFormView,
+  DocumentDetailView,
+  OnboardingView,
+  OffboardingView,
+  WorkflowsView,
+  WorkflowFormView,
+  SignaturesView
 } from './views/pages';
 
 /**
@@ -39,23 +43,27 @@ const routes = (
     <Route path="hr/departments/:id" element={<DepartmentDetailView />} />
     <Route path="hr/departments/edit/:id" element={<DepartmentFormView />} />
 
-    {/* Routes pour les contrats */}
+    {/* Route pour les contrats */}
     <Route path="hr/contracts" element={<ContractsView />} />
+    <Route path="hr/contracts/new" element={<ContractFormView />} />
+    <Route path="hr/contracts/:id" element={<ContractDetailView />} />
+    <Route path="hr/contracts/edit/:id" element={<ContractFormView />} />
 
-    {/* Routes pour les congés */}
-    <Route path="hr/leaves" element={<LeavesView />} />
-
-    {/* Routes pour la formation */}
-    <Route path="hr/training" element={<TrainingView />} />
-
-    {/* Routes pour le recrutement */}
-    <Route path="hr/recruitment" element={<RecruitmentView />} />
-
-    {/* Autres routes */}
+    {/* Documents */}
     <Route path="hr/documents" element={<DocumentsView />} />
-    <Route path="hr/settings" element={<SettingsView />} />
-    <Route path="hr/config" element={<ConfigView />} />
-    <Route path="hr/config/:configType" element={<ConfigView />} />
+    <Route path="hr/documents/new" element={<DocumentFormView />} />
+    <Route path="hr/documents/:id" element={<DocumentDetailView />} />
+    <Route path="hr/documents/edit/:id" element={<DocumentFormView />} />
+
+    {/* Onboarding / Offboarding */}
+    <Route path="hr/onboarding" element={<OnboardingView />} />
+    <Route path="hr/offboarding" element={<OffboardingView />} />
+    {/* Workflows */}
+    <Route path="hr/workflows" element={<WorkflowsView />} />
+    <Route path="hr/workflows/new" element={<WorkflowFormView />} />
+    <Route path="hr/workflows/edit/:id" element={<WorkflowFormView />} />
+    {/* Signatures */}
+    <Route path="hr/signatures" element={<SignaturesView />} />
   </>
 );
 

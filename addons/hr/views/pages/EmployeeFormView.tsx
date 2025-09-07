@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { HrNavigation } from '../components';
+import { HrLayout } from '../components';
 import { useEmployeeForm } from '../../hooks/useEmployeeForm';
 import { EmployeeFormHeader, EmployeeForm } from '../../components/employee';
 
@@ -32,23 +32,23 @@ const EmployeeFormView: React.FC = () => {
   }, [id]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <EmployeeFormHeader isNewEmployee={isNewEmployee} />
-      
-      <HrNavigation />
+    <HrLayout>
+      <div className="container mx-auto px-4 py-8">
+        <EmployeeFormHeader isNewEmployee={isNewEmployee} />
 
-      <EmployeeForm
-        employee={employee}
-        departments={departments}
-        managers={managers}
-        employmentTypes={employmentTypes}
-        isNewEmployee={isNewEmployee}
-        onSubmit={handleSubmit}
-        onChange={handleChange}
-        onStatusChange={handleStatusChange}
-        onDelete={handleDelete}
-      />
-    </div>
+        <EmployeeForm
+          employee={employee}
+          departments={departments}
+          managers={managers}
+          employmentTypes={employmentTypes}
+          isNewEmployee={isNewEmployee}
+          onSubmit={handleSubmit}
+          onChange={handleChange}
+          onStatusChange={handleStatusChange}
+          onDelete={handleDelete}
+        />
+      </div>
+    </HrLayout>
   );
 };
 

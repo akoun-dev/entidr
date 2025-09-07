@@ -32,21 +32,22 @@ const AppRoutes = () => {
   const [addonRoutes, setAddonRoutes] = useState<RouteDefinition[]>([]);
 
   useEffect(() => {
-    // Récupérer les routes des addons une fois que l'AddonLoader a chargé les modules
-    const routes = AddonManager.getAllRoutes();
+    const refresh = () => {
+      const routes = AddonManager.getAllRoutes();
+      debug("Routes chargées:", routes);
+      if (routes.length === 0) {
+        error("Aucune route n'a été chargée depuis les modules");
+      } else {
+        routes.forEach((route, index) => debug(`Route ${index}:`, route));
+      }
+      setAddonRoutes(routes as any);
+    };
 
-    debug("Routes chargées:", routes);
+    // Première récupération
+    refresh();
 
-    // Vérifier si les routes sont correctement chargées
-    if (routes.length === 0) {
-      error("Aucune route n'a été chargée depuis les modules");
-    } else {
-      routes.forEach((route, index) => {
-        debug(`Route ${index}:`, route);
-      });
-    }
-
-    setAddonRoutes(routes);
+    // Écoute des chargements tardifs de modules
+    AddonManager.registerHook('postModuleLoad', () => refresh());
   }, []);
 
   // Afficher les routes dans la console pour le débogage
@@ -60,12 +61,12 @@ const AppRoutes = () => {
           {/* Routes des addons */}
           {addonRoutes.map((route, index) => {
             debug(`Rendu de la route ${index}:`, route);
-
+            const path = (route as any).path?.startsWith('/') ? (route as any).path.slice(1) : (route as any).path;
             return (
               <Route
                 key={`addon-route-${index}`}
-                path={route.path}
-                element={React.createElement(route.component)}
+                path={path}
+                element={React.createElement((route as any).component)}
               />
             );
           })}
