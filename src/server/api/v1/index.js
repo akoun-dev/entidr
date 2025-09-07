@@ -29,6 +29,10 @@ const importexport = require('./importexport');
 const performance = require('./performance');
 const appearance = require('./appearance');
 const reference = require('./reference');
+const languages = require('./languages');
+const translations = require('./translations');
+const emailservers = require('./emailservers');
+const apikeys = require('./apikeys');
 const logging = require('./logging');
 const dateformats = require('./dateformats');
 
@@ -58,6 +62,11 @@ router.use('/', compliance);
 router.use('/', importexport);
 router.use('/', performance);
 router.use('/', appearance);
+// Specific routers before reference to cover CRUD/actions
+router.use('/', languages);
+router.use('/', translations);
+router.use('/', emailservers);
+router.use('/', apikeys);
 router.use('/', reference);
 router.use('/', logging);
 router.use('/', dateformats);

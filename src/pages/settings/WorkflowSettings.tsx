@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Switch } from '../../components/ui/switch';
 import { Textarea } from '../../components/ui/textarea';
-import axios from 'axios';
+import { api } from '../../config/api';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 
 // Interface pour les conditions de workflow
@@ -101,19 +101,19 @@ const WorkflowSettings: React.FC = () => {
         setError(null);
 
         // Récupérer tous les workflows
-        const response = await axios.get<{data: Workflow[]}>('/api/workflows', {
+        const response = await api.get<Workflow[]>('/workflows', {
           timeout: 5000 // Timeout de 5 secondes
         });
-        const workflowsData: Workflow[] = response.data.data;
+        const workflowsData: Workflow[] = (response.data as any) ?? [];
 
         // Pour chaque workflow, récupérer ses étapes et conditions
         const workflowsWithDetails = await Promise.all(
           workflowsData.map(async (workflow: any) => {
             try {
-              const detailResponse = await axios.get<{data: Workflow}>(`/api/workflows/${workflow.id}`, {
+              const detailResponse = await api.get<Workflow>(`/workflows/${workflow.id}`, {
                 timeout: 5000 // Timeout de 5 secondes
               });
-              return detailResponse.data.data;
+              return (detailResponse.data as any);
             } catch (err) {
               console.error(`Erreur lors du chargement du workflow ${workflow.id}:`, err);
               return {
@@ -285,7 +285,7 @@ const WorkflowSettings: React.FC = () => {
 
     try {
       // Supprimer le workflow via l'API
-      await axios.delete(`/api/workflows/${workflowToDelete.id}`);
+      await api.delete(`/workflows/${workflowToDelete.id}`);
 
       // Mettre à jour la liste des workflows
       setWorkflows(workflows.filter(w => w.id !== workflowToDelete.id));
@@ -343,7 +343,7 @@ const WorkflowSettings: React.FC = () => {
       }
 
       // Créer l'étape via l'API
-      const response = await axios.post<WorkflowStep>('/api/workflowsteps', {
+      const response = await api.post<WorkflowStep>('/workflowsteps', {
         workflowId: selectedWorkflow,
         name: stepForm.name,
         type: stepForm.type,
@@ -355,7 +355,7 @@ const WorkflowSettings: React.FC = () => {
       });
 
       // Ajouter l'étape au workflow sélectionné
-      const createdStep = response.data;
+      const createdStep: any = response.data as any;
       createdStep.conditions = []; // Initialiser avec un tableau vide
 
       // Mettre à jour le workflow dans la liste

@@ -7,8 +7,7 @@ import { Label } from '../../components/ui/label';
 import { Hash, FileText, Calendar, Plus, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
-import axios from 'axios';
-import { API_BASE_URL } from '../../config/api';
+import { api } from '../../config/api';
 
 interface Sequence {
   id: string;
@@ -63,12 +62,12 @@ const SequenceSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer les séquences
-        const sequencesResponse = await axios.get(`${API_BASE_URL}/sequences`);
-        setSequences(sequencesResponse.data?.data ?? []);
+        const sequencesResponse = await api.get(`/sequences`);
+        setSequences((sequencesResponse.data as any) ?? []);
 
         // Récupérer la configuration des séquences
-        const configResponse = await axios.get(`${API_BASE_URL}/sequenceconfig`);
-        setSequenceConfig(configResponse.data?.data ?? null);
+        const configResponse = await api.get(`/sequenceconfig`);
+        setSequenceConfig((configResponse.data as any) ?? null);
 
         setLoading(false);
       } catch (error) {
@@ -92,7 +91,7 @@ const SequenceSettings: React.FC = () => {
 
       if (!sequenceConfig) return;
 
-      await axios.put(`${API_BASE_URL}/sequenceconfig`, sequenceConfig);
+      await api.put(`/sequenceconfig`, sequenceConfig);
 
       toast({
         title: "Configuration sauvegardée",
@@ -124,11 +123,11 @@ const SequenceSettings: React.FC = () => {
     setIsResetting(true);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/sequences/${sequenceToReset.id}/reset`);
+      const response = await api.post(`/sequences/${sequenceToReset.id}/reset`);
 
       // Mettre à jour la séquence dans le tableau
       setSequences((sequences || []).map(seq =>
-        seq.id === sequenceToReset.id ? (response.data?.data ?? seq) : seq
+        seq.id === sequenceToReset.id ? ((response.data as any) ?? seq) : seq
       ));
 
       toast({

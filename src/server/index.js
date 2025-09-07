@@ -125,16 +125,7 @@ app.use('/api/themeconfig', appearanceRouter);
 app.use('/api/v1/themeconfig', appearanceRouter);
 app.use('/api/calendarconfig', appearanceRouter);
 app.use('/api/v1/calendarconfig', appearanceRouter);
-app.use('/api/holidays', referenceRouter);
-app.use('/api/v1/holidays', referenceRouter);
-app.use('/api/languages', referenceRouter);
-app.use('/api/v1/languages', referenceRouter);
-app.use('/api/translations', referenceRouter);
-app.use('/api/v1/translations', referenceRouter);
-app.use('/api/apikeys', referenceRouter);
-app.use('/api/v1/apikeys', referenceRouter);
-app.use('/api/emailservers', referenceRouter);
-app.use('/api/v1/emailservers', referenceRouter);
+// Remove composite mounts that produced duplicate paths
 app.use('/api/logging-settings', loggingRouter);
 app.use('/api/v1/logging-settings', loggingRouter);
 app.use('/api/dateformats', dateFormatsRouter);

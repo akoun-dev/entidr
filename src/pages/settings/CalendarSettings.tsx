@@ -224,7 +224,7 @@ const CalendarSettings: React.FC = () => {
     setIsDeleting(true);
 
     try {
-      await axios.delete(`${API_BASE_URL}/holidays/${holidayToDelete.id}`);
+      await api.delete(`/holidays/${holidayToDelete.id}`);
 
       // Mettre à jour l'état local
       setHolidays(holidays.filter(h => h.id !== holidayToDelete.id));

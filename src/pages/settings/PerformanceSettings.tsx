@@ -8,8 +8,7 @@ import { Label } from '../../components/ui/label';
 import { Gauge, Database, Clock, Server, Activity, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
-import axios from 'axios';
-import { API_BASE_URL } from '../../config/api';
+import { api } from '../../config/api';
 
 interface PerformanceConfig {
   id: string;
@@ -99,8 +98,8 @@ const PerformanceSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer la configuration des performances
-        const configResponse = await axios.get(`${API_BASE_URL}/performanceconfig`);
-        const cfg = configResponse.data?.data ?? null;
+        const configResponse = await api.get(`/performanceconfig`);
+        const cfg = (configResponse.data as any) ?? null;
         setConfig(cfg);
 
         // Mettre à jour les états locaux
@@ -112,8 +111,8 @@ const PerformanceSettings: React.FC = () => {
         }
 
         // Récupérer les métriques de performance
-        const metricsResponse = await axios.get(`${API_BASE_URL}/performancemetrics`);
-        setMetrics(metricsResponse.data?.data ?? null);
+        const metricsResponse = await api.get(`/performancemetrics`);
+        setMetrics((metricsResponse.data as any) ?? null);
 
         setLoading(false);
       } catch (error) {
@@ -127,8 +126,8 @@ const PerformanceSettings: React.FC = () => {
     // Mettre à jour les métriques toutes les 10 secondes
     const intervalId = setInterval(async () => {
       try {
-        const metricsResponse = await axios.get(`${API_BASE_URL}/performancemetrics`);
-        setMetrics(metricsResponse.data?.data ?? null);
+        const metricsResponse = await api.get(`/performancemetrics`);
+        setMetrics((metricsResponse.data as any) ?? null);
       } catch (error) {
         console.error('Erreur lors de la mise à jour des métriques:', error);
       }
@@ -153,7 +152,7 @@ const PerformanceSettings: React.FC = () => {
         queryOptimization
       };
 
-      await axios.put(`${API_BASE_URL}/performanceconfig`, updatedConfig);
+      await api.put(`/performanceconfig`, updatedConfig);
       setConfig(updatedConfig);
 
       setLoading(false);
@@ -184,8 +183,8 @@ const PerformanceSettings: React.FC = () => {
       setIsRunningDiagnostic(true);
 
       // Récupérer les métriques de performance
-      const metricsResponse = await axios.get(`${API_BASE_URL}/performancemetrics`);
-      setMetrics(metricsResponse.data);
+      const metricsResponse = await api.get(`/performancemetrics`);
+      setMetrics(metricsResponse.data as any);
 
       toast({
         title: "Diagnostic terminé",

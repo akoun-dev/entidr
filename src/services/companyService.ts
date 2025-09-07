@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
+import { api } from '../config/api';
 import { Company } from '@/types/company';
 
 /**
@@ -12,8 +11,8 @@ const companyService = {
    */
   async get(): Promise<Company> {
     try {
-      const response = await axios.get<{data: Company}>(`${API_BASE_URL}/company`);
-      return response.data.data || {
+      const response = await api.get<Company>(`/company`);
+      return (response.data as Company) || {
         name: '',
         trading_name: '',
         description: '',
@@ -47,8 +46,8 @@ const companyService = {
    */
   async update(data: Company): Promise<Company> {
     try {
-      const response = await axios.put<{data: Company}>(`${API_BASE_URL}/company`, data);
-      return response.data.data;
+      const response = await api.put<Company>(`/company`, data);
+      return response.data as Company;
     } catch (error) {
       console.error('Erreur lors de la mise à jour des données de l\'entreprise:', error);
       throw error;

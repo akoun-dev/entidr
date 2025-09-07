@@ -65,6 +65,19 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'EmailServer',
     tableName: 'EmailServers'
   });
+
+  // Encrypt password at rest
+  const { encrypt } = require('../server/utils/crypto');
+  EmailServer.addHook('beforeCreate', (server) => {
+    if (server.password) {
+      server.password = encrypt(server.password);
+    }
+  });
+  EmailServer.addHook('beforeUpdate', (server) => {
+    if (server.changed('password') && server.password) {
+      server.password = encrypt(server.password);
+    }
+  });
   
   return EmailServer;
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { api } from '../../config/api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -27,9 +27,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Loader2, Trash2, Power, RefreshCw } from 'lucide-react';
 import { Module } from '../../types/module';
 
-// Utilise l'URL de base de l'API définie dans les variables d'environnement, avec un
-// repli local identique au reste du projet pour éviter toute adresse codée en dur.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+// Utilise l'instance Axios centralisée (baseURL et intercepteurs)
 
 
 /**
@@ -53,8 +51,8 @@ const ModulesSettings: React.FC = () => {
     const fetchModules = async () => {
       try {
         setLoading(true);
-        const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
-        setModules(response.data.data);
+        const response = await api.get<Module[]>(`/modules`);
+        setModules((response.data as any) ?? []);
         setError(null);
       } catch (err) {
         console.error('Erreur lors du chargement des modules:', err);
@@ -88,13 +86,13 @@ const ModulesSettings: React.FC = () => {
     setProcessingModule(selectedModule.name);
 
     try {
-      await axios.put(`${API_BASE_URL}/modules/${selectedModule.name}/status`, {
+      await api.put(`/modules/${selectedModule.name}/status`, {
         active: !selectedModule.active
       });
 
       // Recharger tous les modules pour avoir les données à jour
-      const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
-      setModules(response.data.data);
+      const response = await api.get<Module[]>(`/modules`);
+      setModules((response.data as any) ?? []);
       setError(null);
 
       // Afficher un message de confirmation
@@ -127,11 +125,11 @@ const ModulesSettings: React.FC = () => {
     setProcessingModule(selectedModule.name);
 
     try {
-      await axios.post(`${API_BASE_URL}/modules/${selectedModule.name}/install`);
+      await api.post(`/modules/${selectedModule.name}/install`);
 
       // Recharger tous les modules pour avoir les données à jour
-      const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
-      setModules(response.data.data);
+      const response = await api.get<Module[]>(`/modules`);
+      setModules((response.data as any) ?? []);
       setError(null);
 
       // Afficher un message de confirmation
@@ -164,11 +162,11 @@ const ModulesSettings: React.FC = () => {
     setProcessingModule(selectedModule.name);
 
     try {
-      await axios.post(`${API_BASE_URL}/modules/${selectedModule.name}/uninstall`);
+      await api.post(`/modules/${selectedModule.name}/uninstall`);
 
       // Recharger tous les modules pour avoir les données à jour
-      const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
-      setModules(response.data.data);
+      const response = await api.get<Module[]>(`/modules`);
+      setModules((response.data as any) ?? []);
       setError(null);
 
       // Afficher un message de confirmation
@@ -295,7 +293,7 @@ const ModulesSettings: React.FC = () => {
           variant="outline"
           onClick={() => {
             setLoading(true);
-            axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`)
+            api.get<Module[]>(`/modules`)
               .then(response => {
                 setModules(response.data.data);
                 setError(null);

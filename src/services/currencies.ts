@@ -18,25 +18,33 @@ export const currencyService = {
   // Récupérer toutes les devises
   async getAll(): Promise<Currency[]> {
     const response = await api.get('/currencies');
-    return response.data.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Récupérer une devise par son ID
   async getById(id: string): Promise<Currency> {
     const response = await api.get(`/currencies/${id}`);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Créer une nouvelle devise
   async create(currency: Omit<Currency, 'id'>): Promise<Currency> {
     const response = await api.post('/currencies', currency);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Mettre à jour une devise
   async update(id: string, currency: Partial<Currency>): Promise<Currency> {
     const response = await api.put(`/currencies/${id}`, currency);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Supprimer une devise
@@ -47,6 +55,8 @@ export const currencyService = {
   // Activer/désactiver une devise
   async toggleStatus(id: string): Promise<Currency> {
     const response = await api.patch(`/currencies/${id}/toggle-status`);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   }
 };

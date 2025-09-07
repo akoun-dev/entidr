@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
+import { api } from '../config/api';
 import { Settings } from '../types/settings.ts';
 import type {
   DatabaseSettings,
@@ -21,22 +20,22 @@ export interface DatabaseConnectionParams {
 const SettingsService = {
   // Méthodes principales
   async getSettings<T extends Settings>(module: string): Promise<T> {
-    const response = await axios.get(`${API_BASE_URL}/settings/${module}`);
+    const response = await api.get(`/settings/${module}`);
     return response.data as T;
   },
 
   async saveSettings<T extends Settings>(module: string, settings: T): Promise<T> {
-    const response = await axios.put(`${API_BASE_URL}/settings/${module}`, settings);
+    const response = await api.put(`/settings/${module}`, settings);
     return response.data as T;
   },
 
   async getAllSettings(): Promise<Record<string, Settings>> {
-    const response = await axios.get(`${API_BASE_URL}/settings`);
+    const response = await api.get(`/settings`);
     return response.data as Record<string, Settings>;
   },
 
   async testDatabaseConnection(connection: DatabaseConnectionParams): Promise<{success: boolean; message: string}> {
-    const response = await axios.post(`${API_BASE_URL}/settings/database/test`, connection);
+    const response = await api.post(`/settings/database/test`, connection);
     return response.data as {success: boolean; message: string};
   },
 

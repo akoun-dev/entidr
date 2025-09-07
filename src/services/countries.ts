@@ -16,25 +16,33 @@ export const countryService = {
   // Récupérer tous les pays
   async getAll(): Promise<Country[]> {
     const response = await api.get('/countries');
-    return response.data.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Récupérer un pays par son ID
   async getById(id: string): Promise<Country> {
     const response = await api.get(`/countries/${id}`);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Créer un nouveau pays
   async create(country: Omit<Country, 'id'>): Promise<Country> {
     const response = await api.post('/countries', country);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Mettre à jour un pays
   async update(id: string, country: Partial<Country>): Promise<Country> {
     const response = await api.put(`/countries/${id}`, country);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   },
 
   // Supprimer un pays
@@ -45,6 +53,8 @@ export const countryService = {
   // Activer/désactiver un pays
   async toggleStatus(id: string): Promise<Country> {
     const response = await api.patch(`/countries/${id}/toggle-status`);
-    return response.data;
+    return (response.data && (response as any).data.data !== undefined)
+      ? (response as any).data.data
+      : response.data;
   }
 };
