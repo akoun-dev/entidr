@@ -22,9 +22,17 @@ const MainLayout: React.FC = () => {
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(prev => !prev)}
         />
-        <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-16'}`}>
+        {/* Overlay for mobile when sidebar is open */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-20 bg-black/40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+        <main className={`flex-1 transition-all duration-300 overflow-x-hidden ${sidebarOpen ? 'md:ml-64' : 'md:ml-16'}`}>
           <Header toggleSidebar={() => setSidebarOpen(prev => !prev)} isSidebarOpen={sidebarOpen} />
-          <div className="w-full transition-all">
+          <div className="w-full transition-all px-3 sm:px-4 md:px-6 lg:px-8">
             <Outlet />
           </div>
         </main>

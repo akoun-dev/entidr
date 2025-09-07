@@ -98,14 +98,17 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-30 bg-sidebar transition-all duration-300 shadow-md border-r border-sidebar-border flex flex-col",
-        isOpen ? "w-64" : "w-16"
+        "fixed inset-y-0 left-0 z-30 bg-sidebar transition-transform duration-300 shadow-md border-r border-sidebar-border flex flex-col will-change-transform",
+        // Mobile: off-canvas full width
+        isOpen ? "translate-x-0 w-64 md:w-64" : "-translate-x-full w-64 md:translate-x-0",
+        // Desktop: collapsed width when closed
+        !isOpen && "md:w-16",
       )}
     >
       {/* Logo et brand */}
       <div className={cn(
         "h-16 px-4 flex items-center border-b border-sidebar-border",
-        isOpen ? "justify-between" : "justify-center"
+        isOpen ? "justify-between" : "justify-center md:justify-center"
       )}>
         {isOpen ? (
           <>
@@ -125,7 +128,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
             </Button>
           </>
         ) : (
-          <Button variant="ghost" size="icon" onClick={onToggle}>
+          <Button variant="ghost" size="icon" onClick={onToggle} className="hidden md:inline-flex">
             <ChevronRight className="h-4 w-4" />
           </Button>
         )}
