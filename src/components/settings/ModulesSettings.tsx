@@ -186,6 +186,9 @@ const ModulesSettings: React.FC = () => {
     }
   };
 
+  const totalVisible = modules.filter(m => m.installed || (m.installable !== false)).length;
+  const installedCount = modules.filter(m => m.installed).length;
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -287,7 +290,7 @@ const ModulesSettings: React.FC = () => {
       </CardContent>
       <CardFooter className="flex justify-between">
         <div className="text-sm text-muted-foreground">
-          {modules.length} modules au total, {modules.filter(m => m.installed).length} installés
+          {totalVisible} modules au total, {installedCount} installés
         </div>
         <Button
           variant="outline"
@@ -295,7 +298,7 @@ const ModulesSettings: React.FC = () => {
             setLoading(true);
             api.get<Module[]>(`/modules`)
               .then(response => {
-                setModules(response.data.data);
+                setModules((response.data as any) ?? []);
                 setError(null);
                 setLoading(false);
               })
