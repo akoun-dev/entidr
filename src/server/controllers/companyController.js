@@ -15,7 +15,15 @@ const COMPANY_FIELDS = [
   'phone',
   'email',
   'website',
+  // Identité visuelle
   'logo',
+  // Informations légales
+  'legal_form',
+  'registration_number',
+  'vat_number',
+  'share_capital',
+  'legal_representative',
+  'legal_info',
   'createdBy',
   'updatedBy'
 ];
@@ -89,30 +97,18 @@ const updateCompany = async (req, res) => {
       }
     });
 
-    const [updated] = await Company.update(updateData, {
-      where: { id: 1 },
-      returning: true
-    });
-
-    if (!updated) {
-      return res.status(404).json({ message: 'Company not found' });
+    // Vérifier l'existence de l'enregistrement id=1, sinon le créer
+    let company = await Company.findByPk(1, { raw: false });
+    if (!company) {
+      company = await Company.create({ createdBy: 1 });
     }
 
-    console.log('Recherche de company avec options:', {
-      tableName: 'Companies',
-      where: { id: 1 },
-      raw: true
-    });
+    // Mettre à jour avec les données filtrées
+    await company.update(updateData);
 
-    const company = await Company.findOne({
-      tableName: 'Companies',
-      where: { id: 1 },
-      raw: true,
-      logging: console.log
-    });
-
-    console.log('Résultat de la requête:', company);
-    res.json(company);
+    // Retourner l'objet brut (compatible avec le front actuel)
+    const plain = company.get({ plain: true });
+    res.json(plain);
   } catch (error) {
     logger.error('Error updating company:', error);
     res.status(500).json({ message: 'Internal server error' });

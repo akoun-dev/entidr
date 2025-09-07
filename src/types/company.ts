@@ -12,6 +12,15 @@ export type Company = {
   phone?: string;
   email?: string;
   website?: string;
+  // Identité visuelle
+  logo?: string;
+  // Informations légales
+  legal_form?: string;
+  registration_number?: string;
+  vat_number?: string;
+  share_capital?: string;
+  legal_representative?: string;
+  legal_info?: string;
 };
 
 // Explicit module export

@@ -26,7 +26,15 @@ module.exports = (sequelize, DataTypes) => {
     phone: DataTypes.STRING,
     email: DataTypes.STRING,
     website: DataTypes.STRING,
+    // Identité visuelle
     logo: DataTypes.STRING,
+    // Informations légales
+    legal_form: DataTypes.STRING,
+    registration_number: DataTypes.STRING,
+    vat_number: DataTypes.STRING,
+    share_capital: DataTypes.STRING,
+    legal_representative: DataTypes.STRING,
+    legal_info: DataTypes.TEXT,
     createdBy: {
       type: DataTypes.INTEGER,
       allowNull: false

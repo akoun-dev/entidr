@@ -25,7 +25,14 @@ const companyService = {
         country: '',
         phone: '',
         email: '',
-        website: ''
+        website: '',
+        logo: '',
+        legal_form: '',
+        registration_number: '',
+        vat_number: '',
+        share_capital: '',
+        legal_representative: '',
+        legal_info: ''
       };
     } catch (error) {
       console.error('Erreur lors de la récupération des données de l\'entreprise:', error);

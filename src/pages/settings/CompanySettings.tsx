@@ -68,10 +68,17 @@ const CompanySettings: React.FC = () => {
     fetchCompanyData();
   }, []);
 
+  // Mappe l'id de l'input vers la clé du modèle
+  const idToKey = (id: string) => {
+    // Les ids sont du type "company_name", "company_trading_name", ...
+    if (id.startsWith('company_')) return id.slice('company_'.length);
+    return id.replace(/-/g, '_');
+  };
+
   // Gérer les changements dans les champs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    const key = id.replace(/-/g, '_'); // Convertir les tirets en underscores pour correspondre aux clés
+    const key = idToKey(id);
 
     setCompany((prev: Company) => ({
       ...prev,
@@ -232,6 +239,126 @@ const CompanySettings: React.FC = () => {
                         value={company.foundation_date || ''}
                         onChange={handleChange}
                       />
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Onglet Informations légales */}
+        <TabsContent value="legal" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Informations légales</CardTitle>
+              <CardDescription>Mentions administratives et légales de l'entreprise</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loading ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-ivory-orange" />
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="company_legal_form">Forme juridique</Label>
+                      <Input
+                        id="company_legal_form"
+                        placeholder="Ex: SARL, SAS, SA, EI, ..."
+                        value={company.legal_form || ''}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="company_share_capital">Capital social</Label>
+                      <Input
+                        id="company_share_capital"
+                        placeholder="Ex: 10 000 €"
+                        value={company.share_capital || ''}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="company_registration_number">N° d'immatriculation (RCS/SIREN/SIRET)</Label>
+                      <Input
+                        id="company_registration_number"
+                        placeholder="Ex: RCS Paris 123 456 789"
+                        value={company.registration_number || ''}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="company_vat_number">N° TVA intracommunautaire</Label>
+                      <Input
+                        id="company_vat_number"
+                        placeholder="Ex: FRXX999999999"
+                        value={company.vat_number || ''}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company_legal_representative">Représentant légal</Label>
+                    <Input
+                      id="company_legal_representative"
+                      placeholder="Nom et fonction"
+                      value={company.legal_representative || ''}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company_legal_info">Mentions légales complémentaires</Label>
+                    <Textarea
+                      id="company_legal_info"
+                      placeholder="Mentions obligatoires, conditions, informations complémentaires..."
+                      className="min-h-[100px]"
+                      value={company.legal_info || ''}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Onglet Identité visuelle */}
+        <TabsContent value="visual" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Identité visuelle</CardTitle>
+              <CardDescription>Logo et éléments d'identité visuelle</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loading ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-ivory-orange" />
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <div className="space-y-2">
+                      <Label htmlFor="company_logo">URL du logo</Label>
+                      <Input
+                        id="company_logo"
+                        placeholder="https://.../logo.png"
+                        value={company.logo || ''}
+                        onChange={handleChange}
+                      />
+                      <p className="text-xs text-muted-foreground">Format PNG/SVG recommandé. Upload direct à venir.</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-24 h-24 border rounded flex items-center justify-center bg-white overflow-hidden">
+                        {company.logo ? (
+                          <img src={company.logo} alt="Logo" className="max-w-full max-h-full" />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Aperçu</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </>
