@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
-import { ArrowUp, Check, RefreshCw, Download, AlertTriangle, Loader2 } from 'lucide-react';
+import { ArrowUp, Check, RefreshCw, Download, AlertTriangle, ExternalLink } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
+import { api } from '../../config/api';
 
 interface Update {
   id: string;
-  name: string;
+  name: string; // Display name
+  module?: string; // module technical name if applicable
   currentVersion: string;
   newVersion: string;
   size: string;
@@ -19,35 +21,8 @@ interface Update {
 }
 
 const UpdatesSettings: React.FC = () => {
-  const [updates, setUpdates] = useState<Update[]>([
-    {
-      id: '1',
-      name: 'ERP Core',
-      currentVersion: '2.3.1',
-      newVersion: '2.4.0',
-      size: '45.2 MB',
-      releaseDate: '2025-05-01',
-      changelog: [
-        'Nouveau système de permissions',
-        'Amélioration des performances',
-        'Correction de bugs critiques'
-      ],
-      security: true
-    },
-    {
-      id: '2',
-      name: 'Module CRM',
-      currentVersion: '1.2.0',
-      newVersion: '1.2.1',
-      size: '12.5 MB',
-      releaseDate: '2025-04-28',
-      changelog: [
-        'Correction des problèmes de synchronisation',
-        'Amélioration de l\'interface utilisateur'
-      ],
-      security: false
-    }
-  ]);
+  const [updates, setUpdates] = useState<Update[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
@@ -57,17 +32,26 @@ const UpdatesSettings: React.FC = () => {
   const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
 
-  const handleCheckUpdates = () => {
+  const refreshUpdates = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get<Update[]>(`/updates/modules`);
+      setUpdates((res.data as any) ?? []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckUpdates = async () => {
     setIsChecking(true);
-    // Simuler une vérification des mises à jour
-    setTimeout(() => {
+    try {
+      await refreshUpdates();
+      toast({ title: 'Vérification terminée', description: 'Catalogue des mises à jour actualisé.' });
+    } catch (e) {
+      toast({ title: 'Erreur', description: 'Impossible de vérifier les mises à jour', variant: 'destructive' });
+    } finally {
       setIsChecking(false);
-      toast({
-        title: "Vérification terminée",
-        description: "Toutes les mises à jour disponibles ont été trouvées.",
-        variant: "default",
-      });
-    }, 2000);
+    }
   };
 
   // Ouvrir la boîte de dialogue de confirmation d'installation
@@ -83,8 +67,9 @@ const UpdatesSettings: React.FC = () => {
     setIsInstalling(true);
 
     try {
-      // Simuler une installation
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      if (updateToInstall.module) {
+        await api.post(`/updates/modules/${encodeURIComponent(updateToInstall.module)}/apply`, { version: updateToInstall.newVersion });
+      }
 
       // Mettre à jour l'état local
       setUpdates(updates.filter(u => u.id !== updateToInstall.id));
@@ -109,6 +94,8 @@ const UpdatesSettings: React.FC = () => {
       setIsInstalling(false);
     }
   };
+
+  useEffect(() => { refreshUpdates(); }, []);
 
   return (
     <div className="p-6">
@@ -142,9 +129,33 @@ const UpdatesSettings: React.FC = () => {
         </Button>
       </div>
 
-      {/* Liste des mises à jour */}
+      {/* Documentation ERP Core */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Mises à jour ERP Core</CardTitle>
+          <CardDescription>Procédure recommandée pour mettre à jour le socle</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-2">Le cœur (ERP Core) se met à jour en mode maintenance:</p>
+          <ol className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
+            <li>Effectuer une sauvegarde (base + fichiers).</li>
+            <li>Basculer en maintenance.</li>
+            <li>Déployer le package core (git pull ou archive).</li>
+            <li>Exécuter les migrations de base.</li>
+            <li>Redémarrer les services.</li>
+            <li>Vérifier les logs et la santé.</li>
+          </ol>
+          <a className="inline-flex items-center gap-2 text-ivory-orange mt-3" href="/docs/CORE_UPDATE.md" target="_blank" rel="noreferrer">
+            <ExternalLink className="h-4 w-4" /> Consulter la documentation complète
+          </a>
+        </CardContent>
+      </Card>
+
+      {/* Liste des mises à jour modules */}
       <div className="space-y-4">
-        {updates.length === 0 ? (
+        {loading ? (
+          <div className="text-sm text-muted-foreground">Chargement…</div>
+        ) : updates.length === 0 ? (
           <Alert>
             <Check className="h-4 w-4" />
             <AlertTitle>Aucune mise à jour disponible</AlertTitle>
