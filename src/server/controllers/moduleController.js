@@ -97,7 +97,48 @@ const moduleController = {
           order: [['displayName', 'ASC']]
         });
         console.log('Modules récupérés avec succès:', modules.length);
-        return res.status(200).json(modules);
+
+        // Compat: certains schémas n'incluent pas encore tous les champs (installable, summary, ...)
+        const normalized = modules.map(m => {
+          const plain = m.toJSON ? m.toJSON() : m;
+          const modulePath = path.join(ADDONS_DIR, plain.name);
+          const existsInFs = fs.existsSync(modulePath);
+
+          // Parse potential JSON strings from older seeders
+          let deps = [];
+          if (Array.isArray(plain.dependencies)) deps = plain.dependencies;
+          else if (typeof plain.dependencies === 'string') {
+            try { deps = JSON.parse(plain.dependencies || '[]'); } catch { deps = []; }
+          }
+
+          let models = [];
+          if (Array.isArray(plain.models)) models = plain.models;
+          else if (typeof plain.models === 'string') {
+            try { models = JSON.parse(plain.models || '[]'); } catch { models = []; }
+          }
+          return {
+            // Champs de base
+            id: plain.id,
+            name: plain.name,
+            displayName: plain.displayName || plain.name,
+            version: plain.version || '0.0.0',
+            description: plain.description || null,
+            summary: plain.summary || plain.description || null,
+            active: typeof plain.active === 'boolean' ? plain.active : false,
+            installed: typeof plain.installed === 'boolean' ? plain.installed : false,
+            // Champs optionnels avec valeurs par défaut raisonnables
+            installable: existsInFs && (typeof plain.installable === 'boolean' ? plain.installable : true),
+            application: typeof plain.application === 'boolean' ? plain.application : true,
+            autoInstall: typeof plain.autoInstall === 'boolean' ? plain.autoInstall : false,
+            dependencies: deps,
+            models: models,
+            installedAt: plain.installedAt || null,
+            createdAt: plain.createdAt,
+            updatedAt: plain.updatedAt
+          };
+        });
+
+        return res.status(200).json(normalized);
       } catch (findError) {
         console.error('Erreur lors de la récupération des modules:', {
           message: findError.message,
@@ -141,7 +182,39 @@ const moduleController = {
         });
       }
 
-      return res.status(200).json(module);
+      const plain = module.toJSON ? module.toJSON() : module;
+      const modulePath = path.join(ADDONS_DIR, plain.name);
+      const existsInFs = fs.existsSync(modulePath);
+      let deps = [];
+      if (Array.isArray(plain.dependencies)) deps = plain.dependencies;
+      else if (typeof plain.dependencies === 'string') {
+        try { deps = JSON.parse(plain.dependencies || '[]'); } catch { deps = []; }
+      }
+      let models = [];
+      if (Array.isArray(plain.models)) models = plain.models;
+      else if (typeof plain.models === 'string') {
+        try { models = JSON.parse(plain.models || '[]'); } catch { models = []; }
+      }
+      const normalized = {
+        id: plain.id,
+        name: plain.name,
+        displayName: plain.displayName || plain.name,
+        version: plain.version || '0.0.0',
+        description: plain.description || null,
+        summary: plain.summary || plain.description || null,
+        active: typeof plain.active === 'boolean' ? plain.active : false,
+        installed: typeof plain.installed === 'boolean' ? plain.installed : false,
+        installable: existsInFs && (typeof plain.installable === 'boolean' ? plain.installable : true),
+        application: typeof plain.application === 'boolean' ? plain.application : true,
+        autoInstall: typeof plain.autoInstall === 'boolean' ? plain.autoInstall : false,
+        dependencies: deps,
+        models: models,
+        installedAt: plain.installedAt || null,
+        createdAt: plain.createdAt,
+        updatedAt: plain.updatedAt
+      };
+
+      return res.status(200).json(normalized);
     } catch (error) {
       console.error(`Erreur lors de la récupération du module ${req.params.name}:`, error);
       return res.status(500).json({

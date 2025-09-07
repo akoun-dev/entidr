@@ -3,8 +3,8 @@ const { DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
   const Module = sequelize.define('Module', {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true
     },
     name: {
@@ -23,6 +23,10 @@ module.exports = (sequelize) => {
     description: {
       type: DataTypes.TEXT
     },
+    summary: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     active: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
@@ -30,9 +34,33 @@ module.exports = (sequelize) => {
     installed: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+    installable: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    application: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    autoInstall: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    dependencies: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    models: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    installedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
-    tableName: 'modules',
+    tableName: 'Modules',
     timestamps: true
   });
 

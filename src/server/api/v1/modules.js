@@ -10,4 +10,13 @@ router.get('/', moduleController.getAllModules);
 // Route pour récupérer un module par son nom
 router.get('/:name', moduleController.getModuleByName);
 
+// Route pour activer/désactiver un module
+router.put('/:name/status', moduleController.toggleModuleStatus);
+
+// Route pour installer un module
+router.post('/:name/install', moduleController.installModule);
+
+// Route pour désinstaller un module
+router.post('/:name/uninstall', moduleController.uninstallModule);
+
 module.exports = router;

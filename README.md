@@ -1,134 +1,99 @@
-**ENTIDR - Système ERP Moderne**
+# Entidr
 
-**ENTIDR** est un système ERP (Enterprise Resource Planning) moderne et modulaire développé avec les technologies web les plus récentes. Voici les caractéristiques principales de votre projet :
+Application full‑stack (React + Express) avec gestion de modules, base de données Sequelize/SQLite et documentation Swagger.
 
-### **Architecture Technique**
+## Aperçu
+- Frontend: React 18 + Vite, UI Radix + tailwind.
+- Backend: Express 5, routes REST `/api/v1`, WebSocket `/ws/analytics`.
+- Base de données: Sequelize, dialecte SQLite (par défaut), migrations + seeders.
+- Modules: registre en base et contenu optionnel dans `addons/<module>/` (migrations/seeders). Actions d’installation, activation, désinstallation.
 
-**Technologies principales :**
-- **Frontend :** React 18.3.1 + TypeScript + Vite
-- **UI Framework :** shadcn-ui + Tailwind CSS + Radix UI
-- **Backend :** Node.js + Express + Sequelize ORM
-- **Base de données :** SQLite (configurable pour PostgreSQL, MySQL)
-- **State Management :** React Query (@tanstack/react-query)
-- **Routing :** React Router DOM
-- **Styling :** Tailwind CSS avec thème personnalisé inspiré de la Côte d'Ivoire
+## Prérequis
+- Node.js 18+ (recommandé 20/22)
+- npm 9+
 
-### **Architecture Modulaire**
+## Installation
+1. Installer les dépendances
+   - `npm install`
+2. Configurer l’environnement (défauts fournis)
+   - Copier/adapter les fichiers d’exemple: `.env.development.example` → `.env.development`, `.env.production.example` → `.env.production`
+   - Variables utiles:
+     - `PORT`: port du backend (défaut 3001)
+     - `VITE_API_BASE_URL`: URL de l’API côté front (ex: `http://localhost:3001/api/v1`)
+     - `DB_DIALECT`, `DB_STORAGE` (SQLite par défaut, voir `src/config/config.js`)
+3. Initialiser la base (Option A)
+   - `npm run setup-db`
+   - Cela exécute les migrations `src/migrations` puis les seeders `src/seeders` et crée `src/database.sqlite`.
 
-Votre projet utilise une architecture de **modules/plugins** très avancée :
+## Démarrage
+- Backend (API + WS):
+  - `npm run server`
+  - Expose: `http://localhost:3001/api/v1` et Swagger sur `http://localhost:3001/api-docs`
+- Frontend (dev):
+  - `npm run dev`
+  - Vite démarre sur `http://localhost:3000` et consomme l’API définie par `VITE_API_BASE_URL`.
 
-**1. Gestionnaire d'Addons ([`AddonManager.ts`](src/core/AddonManager.ts:1))**
-- Singleton qui gère le chargement, l'enregistrement et la vie des modules
-- Supporte l'initialisation et le nettoyage des modules
-- Gestion centralisée des routes et des menus
+## Scripts NPM utiles
+- `dev`: lance Vite (frontend)
+- `server`: démarre le serveur Express (backend)
+- `setup-db`: migrations + seeders (SQLite par défaut)
+- `migrate`, `migrate:dev`, `migrate:prod`: exécution contrôlée des migrations
+- `build`, `build:dev`, `preview`: build/preview du frontend
+- `test`, `test:unit`, `test:api`: tests (vitest/jest)
+- `lint`: ESLint
 
-**2. Registre des Modules ([`ModuleRegistry.ts`](src/core/ModuleRegistry.ts:1))**
-- Généré automatiquement par le script [`generateModuleRegistry.js`](scripts/generateModuleRegistry.js:1)
-- Découverte dynamique des modules dans le dossier `addons/`
-- Tri topologique des modules en fonction des dépendances
+## Architecture
+- Backend
+  - Entrée: `server.js` → `src/server/index.js`
+  - Routes v1: `src/server/api/v1` (ex: `modules.js`, `users.js`, `printers.js`, …)
+  - Contrôleurs: `src/server/controllers` (ex: `moduleController.js`)
+  - Middlewares/erreurs: `src/middlewares`
+  - Swagger: `src/config/swagger`
+  - Modèles Sequelize: `src/models` (+ `src/config/config.js`)
+  - Migrations/Seeders: `src/migrations`, `src/seeders`
+- Frontend
+  - Code: `src/` (React + Vite)
+  - Gestion des modules (UI): `src/components/settings/ModulesSettings.tsx`
+  - Types: `src/types`
+- Modules (fichiers additionnels)
+  - Dossier: `addons/<nomModule>/`
+  - Sous‑dossiers pris en charge: `migrations/`, `seeders/`
 
-**3. Structure des Modules**
-Chaque module suit une structure cohérente :
-- `manifest.ts` - Métadonnées et configuration
-- `index.ts` - Point d'entrée du module
-- `routes/` - Définition des routes
-- `views/` - Composants React
-- `models/` - Modèles de données (optionnel)
-- `services/` - Services métier (optionnel)
+## Gestion des modules
+- Endpoints principaux (v1):
+  - `GET /api/v1/modules` : liste des modules
+  - `GET /api/v1/modules/:name` : détail d’un module
+  - `PUT /api/v1/modules/:name/status` : activer/désactiver (`{ "active": true|false }`)
+  - `POST /api/v1/modules/:name/install` : installer (exécute migrations/seeders du module si présents)
+  - `POST /api/v1/modules/:name/uninstall` : désinstaller (vérifie dépendances)
+- UI
+  - Onglets: “Installés”, “Disponibles”, “Tous”
+  - Bouton “Rafraîchir” relit la liste depuis l’API
+- Synchronisation avec le système de fichiers
+  - L’API marque `installable=false` si le dossier `addons/<module>` est absent. Ces modules n’apparaissent pas en “Disponibles” ni en “Tous” s’ils ne sont pas installés.
+  - Pour supprimer définitivement un module de la base, prévoir une opération de nettoyage (à venir) ou le retirer manuellement de la table `Modules`.
 
-### **Modules Disponibles**
+## Base de données
+- Config: `src/config/config.js` (SQLite par défaut: `src/database.sqlite` en dev)
+- Migrations: `src/migrations` (création des tables)
+- Seeders: `src/seeders` (données de base, y compris modules par défaut)
+- Commandes utiles:
+  - `npx sequelize-cli db:migrate --migrations-path=src/migrations`
+  - `npx sequelize-cli db:seed:all --seeders-path=src/seeders`
 
-**1. Ressources Humaines ([`addons/hr/`](addons/hr/))**
-- Gestion des employés, départements, congés
-- Contrats, formations, recrutement
-- Modèles : `hr.employee`, `hr.department`, `hr.leave`
+## Déploiement
+- Construire le frontend: `npm run build` (dossier `dist/`)
+- Lancer l’API: `npm run server` (derrière un reverse proxy recommandé)
+- Variables à définir: `PORT`, `VITE_API_BASE_URL`, et paramètres DB (si autre que SQLite fichier)
 
-**2. CRM ([`addons/crm/`](addons/crm/))**
-- Gestion des clients, leads, opportunités
-- Activités et suivi commercial
-- Modèles : `crm.lead`, `crm.opportunity`, `crm.customer`
+## Dépannage
+- 404 sur désinstallation d’un module
+  - Vérifier les routes v1: `src/server/api/v1/modules.js` doit exposer `POST /:name/uninstall`.
+- Vue “Aucun module disponible”
+  - Exécuter `npm run setup-db` pour aligner le schéma et les données seed.
+  - Vérifier `VITE_API_BASE_URL` (ex: `http://localhost:3001/api/v1`).
+- Modules supprimés dans `addons/` encore visibles
+  - Cliquer sur “Rafraîchir” dans l’UI; l’API marquera `installable=false` et ils ne seront plus listés en “Disponibles”/“Tous” s’ils ne sont pas installés. Pour un nettoyage total, supprimer l’entrée en DB.
 
-**3. Finance ([`addons/finance/`](addons/finance/))**
-- Comptabilité, facturation, paiements
-- Rapports financiers
-- Modèles : `finance.invoice`, `finance.payment`
-
-**4. Autres modules :**
-- **Inventaire** - Gestion des stocks
-- **Projets** - Gestion de projet
-- **BPMN** - Workflow et processus métier
-
-### **Fonctionnalités Clés**
-
-**1. Interface Utilisateur Moderne**
-- Design responsive avec inspirations ivoiriennes (couleurs orange et verte)
-- Thème clair/sombre avec [`next-themes`](package.json:62)
-- Composants UI réutilisables basés sur shadcn-ui
-
-**2. Système de Configuration Complet**
-- Paramètres généraux, utilisateurs, groupes
-- Localisation (langues, devises, pays, formats)
-- Intégrations externes, API, sécurité
-- Notifications, audit, sauvegardes
-
-**3. Internationalisation**
-- Support multi-langues
-- Gestion des traductions
-- Formats de date, heure, nombre personnalisables
-
-**4. Architecture Extensible**
-- Modules installables/désinstallables
-- Boutique d'applications prévue
-- Mises à jour de modules
-
-### **Système de Base de Données**
-
-**Modèle de données unifié :**
-- Utilise Sequelize ORM avec SQLite par défaut
-- Modèles centralisés dans [`src/models/`](src/models/)
-- Support des relations (many2one, one2many, many2many)
-- Migration et seeding via Sequelize CLI
-
-### **Développement et Déploiement**
-
-**Scripts disponibles :**
-- `npm run dev` - Développement avec Vite
-- `npm run build` - Build pour production
-- `npm run server` - Démarrage du serveur backend
-- `npm run setup-db` - Configuration de la base de données
-- `npm run generate-modules` - Régénération du registre des modules
-
-### **Architecture Scalable**
-
-**1. Architecture Microservices :**
-- Découpage des modules critiques en services indépendants
-- Communication via bus d'événements
-- Déploiement isolé possible
-
-**2. Event Bus (Kafka) :**
-- Système de messages asynchrones
-- Topics par domaine métier
-- Producteurs/Consommateurs isolés
-
-**3. API Gateway Modulaire :**
-- Agrégation des endpoints
-- Routing intelligent
-- Load balancing
-
-**4. Points Forts :**
-- Modularité extrême (chaque fonctionnalité est un module indépendant)
-- Découverte automatique des modules
-- Gestion des dépendances entre services
-- Configuration centralisée
-- Extensibilité simplifiée
-- Design moderne et réactif
-
-### **Potentiel d'Amélioration**
-
-1. **Déploiement Kubernetes** - Orchestration des microservices
-2. **Monitoring** - Observabilité des services
-3. **Sécurité** - RBAC avancé et chiffrement
-4. **Tests** - Couverture de tests étendue
-5. **CI/CD** - Pipeline automatisé
-
-C'est un projet ERP très bien structuré, moderne et extensible, avec une architecture de modules qui le rend particulièrement adaptable aux besoins des entreprises africaines et internationales.
+## Licence
+- À définir par le propriétaire du projet.

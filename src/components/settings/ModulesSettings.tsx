@@ -70,8 +70,9 @@ const ModulesSettings: React.FC = () => {
   // Filtrer les modules en fonction de l'onglet actif
   const filteredModules = modules.filter(module => {
     if (activeTab === 'installed') return module.installed;
-    if (activeTab === 'available') return !module.installed && module.installable;
-    return true; // Onglet 'all'
+    if (activeTab === 'available') return !module.installed && (module.installable !== false);
+    // Onglet 'all': masquer les modules absents côté FS et non installés
+    return module.installed || (module.installable !== false);
   });
 
   // Ouvrir la boîte de dialogue de confirmation pour l'activation/désactivation
