@@ -61,4 +61,20 @@ module.exports = {
             res.status(500).json({ error: error.message });
         }
     }
+    ,
+
+    // Définir un modèle comme par défaut pour son type
+    setDefault: async (req, res) => {
+        try {
+            const layout = await DocumentLayout.findByPk(req.params.id);
+            if (!layout) {
+                return res.status(404).json({ error: 'Document layout not found' });
+            }
+            layout.isDefault = true;
+            await layout.save();
+            res.json(layout);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
 };

@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { securityService } from '@/services/securityService';
-import type { SecuritySetting } from '@/types/security';
+import { securityService } from '../../services/securityService';
+import type { SecuritySetting } from '../../types/security';
 
 const SecuritySettings: React.FC = () => {
   const [settings, setSettings] = useState<SecuritySetting[]>([]);

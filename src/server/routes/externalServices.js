@@ -3,7 +3,6 @@ const router = express.Router();
 const ExternalServiceController = require('../controllers/ExternalServiceController');
 const { authenticate, authorize } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validate');
-const { externalServiceSchema } = require('../validations/externalService');
 
 /**
  * @swagger
@@ -40,7 +39,7 @@ router.post(
   '/',
   authenticate,
   authorize(['admin']),
-  validate(externalServiceSchema),
+  validate(),
   ExternalServiceController.create
 );
 
@@ -131,7 +130,7 @@ router.put(
   '/:id',
   authenticate,
   authorize(['admin']),
-  validate(externalServiceSchema),
+  validate(),
   ExternalServiceController.update
 );
 

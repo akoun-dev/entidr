@@ -128,11 +128,13 @@ const ComplianceSettings: React.FC = () => {
     }
   };
 
-  const filteredConsentRecords = consentRecords.filter(record =>
-    record.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    record.consentType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    record.ipAddress.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredConsentRecords = consentRecords.filter(record => {
+    const term = (searchTerm || '').toLowerCase();
+    const userText = (record.user ?? String(record.userId ?? '')).toLowerCase();
+    const typeText = (record.consentType ?? '').toLowerCase();
+    const ipText = (record.ipAddress ?? '').toLowerCase();
+    return userText.includes(term) || typeText.includes(term) || ipText.includes(term);
+  });
 
   // Formater la date pour l'affichage
   const formatDate = (dateString: string) => {

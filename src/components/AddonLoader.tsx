@@ -40,6 +40,17 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
           return dbModule ? dbModule.active : true;
         });
 
+        // Enregistrer les manifests des addons actifs pour exposer leurs routes/menus
+        activeModules.forEach(addon => {
+          try {
+            if (!AddonManager.getAddon(addon.manifest.name)) {
+              AddonManager.registerAddon(addon.manifest);
+            }
+          } catch (e) {
+            warn(`Enregistrement du module ${addon.manifest.name} ignoré:`, e);
+          }
+        });
+
         const lazyModules = activeModules.map(addon => {
           const LazyComponent = lazy(() =>
             import(`../../addons/${addon.manifest.name}/views/index.ts`)

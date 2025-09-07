@@ -1,4 +1,4 @@
-const ExternalService = require('../../models/externalService');
+const { ExternalService } = require('../../models');
 const { successResponse, errorResponse } = require('../helpers/response');
 
 class ExternalServiceController {

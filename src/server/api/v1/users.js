@@ -2,6 +2,7 @@
 
 const express = require('express');
 const bcrypt = require('bcrypt');
+const { ValidationError, UniqueConstraintError } = require('sequelize');
 const { User, Group } = require('../../../models');
 
 const router = express.Router();
@@ -58,43 +59,67 @@ router.get('/:id', asyncHandler(async (req, res) => {
 router.post('/', asyncHandler(async (req, res) => {
   const { username, email, password, firstName, lastName, role, status, groups } = req.body;
 
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  const user = await User.create({
-    username,
-    email,
-    password: hashedPassword,
-    firstName,
-    lastName,
-    role: role || 'user',
-    status: status || 'active'
-  });
-
-  if (groups && groups.length > 0) {
-    const groupsToAssociate = await Group.findAll({
-      where: { name: groups }
+  // Basic input checks to avoid opaque DB errors
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      message: 'username, email et password sont requis'
     });
-    await user.setGroups(groupsToAssociate);
   }
 
-  const createdUser = await User.findByPk(user.id, {
-    include: [{ model: Group }]
-  });
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-  const transformedUser = {
-    id: createdUser.id.toString(),
-    username: createdUser.username,
-    email: createdUser.email,
-    firstName: createdUser.firstName || '',
-    lastName: createdUser.lastName || '',
-    role: createdUser.role,
-    status: createdUser.status,
-    lastLogin: createdUser.lastLogin ? createdUser.lastLogin.toISOString() : null,
-    groups: createdUser.Groups ? createdUser.Groups.map(group => group.name) : []
-  };
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      role: role || 'user',
+      status: status || 'active'
+    });
 
-  res.status(201).json(transformedUser);
+    if (groups && groups.length > 0) {
+      const groupsToAssociate = await Group.findAll({
+        where: { name: groups }
+      });
+      await user.setGroups(groupsToAssociate);
+    }
+
+    const createdUser = await User.findByPk(user.id, {
+      include: [{ model: Group }]
+    });
+
+    const transformedUser = {
+      id: createdUser.id.toString(),
+      username: createdUser.username,
+      email: createdUser.email,
+      firstName: createdUser.firstName || '',
+      lastName: createdUser.lastName || '',
+      role: createdUser.role,
+      status: createdUser.status,
+      lastLogin: createdUser.lastLogin ? createdUser.lastLogin.toISOString() : null,
+      groups: createdUser.Groups ? createdUser.Groups.map(group => group.name) : []
+    };
+
+    res.status(201).json(transformedUser);
+  } catch (err) {
+    if (err instanceof UniqueConstraintError) {
+      // Duplicate username or email
+      return res.status(400).json({
+        message: 'Conflit d\'unicité sur username ou email',
+        errors: err.errors?.map(e => ({ field: e.path, message: e.message }))
+      });
+    }
+    if (err instanceof ValidationError) {
+      return res.status(400).json({
+        message: 'Erreur de validation',
+        errors: err.errors?.map(e => ({ field: e.path, message: e.message }))
+      });
+    }
+    throw err;
+  }
 }));
 
 router.put('/:id', asyncHandler(async (req, res) => {
@@ -186,4 +211,3 @@ router.patch('/:id/status', asyncHandler(async (req, res) => {
 }));
 
 module.exports = router;
-

@@ -32,8 +32,8 @@ const SettingsOverview: React.FC = () => {
         { id: 'security', name: 'Sécurité', icon: <Shield className="w-4 h-4" />, route: '/settings/system/security' }
       ]
     },
-    
-    
+
+
     {
       id: 'modules',
       name: 'Modules',
@@ -104,8 +104,9 @@ const SettingsOverview: React.FC = () => {
       description: 'Personnalisation de l\'interface et notifications',
       items: [
         { id: 'theme', name: 'Thèmes', icon: <Moon className="w-4 h-4" />, route: '/settings/appearance/themes' },
-        { id: 'notifications', name: 'Notifications', icon: <Bell className="w-4 h-4" />, route: '/settings/integrations/notifications' },
-        { id: 'calendar', name: 'Calendrier', icon: <Calendar className="w-4 h-4" />, route: '/settings/calendar' }
+        { id: 'calendar', name: 'Calendrier', icon: <Calendar className="w-4 h-4" />, route: '/settings/calendar' },
+        { id: 'formats', name: 'Formats', icon: <Calendar className="w-4 h-4" />, route: '/settings/localization/date-formats' }
+
       ]
     },
 
@@ -120,7 +121,6 @@ const SettingsOverview: React.FC = () => {
         { id: 'translations', name: 'Traductions', icon: <Languages className="w-4 h-4" />, route: '/settings/localization/translations' },
         { id: 'countries', name: 'Pays', icon: <Globe className="w-4 h-4" />, route: '/settings/localization/countries' },
         { id: 'currencies', name: 'Devises', icon: <DollarSign className="w-4 h-4" />, route: '/settings/localization/currencies' },
-        { id: 'formats', name: 'Formats', icon: <Calendar className="w-4 h-4" />, route: '/settings/localization/date-formats' }
       ]
     },
     // 3. Données et système

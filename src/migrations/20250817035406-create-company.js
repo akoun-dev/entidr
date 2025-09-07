@@ -45,6 +45,19 @@ module.exports = {
       website: {
         type: Sequelize.STRING
       },
+      logo: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      createdBy: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+      },
+      updatedBy: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

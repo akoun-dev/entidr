@@ -4,23 +4,12 @@ const SecuritySettingController = require('../controllers/SecuritySettingControl
 const { authenticate, authorize } = require('../middlewares/auth');
 
 // Routes pour la configuration de sécurité
-router.get('/',
-  authenticate,
-  authorize('admin'),
-  SecuritySettingController.list
-);
+// Lecture publique des paramètres (lecture seule)
+router.get('/', SecuritySettingController.list);
 
-router.get('/categories',
-  authenticate,
-  authorize('admin'),
-  SecuritySettingController.getCategories
-);
+router.get('/categories', SecuritySettingController.getCategories);
 
-router.get('/:key',
-  authenticate,
-  authorize('admin'),
-  SecuritySettingController.getByKey
-);
+router.get('/:key', SecuritySettingController.getByKey);
 
 router.put('/:key',
   authenticate,

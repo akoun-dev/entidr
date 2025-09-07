@@ -1,12 +1,12 @@
-const WorkflowDefinition = require('../models/WorkflowDefinition');
-const { NotFoundError } = require('../errors');
+const { Workflow } = require('../../models');
+const { successResponse, errorResponse } = require('../helpers/response');
 
 class WorkflowDefinitionController {
   static async create(req, res) {
     try {
       const { name, description, steps, triggers, isActive } = req.body;
 
-      const workflow = await WorkflowDefinition.create({
+      const workflow = await Workflow.create({
         name,
         description,
         steps,
@@ -22,7 +22,7 @@ class WorkflowDefinitionController {
 
   static async list(req, res) {
     try {
-      const workflows = await WorkflowDefinition.findAll();
+      const workflows = await Workflow.findAll();
       res.json(workflows);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -31,7 +31,7 @@ class WorkflowDefinitionController {
 
   static async get(req, res) {
     try {
-      const workflow = await WorkflowDefinition.findByPk(req.params.id);
+      const workflow = await Workflow.findByPk(req.params.id);
       if (!workflow) {
         throw new NotFoundError('Définition de workflow non trouvée');
       }
@@ -43,7 +43,7 @@ class WorkflowDefinitionController {
 
   static async update(req, res) {
     try {
-      const workflow = await WorkflowDefinition.findByPk(req.params.id);
+      const workflow = await Workflow.findByPk(req.params.id);
       if (!workflow) {
         throw new NotFoundError('Définition de workflow non trouvée');
       }
@@ -66,7 +66,7 @@ class WorkflowDefinitionController {
 
   static async delete(req, res) {
     try {
-      const workflow = await WorkflowDefinition.findByPk(req.params.id);
+      const workflow = await Workflow.findByPk(req.params.id);
       if (!workflow) {
         throw new NotFoundError('Définition de workflow non trouvée');
       }
@@ -80,7 +80,7 @@ class WorkflowDefinitionController {
 
   static async testWorkflow(req, res) {
     try {
-      const workflow = await WorkflowDefinition.findByPk(req.params.id);
+      const workflow = await Workflow.findByPk(req.params.id);
       if (!workflow) {
         throw new NotFoundError('Définition de workflow non trouvée');
       }

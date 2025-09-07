@@ -8,6 +8,7 @@ router.get('/', documentLayoutController.getAllDocumentLayouts);
 router.post('/', documentLayoutController.createDocumentLayout);
 router.get('/:id', documentLayoutController.getDocumentLayoutById);
 router.put('/:id', documentLayoutController.updateDocumentLayout);
+router.patch('/:id/setdefault', documentLayoutController.setDefault);
 router.delete('/:id', documentLayoutController.deleteDocumentLayout);
 
 module.exports = router;

@@ -118,3 +118,5 @@ export const LoggingSettings = () => {
     </Card>
   );
 };
+
+export default LoggingSettings;

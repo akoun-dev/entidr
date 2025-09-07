@@ -8,6 +8,9 @@ import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
 import { api } from '../../services';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 
 interface DocumentLayout {
   id: string;
@@ -30,6 +33,16 @@ const DocumentLayoutsSettings: React.FC = () => {
   const [layoutToDelete, setLayoutToDelete] = useState<DocumentLayout | null>(null);
   const [deletingLayout, setDeletingLayout] = useState<string | null>(null);
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
+  const [showNewLayoutDialog, setShowNewLayoutDialog] = useState(false);
+  const [creatingLayout, setCreatingLayout] = useState(false);
+  const [newLayout, setNewLayout] = useState({
+    name: '',
+    type: 'invoice',
+    orientation: 'portrait',
+    paperSize: 'A4',
+    content: '<div>Modèle de document</div>',
+    metadata: JSON.stringify({ margins: { top: 10, right: 10, bottom: 10, left: 10 } })
+  });
 
   // Charger les modèles de documents depuis l'API
   useEffect(() => {
@@ -39,7 +52,18 @@ const DocumentLayoutsSettings: React.FC = () => {
 
       try {
         const response = await api.get('/documentlayouts');
-        setLayouts(response.data);
+        const mapped = (response.data || []).map((l: any) => ({
+          id: String(l.id),
+          name: l.name,
+          type: l.type,
+          lastModified: l.updatedAt || l.updated_at || '',
+          isDefault: !!l.isDefault,
+          orientation: l.orientation,
+          paperSize: l.paperSize,
+          previewUrl: l.previewUrl,
+          status: l.status
+        }));
+        setLayouts(mapped);
       } catch (err) {
         console.error('Erreur lors du chargement des modèles de documents:', err);
         setError('Impossible de charger les modèles de documents. Veuillez réessayer plus tard.');
@@ -162,7 +186,7 @@ const DocumentLayoutsSettings: React.FC = () => {
             <CardTitle>Modèles disponibles</CardTitle>
             <CardDescription>Liste des modèles de documents configurés</CardDescription>
           </div>
-          <Button className="bg-ivory-orange hover:bg-ivory-orange/90">
+          <Button className="bg-ivory-orange hover:bg-ivory-orange/90" onClick={() => setShowNewLayoutDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nouveau modèle
           </Button>
@@ -301,6 +325,104 @@ const DocumentLayoutsSettings: React.FC = () => {
                   Supprimer
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Boîte de dialogue de création d'un modèle */}
+      <Dialog open={showNewLayoutDialog} onOpenChange={setShowNewLayoutDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nouveau modèle de document</DialogTitle>
+            <DialogDescription>Configurez le modèle de document</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Nom</Label>
+                <Input id="name" value={newLayout.name} onChange={e => setNewLayout({ ...newLayout, name: e.target.value })} />
+              </div>
+              <div>
+                <Label>Type</Label>
+                <Select value={newLayout.type} onValueChange={v => setNewLayout({ ...newLayout, type: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="invoice">Facture</SelectItem>
+                    <SelectItem value="quote">Devis</SelectItem>
+                    <SelectItem value="order">Commande</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Orientation</Label>
+                <Select value={newLayout.orientation} onValueChange={v => setNewLayout({ ...newLayout, orientation: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Orientation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="portrait">Portrait</SelectItem>
+                    <SelectItem value="landscape">Paysage</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Taille de papier</Label>
+                <Select value={newLayout.paperSize} onValueChange={v => setNewLayout({ ...newLayout, paperSize: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Taille" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A4">A4</SelectItem>
+                    <SelectItem value="A5">A5</SelectItem>
+                    <SelectItem value="Letter">Letter</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewLayoutDialog(false)}>Annuler</Button>
+            <Button disabled={creatingLayout} onClick={async () => {
+              if (!newLayout.name.trim()) {
+                toast({ title: 'Erreur de validation', description: 'Le nom est requis', variant: 'destructive' });
+                return;
+              }
+              setCreatingLayout(true);
+              try {
+                const payload: any = {
+                  name: newLayout.name,
+                  type: newLayout.type,
+                  orientation: newLayout.orientation,
+                  paperSize: newLayout.paperSize,
+                  content: newLayout.content,
+                  metadata: JSON.parse(newLayout.metadata)
+                };
+                const resp = await api.post('/documentlayouts', payload);
+                const l = resp.data;
+                const dto = {
+                  id: String(l.id),
+                  name: l.name,
+                  type: l.type,
+                  lastModified: l.updatedAt || '',
+                  isDefault: !!l.isDefault,
+                  orientation: l.orientation,
+                  paperSize: l.paperSize,
+                  previewUrl: l.previewUrl,
+                  status: l.status
+                } as DocumentLayout;
+                setLayouts([...layouts, dto]);
+                setShowNewLayoutDialog(false);
+                toast({ title: 'Modèle créé', description: "Le modèle de document a été créé avec succès." });
+              } catch (e) {
+                console.error('Erreur création layout:', e);
+                toast({ title: 'Erreur', description: "Impossible de créer le modèle.", variant: 'destructive' });
+              } finally {
+                setCreatingLayout(false);
+              }
+            }}>
+              {creatingLayout ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Création...</> : 'Créer'}
             </Button>
           </DialogFooter>
         </DialogContent>

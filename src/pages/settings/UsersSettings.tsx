@@ -84,7 +84,7 @@ const UsersSettings: React.FC = () => {
 
         // Charger les groupes
         const groupsData = await groupService.getAll();
-        setAvailableGroups(groupsData.map(group => group.name));
+        setAvailableGroups(groupsData.data?.map(group => group.name) || []);
 
         setLoading(false);
       } catch (error) {
@@ -571,7 +571,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onSave, onCancel, saving }) =
                 <span>Chargement des groupes...</span>
               </div>
             ) : availableGroups && availableGroups.length > 0 ? (
-              availableGroups.map(group => (
+              availableGroups.map((group: any) => (
                 <div key={group.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`group-${group.id}`}
