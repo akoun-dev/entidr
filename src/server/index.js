@@ -44,6 +44,14 @@ wss.on('connection', ws => {
   sendMetrics();
 });
 
+// Attach request id for tracing
+app.use((req, res, next) => {
+  const id = (Math.random().toString(36).slice(2)) + Date.now().toString(36);
+  req.id = id;
+  res.setHeader('x-request-id', id);
+  next();
+});
+
 // Security & middleware
 // Helmet: secure HTTP headers
 app.use(helmet({

@@ -3,8 +3,10 @@
 const express = require('express');
 const router = express.Router();
 const { Translation, sequelize } = require('../../../models');
+const logger = require('../../../utils/logger.server');
 const { Op } = require('sequelize');
 const { authenticate, authorize } = require('../../middlewares/auth');
+const { zodValidate, z } = require('../../middlewares/zodValidate');
 
 const validateCreate = (req, res, next) => {
   const { key, locale, namespace, value } = req.body || {};
@@ -66,7 +68,15 @@ router.get('/translations/namespace/:namespace', asyncHandler(async (req, res) =
 router.post(
   '/translations',
   authenticate, authorize(['admin']),
-  validateCreate,
+  zodValidate(z.object({
+    key: z.string().min(1),
+    locale: z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/),
+    namespace: z.string().min(1).optional(),
+    value: z.string().min(1),
+    is_default: z.boolean().optional(),
+    active: z.boolean().optional(),
+    description: z.string().optional().nullable(),
+  })),
   asyncHandler(async (req, res) => {
     const { key, locale, namespace = 'common', value, is_default = false, active = true, description = null } = req.body || {};
     const t = await sequelize.transaction();
@@ -76,6 +86,7 @@ router.post(
         await Translation.update({ is_default: false }, { where: { id: { [Op.ne]: created.id }, key: created.key, namespace: created.namespace }, transaction: t });
       }
       await t.commit();
+      logger.info(`Translation created id=${created.id} key=${created.key} ns=${created.namespace}`);
       res.ok(created, 201);
     } catch (e) {
       await t.rollback();
@@ -88,7 +99,15 @@ router.post(
 router.put(
   '/translations/:id',
   authenticate, authorize(['admin']),
-  validateUpdate,
+  zodValidate(z.object({
+    key: z.string().min(1).optional(),
+    locale: z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/).optional(),
+    namespace: z.string().min(1).optional(),
+    value: z.string().min(1).optional(),
+    is_default: z.boolean().optional(),
+    active: z.boolean().optional(),
+    description: z.string().optional().nullable(),
+  })),
   asyncHandler(async (req, res) => {
     const item = await Translation.findByPk(req.params.id);
     if (!item) return res.fail(404, 'Translation not found');
@@ -108,6 +127,7 @@ router.put(
         await Translation.update({ is_default: false }, { where: { id: { [Op.ne]: item.id }, key: item.key, namespace: item.namespace }, transaction: t });
       }
       await t.commit();
+      logger.info(`Translation updated id=${item.id}`);
       res.ok(item);
     } catch (e) {
       await t.rollback();
@@ -121,6 +141,7 @@ router.delete('/translations/:id', authenticate, authorize(['admin']), asyncHand
   const item = await Translation.findByPk(req.params.id);
   if (!item) return res.fail(404, 'Translation not found');
   await item.destroy();
+  logger.warn(`Translation deleted id=${item.id}`);
   res.ok(null, 204);
 }));
 
@@ -129,6 +150,7 @@ router.patch('/translations/:id/toggle-status', authenticate, authorize(['admin'
   const item = await Translation.findByPk(req.params.id);
   if (!item) return res.fail(404, 'Translation not found');
   await item.update({ active: !item.active });
+  logger.info(`Translation toggled id=${item.id} active=${item.active}`);
   res.ok(item);
 }));
 
@@ -138,6 +160,7 @@ router.patch('/translations/:id/set-default', authenticate, authorize(['admin'])
   if (!item) return res.fail(404, 'Translation not found');
   await Translation.update({ is_default: false }, { where: { key: item.key, namespace: item.namespace } });
   await item.update({ is_default: true });
+  logger.info(`Translation set-default id=${item.id}`);
   res.ok(item);
 }));
 

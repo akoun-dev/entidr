@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { externalHttp } from './httpExternal';
 import { Logger } from './Logger.js';
 
 export class HealthChecker {
@@ -8,7 +8,7 @@ export class HealthChecker {
 
   async check(version: string): Promise<boolean> {
     try {
-      const response = await axios.get(`${this.getBaseUrl()}/${version}${this.healthEndpoint}`);
+      const response = await externalHttp.get(`${this.getBaseUrl()}/${version}${this.healthEndpoint}`);
       return response.status === 200 && response.data.status === 'OK';
     } catch (error) {
       this.logger.error(`Health check failed for version ${version}:`, error);

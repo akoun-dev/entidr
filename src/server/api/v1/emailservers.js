@@ -3,8 +3,10 @@
 const express = require('express');
 const router = express.Router();
 const { EmailServer, sequelize } = require('../../../models');
+const logger = require('../../../utils/logger.server');
 const { Op } = require('sequelize');
 const { authenticate, authorize } = require('../../middlewares/auth');
+const { zodValidate, z } = require('../../middlewares/zodValidate');
 
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
@@ -52,7 +54,19 @@ router.get('/emailservers/:id', asyncHandler(async (req, res) => {
 router.post(
   '/emailservers',
   authenticate, authorize(['admin']),
-  validateCreate,
+  zodValidate(z.object({
+    name: z.string().min(1),
+    protocol: z.enum(['smtp', 'sendmail']).optional(),
+    host: z.string().min(1),
+    port: z.number().int().positive().optional(),
+    username: z.string().optional().nullable(),
+    password: z.string().optional().nullable(),
+    encryption: z.enum(['tls', 'ssl', 'none']).optional(),
+    from_email: z.string().min(1),
+    from_name: z.string().min(1),
+    is_default: z.boolean().optional(),
+    active: z.boolean().optional(),
+  })),
   asyncHandler(async (req, res) => {
     const { name, protocol = 'smtp', host, port = 587, username, password, encryption = 'tls', from_email, from_name, is_default = false, active = true } = req.body || {};
     const t = await sequelize.transaction();
@@ -62,6 +76,7 @@ router.post(
         await EmailServer.update({ is_default: false }, { where: { id: { [Op.ne]: created.id } }, transaction: t });
       }
       await t.commit();
+      logger.info(`EmailServer created id=${created.id} name=${created.name}`);
       res.ok(toDto(created), 201);
     } catch (e) {
       await t.rollback();
@@ -74,7 +89,19 @@ router.post(
 router.put(
   '/emailservers/:id',
   authenticate, authorize(['admin']),
-  validateUpdate,
+  zodValidate(z.object({
+    name: z.string().min(1).optional(),
+    protocol: z.enum(['smtp', 'sendmail']).optional(),
+    host: z.string().min(1).optional(),
+    port: z.number().int().positive().optional(),
+    username: z.string().optional().nullable(),
+    password: z.string().optional().nullable(),
+    encryption: z.enum(['tls', 'ssl', 'none']).optional(),
+    from_email: z.string().min(1).optional(),
+    from_name: z.string().min(1).optional(),
+    is_default: z.boolean().optional(),
+    active: z.boolean().optional(),
+  })),
   asyncHandler(async (req, res) => {
     const item = await EmailServer.findByPk(req.params.id);
     if (!item) return res.fail(404, 'Email server not found');
@@ -98,6 +125,7 @@ router.put(
         await EmailServer.update({ is_default: false }, { where: { id: { [Op.ne]: item.id } }, transaction: t });
       }
       await t.commit();
+      logger.info(`EmailServer updated id=${item.id}`);
       res.ok(toDto(item));
     } catch (e) {
       await t.rollback();
@@ -112,6 +140,7 @@ router.delete('/emailservers/:id', authenticate, authorize(['admin']), asyncHand
   if (!item) return res.fail(404, 'Email server not found');
   if (item.is_default) return res.fail(400, 'Cannot delete default email server');
   await item.destroy();
+  logger.warn(`EmailServer deleted id=${item.id}`);
   res.ok(null, 204);
 }));
 
@@ -121,6 +150,7 @@ router.patch('/emailservers/:id/toggle-status', authenticate, authorize(['admin'
   if (!item) return res.fail(404, 'Email server not found');
   if (item.is_default && item.active) return res.fail(400, 'Cannot deactivate default email server');
   await item.update({ active: !item.active });
+  logger.info(`EmailServer toggled id=${item.id} active=${item.active}`);
   res.ok(item);
 }));
 
@@ -131,6 +161,7 @@ router.patch('/emailservers/:id/set-default', authenticate, authorize(['admin'])
   if (!item.active) return res.fail(400, 'Default server must be active');
   await EmailServer.update({ is_default: false }, { where: {} });
   await item.update({ is_default: true });
+  logger.info(`EmailServer set-default id=${item.id}`);
   res.ok(item);
 }));
 

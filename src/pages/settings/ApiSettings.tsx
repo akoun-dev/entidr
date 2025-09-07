@@ -47,9 +47,14 @@ const ApiSettings: React.FC = () => {
         const response = await api.get('/apikeys');
         const items = response?.data?.data ?? response?.data;
         setApiKeys(Array.isArray(items) ? items : []);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Erreur lors du chargement des clés API:', err);
-        setError('Impossible de charger les clés API. Veuillez réessayer plus tard.');
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          setError("Accès non autorisé. Veuillez vous connecter pour voir les clés API.");
+        } else {
+          setError('Impossible de charger les clés API. Veuillez réessayer plus tard.');
+        }
       } finally {
         setLoading(false);
       }

@@ -3,8 +3,10 @@
 const express = require('express');
 const router = express.Router();
 const { Language, sequelize } = require('../../../models');
+const logger = require('../../../utils/logger.server');
 const { Op } = require('sequelize');
 const { authenticate, authorize } = require('../../middlewares/auth');
+const { zodValidate, z } = require('../../middlewares/zodValidate');
 
 const validateCreate = (req, res, next) => {
   const { name, code, direction } = req.body || {};
@@ -22,6 +24,27 @@ const validateUpdate = (req, res, next) => {
 
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
+/**
+ * @swagger
+ * /languages:
+ *   get:
+ *     summary: Liste des langues
+ *     tags: [Languages]
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Language'
+ *                 error:
+ *                   nullable: true
+ */
 // GET /languages
 router.get('/languages', asyncHandler(async (req, res) => {
   const items = await Language.findAll({ order: [['name', 'ASC']] });
@@ -39,7 +62,14 @@ router.get('/languages/:id', asyncHandler(async (req, res) => {
 router.post(
   '/languages',
   authenticate, authorize(['admin']),
-  validateCreate,
+  zodValidate(z.object({
+    name: z.string().min(1),
+    code: z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/),
+    native_name: z.string().optional().nullable(),
+    direction: z.enum(['ltr', 'rtl']).optional(),
+    is_default: z.boolean().optional(),
+    active: z.boolean().optional(),
+  })),
   asyncHandler(async (req, res) => {
     const payload = (({ name, code, native_name, direction, is_default, active }) => ({ name, code, native_name, direction, is_default, active }))(req.body || {});
     const t = await sequelize.transaction();
@@ -58,6 +88,7 @@ router.post(
       }
 
       await t.commit();
+      logger.info(`Language created id=${created.id} code=${created.code}`);
       res.ok(created, 201);
     } catch (e) {
       await t.rollback();
@@ -70,7 +101,14 @@ router.post(
 router.put(
   '/languages/:id',
   authenticate, authorize(['admin']),
-  validateUpdate,
+  zodValidate(z.object({
+    name: z.string().min(1).optional(),
+    code: z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/).optional(),
+    native_name: z.string().optional().nullable(),
+    direction: z.enum(['ltr', 'rtl']).optional(),
+    is_default: z.boolean().optional(),
+    active: z.boolean().optional(),
+  })),
   asyncHandler(async (req, res) => {
     const item = await Language.findByPk(req.params.id);
     if (!item) return res.fail(404, 'Language not found');
@@ -92,6 +130,7 @@ router.put(
       }
 
       await t.commit();
+      logger.info(`Language updated id=${item.id}`);
       res.ok(item);
     } catch (e) {
       await t.rollback();
@@ -106,6 +145,7 @@ router.delete('/languages/:id', authenticate, authorize(['admin']), asyncHandler
   if (!item) return res.fail(404, 'Language not found');
   if (item.is_default) return res.fail(400, 'Cannot delete default language');
   await item.destroy();
+  logger.warn(`Language deleted id=${item.id}`);
   res.ok(null, 204);
 }));
 
@@ -117,6 +157,7 @@ router.patch('/languages/:id/toggle-status', authenticate, authorize(['admin']),
     return res.fail(400, 'Cannot deactivate default language');
   }
   await item.update({ active: !item.active });
+  logger.info(`Language toggled id=${item.id} active=${item.active}`);
   res.ok(item);
 }));
 
@@ -128,9 +169,10 @@ router.patch('/languages/:id/set-default', authenticate, authorize(['admin']), a
   const t = await sequelize.transaction();
   try {
     await Language.update({ is_default: false }, { where: {}, transaction: t });
-    await item.update({ is_default: true }, { transaction: t });
-    await t.commit();
-    res.ok(item);
+  await item.update({ is_default: true }, { transaction: t });
+  await t.commit();
+  logger.info(`Language set-default id=${item.id}`);
+  res.ok(item);
   } catch (e) {
     await t.rollback();
     throw e;

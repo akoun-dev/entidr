@@ -21,7 +21,7 @@ const options = {
     ],
     servers: [
       {
-        url: 'http://localhost:3000/api/v1',
+        url: 'http://localhost:3001/api/v1',
         description: 'Serveur de développement'
       },
     ],
@@ -34,6 +34,61 @@ const options = {
         }
       },
       schemas: {
+        Language: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            code: { type: 'string', example: 'fr-FR' },
+            native_name: { type: 'string', nullable: true },
+            direction: { type: 'string', enum: ['ltr', 'rtl'] },
+            is_default: { type: 'boolean' },
+            active: { type: 'boolean' }
+          }
+        },
+        Translation: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            key: { type: 'string' },
+            locale: { type: 'string', example: 'fr-FR' },
+            namespace: { type: 'string', example: 'common' },
+            value: { type: 'string' },
+            is_default: { type: 'boolean' },
+            active: { type: 'boolean' },
+            description: { type: 'string' }
+          }
+        },
+        EmailServer: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            protocol: { type: 'string', enum: ['smtp', 'sendmail'] },
+            host: { type: 'string' },
+            port: { type: 'integer' },
+            username: { type: 'string' },
+            from_email: { type: 'string' },
+            from_name: { type: 'string' },
+            encryption: { type: 'string', enum: ['tls', 'ssl', 'none'] },
+            is_default: { type: 'boolean' },
+            active: { type: 'boolean' }
+          }
+        },
+        ApiKey: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            key: { type: 'string' },
+            permissions: { type: 'array', items: { type: 'string' } },
+            active: { type: 'boolean' },
+            expires_at: { type: 'string', format: 'date-time' },
+            last_used_at: { type: 'string', format: 'date-time' },
+            description: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' }
+          }
+        },
         // Analytics schemas
         BpmnAnalytics: {
           type: 'object',
@@ -159,7 +214,7 @@ const options = {
       }
     }
   },
-  apis: ['./src/server/routes/*.js'], // fichiers contenant les annotations Swagger
+  apis: ['./src/server/routes/*.js', './src/server/api/v1/*.js'], // fichiers contenant les annotations Swagger
 };
 
 const specs = swaggerJsdoc(options);

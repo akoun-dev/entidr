@@ -1,5 +1,5 @@
 import { LogExportConfig, LogContext } from './types/logging';
-import axios from 'axios';
+import { externalHttp } from './httpExternal';
 
 export class ExportService {
   constructor(private config?: LogExportConfig) {}
@@ -10,18 +10,18 @@ export class ExportService {
     try {
       // Envoi vers ELK
       if (this.config.elkEndpoint) {
-        await axios.post(this.config.elkEndpoint, data);
+        await externalHttp.post(this.config.elkEndpoint, data);
       }
 
       // Envoi vers Prometheus
       if (this.config.prometheusEndpoint) {
         const metrics = this.convertToMetrics(data);
-        await axios.post(this.config.prometheusEndpoint, metrics);
+        await externalHttp.post(this.config.prometheusEndpoint, metrics);
       }
 
       // Envoi vers Grafana
       if (this.config.grafanaEndpoint) {
-        await axios.post(this.config.grafanaEndpoint, {
+        await externalHttp.post(this.config.grafanaEndpoint, {
           ...data,
           timestamp: Date.now()
         });
