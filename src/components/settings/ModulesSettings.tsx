@@ -45,6 +45,7 @@ const ModulesSettings: React.FC = () => {
   const [showUninstallDialog, setShowUninstallDialog] = useState(false);
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [processingModule, setProcessingModule] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Charger les modules au chargement du composant
   useEffect(() => {
@@ -142,10 +143,11 @@ const ModulesSettings: React.FC = () => {
 
       // Recharger la page pour appliquer les changements
       window.location.reload();
-    } catch (err) {
+    } catch (err: any) {
       console.error(`Erreur lors de l'installation du module ${selectedModule.name}:`, err);
-      setError(`Erreur lors de l'installation du module ${selectedModule.displayName}.`);
-      toast.error(`Erreur lors de l'installation du module ${selectedModule.displayName}.`);
+      const message = err?.response?.data?.error?.message || `Erreur lors de l'installation du module ${selectedModule.displayName}.`;
+      setError(message);
+      toast.error(message);
     } finally {
       setProcessingModule(null);
     }
@@ -297,21 +299,34 @@ const ModulesSettings: React.FC = () => {
         <Button
           variant="outline"
           onClick={() => {
-            setLoading(true);
-            api.get<Module[]>(`/modules`)
-              .then(response => {
+            setIsSyncing(true);
+            setError(null);
+            api.post(`/modules/sync`)
+              .then(async () => {
+                const response = await api.get<Module[]>(`/modules`);
                 setModules((response.data as any) ?? []);
-                setError(null);
-                setLoading(false);
+                toast.success('Catalogue des modules mis à jour.');
               })
               .catch(err => {
-                console.error('Erreur lors du rafraîchissement des modules:', err);
-                setError('Erreur lors du rafraîchissement des modules.');
-                setLoading(false);
-              });
+                console.error('Erreur lors de la synchronisation des modules:', err);
+                setError('Erreur lors de la synchronisation des modules.');
+                toast.error('Impossible de rechercher les mises à jour.');
+              })
+              .finally(() => setIsSyncing(false));
           }}
+          disabled={isSyncing}
         >
-          Rafraîchir
+          {isSyncing ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Recherche des mises à jour…
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Rechercher des mises à jour
+            </>
+          )}
         </Button>
       </CardFooter>
 

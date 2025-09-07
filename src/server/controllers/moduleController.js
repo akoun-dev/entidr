@@ -354,8 +354,12 @@ const moduleController = {
         return res.status(400).json({ data: null, error: { message: `Le dossier du module ${name} n'existe pas` } });
       }
 
-      // Vérifier les dépendances
-      const dependencies = module.dependencies || [];
+      // Vérifier les dépendances (parser si stockées en TEXT)
+      let dependencies = [];
+      if (Array.isArray(module.dependencies)) dependencies = module.dependencies;
+      else if (typeof module.dependencies === 'string') {
+        try { dependencies = JSON.parse(module.dependencies || '[]'); } catch { dependencies = []; }
+      }
       const missingDependencies = [];
 
       for (const dep of dependencies) {
@@ -441,8 +445,12 @@ const moduleController = {
 
       // Vérifier si d'autres modules dépendent de celui-ci
       const dependents = dependentModules.filter(m => {
-        const deps = m.dependencies || [];
-        return deps.includes(name);
+        let deps = [];
+        if (Array.isArray(m.dependencies)) deps = m.dependencies;
+        else if (typeof m.dependencies === 'string') {
+          try { deps = JSON.parse(m.dependencies || '[]'); } catch { deps = []; }
+        }
+        return Array.isArray(deps) && deps.includes(name);
       });
 
       if (dependents.length > 0) {
