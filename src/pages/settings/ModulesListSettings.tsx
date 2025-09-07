@@ -1,17 +1,45 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Button } from '../../components/ui/button';
 import { Separator } from '../../components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Layers, ChevronLeft } from 'lucide-react';
 import ModulesSettings from '../../components/settings/ModulesSettings';
+import DependencyGraph from '../../components/settings/DependencyGraph';
+import type { Module } from '../../types/module';
+import { api } from '../../config/api';
 
 /**
  * Page de gestion des modules
  * Permet de gérer les modules installés dans l'application
  */
 const ModulesListSettings: React.FC = () => {
+  const [modules, setModules] = useState<Module[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [includeMissing, setIncludeMissing] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchModules = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get<Module[]>(`/modules`);
+        const all = ((res.data as any) ?? []) as Module[];
+        // Ne charger que les modules réellement disponibles dans addons (installable !== false)
+        const present = all.filter(m => m.installable !== false);
+        if (mounted) setModules(present);
+      } catch (e) {
+        if (mounted) setError('Erreur lors du chargement des modules');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchModules();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <div className="p-6">
       <Button
@@ -47,9 +75,24 @@ const ModulesListSettings: React.FC = () => {
                 <CardDescription>Visualisez les dépendances entre les modules</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Cette fonctionnalité sera disponible dans une prochaine version.
-                </p>
+                {error ? (
+                  <div className="text-sm text-red-600">{error}</div>
+                ) : loading ? (
+                  <div className="text-sm text-muted-foreground">Chargement…</div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-sm text-muted-foreground">
+                        {modules.length} modules chargés
+                      </div>
+                      <label className="text-sm flex items-center gap-2">
+                        <input type="checkbox" checked={includeMissing} onChange={(e) => setIncludeMissing(e.target.checked)} />
+                        Inclure les dépendances manquantes
+                      </label>
+                    </div>
+                    <DependencyGraph modules={modules} includeMissing={includeMissing} />
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

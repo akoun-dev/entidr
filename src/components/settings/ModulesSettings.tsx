@@ -65,12 +65,14 @@ const ModulesSettings: React.FC = () => {
     fetchModules();
   }, []);
 
-  // Filtrer les modules en fonction de l'onglet actif
+  // Filtrer les modules: ne considérer que ceux présents dans addons (installable !== false)
   const filteredModules = modules.filter(module => {
+    const present = module.installable !== false;
+    if (!present) return false;
     if (activeTab === 'installed') return module.installed;
-    if (activeTab === 'available') return !module.installed && (module.installable !== false);
-    // Onglet 'all': masquer les modules absents côté FS et non installés
-    return module.installed || (module.installable !== false);
+    if (activeTab === 'available') return !module.installed;
+    // Onglet 'all': uniquement les présents
+    return true;
   });
 
   // Ouvrir la boîte de dialogue de confirmation pour l'activation/désactivation
@@ -186,8 +188,8 @@ const ModulesSettings: React.FC = () => {
     }
   };
 
-  const totalVisible = modules.filter(m => m.installed || (m.installable !== false)).length;
-  const installedCount = modules.filter(m => m.installed).length;
+  const totalVisible = modules.filter(m => m.installable !== false).length;
+  const installedCount = modules.filter(m => m.installable !== false && m.installed).length;
 
   return (
     <Card className="w-full">
