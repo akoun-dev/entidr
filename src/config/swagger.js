@@ -210,6 +210,21 @@ const options = {
             currentPage: { type: 'integer' },
             itemsPerPage: { type: 'integer' }
           }
+        },
+        ModuleUpdate: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            type: { type: 'string', example: 'module' },
+            name: { type: 'string', description: 'Display name' },
+            module: { type: 'string', description: 'Technical module name' },
+            currentVersion: { type: 'string' },
+            newVersion: { type: 'string' },
+            size: { type: 'string', example: '12.5 MB' },
+            releaseDate: { type: 'string', example: '2025-04-28' },
+            changelog: { type: 'array', items: { type: 'string' } },
+            security: { type: 'boolean' }
+          }
         }
       }
     }

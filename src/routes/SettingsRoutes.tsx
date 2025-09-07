@@ -59,6 +59,7 @@ const ImportExportSettings = lazy(() => import('@/pages/settings/ImportExportSet
 const CalendarSettings = lazy(() => import('@/pages/settings/CalendarSettings').then(module => ({ default: module.default })));
 const SequenceSettings = lazy(() => import('@/pages/settings/SequenceSettings').then(module => ({ default: module.default })));
 const PerformanceSettings = lazy(() => import('@/pages/settings/PerformanceSettings').then(module => ({ default: module.default })));
+const DocumentationSettings = lazy(() => import('@/pages/settings/DocumentationSettings').then(module => ({ default: module.default })));
 
 const settingsRoutes = [
   // General
@@ -82,6 +83,7 @@ const settingsRoutes = [
   { path: 'system/automation', Component: AutomationSettings },
   { path: 'system/api', Component: ApiSettings },
   { path: 'system/logging', Component: LoggingSettings },
+  { path: 'system/documentation', Component: DocumentationSettings },
   { path: 'system/audit', Component: AuditSettings },
   { path: 'system/backup', Component: BackupSettings },
   
@@ -148,4 +150,3 @@ const SettingsRoutes = (
 );
 
 export default SettingsRoutes;
-

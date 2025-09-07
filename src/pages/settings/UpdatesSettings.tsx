@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
-import { ArrowUp, Check, RefreshCw, Download, AlertTriangle, ExternalLink } from 'lucide-react';
+import { ArrowUp, Check, RefreshCw, Download, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import { api } from '../../config/api';
@@ -25,6 +26,10 @@ const UpdatesSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const [isChecking, setIsChecking] = useState(false);
+  const [autoSyncUpdates, setAutoSyncUpdates] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('AUTO_SYNC_UPDATES') === '1';
+  });
   const { toast } = useToast();
 
   // États pour la confirmation d'installation
@@ -96,6 +101,12 @@ const UpdatesSettings: React.FC = () => {
   };
 
   useEffect(() => { refreshUpdates(); }, []);
+  useEffect(() => {
+    if (autoSyncUpdates) {
+      handleCheckUpdates();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSyncUpdates]);
 
   return (
     <div className="p-6">
@@ -109,7 +120,7 @@ const UpdatesSettings: React.FC = () => {
       </div>
 
       {/* Bouton de vérification */}
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-3">
         <Button
           variant="outline"
           onClick={handleCheckUpdates}
@@ -127,6 +138,18 @@ const UpdatesSettings: React.FC = () => {
             </>
           )}
         </Button>
+        <label className="text-xs text-muted-foreground flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={autoSyncUpdates}
+            onChange={(e) => {
+              const v = e.target.checked;
+              setAutoSyncUpdates(v);
+              try { localStorage.setItem('AUTO_SYNC_UPDATES', v ? '1' : '0'); } catch { /* no-op */ }
+            }}
+          />
+          Auto-synchroniser au chargement
+        </label>
       </div>
 
       {/* Documentation ERP Core */}
@@ -145,9 +168,9 @@ const UpdatesSettings: React.FC = () => {
             <li>Redémarrer les services.</li>
             <li>Vérifier les logs et la santé.</li>
           </ol>
-          <a className="inline-flex items-center gap-2 text-ivory-orange mt-3" href="/docs/CORE_UPDATE.md" target="_blank" rel="noreferrer">
-            <ExternalLink className="h-4 w-4" /> Consulter la documentation complète
-          </a>
+          <Link className="inline-flex items-center gap-2 text-ivory-orange mt-3" to="/settings/system/documentation">
+            Consulter la documentation complète
+          </Link>
         </CardContent>
       </Card>
 

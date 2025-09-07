@@ -402,6 +402,7 @@ const moduleController = {
 
       // Mettre à jour le statut du module
       module.installed = true;
+      module.active = true; // Activer automatiquement lors de l'installation
       module.installedAt = new Date();
       await module.save();
 

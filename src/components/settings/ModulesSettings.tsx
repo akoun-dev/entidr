@@ -46,12 +46,19 @@ const ModulesSettings: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [processingModule, setProcessingModule] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [autoSync, setAutoSync] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('AUTO_SYNC_MODULES') === '1';
+  });
 
-  // Charger les modules au chargement du composant
+  // Charger les modules au chargement du composant (avec auto-sync optionnel)
   useEffect(() => {
     const fetchModules = async () => {
       try {
         setLoading(true);
+        if (autoSync) {
+          try { await api.post(`/modules/sync`); } catch { /* no-op */ }
+        }
         const response = await api.get<Module[]>(`/modules`);
         setModules((response.data as any) ?? []);
         setError(null);
@@ -64,7 +71,7 @@ const ModulesSettings: React.FC = () => {
     };
 
     fetchModules();
-  }, []);
+  }, [autoSync]);
 
   // Filtrer les modules: ne considérer que ceux présents dans addons (installable !== false)
   const filteredModules = modules.filter(module => {
@@ -292,10 +299,22 @@ const ModulesSettings: React.FC = () => {
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between items-center gap-3">
         <div className="text-sm text-muted-foreground">
           {totalVisible} modules au total, {installedCount} installés
         </div>
+        <label className="text-xs text-muted-foreground flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={autoSync}
+            onChange={(e) => {
+              const v = e.target.checked;
+              setAutoSync(v);
+              try { localStorage.setItem('AUTO_SYNC_MODULES', v ? '1' : '0'); } catch { /* no-op */ }
+            }}
+          />
+          Auto-synchroniser au chargement
+        </label>
         <Button
           variant="outline"
           onClick={() => {

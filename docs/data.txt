@@ -1,0 +1,6 @@
+Prochaines étapes proposées
+
+Ajouter auth admin sur POST /updates/modules/:name/apply
+Étendre Swagger aux nouveaux endpoints d’updates (liste/apply)
+Intégrer l’exécution des migrations (si vous souhaitez l’automatisation)
+Option d’auto-synchronisation au chargement des pages de modules/updates

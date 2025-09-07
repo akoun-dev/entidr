@@ -35,6 +35,7 @@ const emailservers = require('./emailservers');
 const apikeys = require('./apikeys');
 const logging = require('./logging');
 const dateformats = require('./dateformats');
+const updates = require('./updates');
 
 router.use('/users', users);
 router.use('/groups', groups);
@@ -70,6 +71,7 @@ router.use('/', apikeys);
 router.use('/', reference);
 router.use('/', logging);
 router.use('/', dateformats);
+router.use('/', updates);
 
 // Routes alternatives pour compatibilité
 router.use('/externalservices', externalServicesV1);

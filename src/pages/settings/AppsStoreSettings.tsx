@@ -26,6 +26,10 @@ const AppsStoreSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [autoSync, setAutoSync] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('AUTO_SYNC_MODULES') === '1';
+  });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -68,6 +72,9 @@ const AppsStoreSettings: React.FC = () => {
     (async () => {
       try {
         setLoading(true);
+        if (autoSync) {
+          try { await api.post(`/modules/sync`); } catch {/* no-op */}
+        }
         if (mounted) await loadCatalog();
       } catch (e) {
         if (mounted) setError("Impossible de charger le catalogue des applications");
@@ -76,7 +83,7 @@ const AppsStoreSettings: React.FC = () => {
       }
     })();
     return () => { mounted = false; };
-  }, [loadCatalog]);
+  }, [loadCatalog, autoSync]);
 
   // Ouvrir la boîte de dialogue de confirmation d'installation
   const openInstallDialog = (app: App) => {
@@ -236,6 +243,18 @@ const AppsStoreSettings: React.FC = () => {
           <div className="text-sm text-muted-foreground">
             {apps.length} applications disponibles
           </div>
+          <label className="text-xs text-muted-foreground flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={autoSync}
+              onChange={(e) => {
+                const v = e.target.checked;
+                setAutoSync(v);
+                try { localStorage.setItem('AUTO_SYNC_MODULES', v ? '1' : '0'); } catch { /* no-op */ }
+              }}
+            />
+            Auto-synchroniser au chargement
+          </label>
           <Button
             variant="outline"
             onClick={async () => {
