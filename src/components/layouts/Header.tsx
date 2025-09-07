@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menu, Bell, Search, Sun, Moon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useTheme } from '../providers/theme-provider';
+import GlobalSearch from '@/components/GlobalSearch';
 
 export interface HeaderProps {
   toggleSidebar: () => void;
@@ -13,6 +14,21 @@ export interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   const { theme, setTheme } = useTheme();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [initialQuery, setInitialQuery] = useState('');
+
+  // Keyboard shortcut: Ctrl/Cmd + K
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setInitialQuery('');
+        setCommandOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   return (
     <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 z-10 sticky top-0 transition-all w-full">
@@ -33,6 +49,15 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) 
               aria-label="Rechercher"
               placeholder="Rechercher..."
               className="pl-10 h-9 focus-visible:ring-ivory-orange bg-background border-border/60 w-[200px] lg:w-[320px]"
+              onFocus={(e) => { setInitialQuery(''); setCommandOpen(true); e.currentTarget.blur(); }}
+              onKeyDown={(e) => {
+                const target = e.currentTarget as HTMLInputElement;
+                if (e.key === 'Enter') {
+                  setInitialQuery(target.value || '');
+                  setCommandOpen(true);
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
         </div>
@@ -44,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) 
             variant="ghost"
             size="icon"
             className="h-9 w-9 md:hidden"
-            onClick={() => setMobileSearchOpen(true)}
+            onClick={() => { setInitialQuery(''); setCommandOpen(true); }}
           >
             <Search className="h-5 w-5" />
           </Button>
@@ -74,20 +99,7 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) 
       </div>
 
       {/* Mobile search overlay */}
-      {mobileSearchOpen && (
-        <div className="md:hidden px-3 pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              autoFocus
-              aria-label="Rechercher"
-              placeholder="Rechercher..."
-              className="pl-10 h-10 focus-visible:ring-ivory-orange bg-background border-border/60 w-full"
-              onBlur={() => setMobileSearchOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+      <GlobalSearch open={commandOpen} onOpenChange={setCommandOpen} initialQuery={initialQuery} />
     </header>
   );
 };

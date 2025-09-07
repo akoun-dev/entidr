@@ -5,8 +5,12 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 const http = require('http');
 const { swaggerUi, specs } = require('../config/swagger');
+const responseEnvelope = require('../middlewares/responseEnvelope');
 const { Server } = require('ws');
 const v1Routes = require('./api/v1');
 const v2Routes = require('./api/v2');
@@ -39,11 +43,42 @@ wss.on('connection', ws => {
   sendMetrics();
 });
 
-// Middleware
+// Security & middleware
+// Helmet: secure HTTP headers
+app.use(helmet({
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false
+}));
 
-app.use(cors());
+// CORS: permissive in dev, restricted in prod via CORS_ORIGIN (comma-separated)
+const allowedOrigins = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({
+  origin: (origin, cb) => {
+    if (process.env.NODE_ENV !== 'production') return cb(null, true);
+    if (!origin) return cb(null, true); // allow non-browser clients
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
+
+// Rate limiter (basic global limiter)
+const limiter = rateLimit({
+  windowMs: Number(process.env.RATE_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.RATE_MAX || 300),
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use(limiter);
+
+// Body parsing
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Response envelope helpers
+app.use(responseEnvelope);
+
+// Access logs
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Documentation Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
@@ -51,11 +86,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 // Import routes
 const apiV1Router = require('./api/v1');
 
-// Middleware de log pour le routage
-app.use((req, res, next) => {
-  console.log(`Requête reçue: ${req.method} ${req.originalUrl}`);
-  next();
-});
+// Optional simple route log (kept minimal; morgan handles most)
+// app.use((req, res, next) => { next(); });
 
 app.use('/api/v1', apiV1Router);
 app.use('/api', apiV1Router); // Compatibilité ascendante

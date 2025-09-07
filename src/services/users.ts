@@ -18,25 +18,25 @@ export const userService = {
   // Récupérer tous les utilisateurs
   async getAll(): Promise<User[]> {
     const response = await api.get('/users');
-    return response.data;
+    return response.data.data;
   },
 
   // Récupérer un utilisateur par son ID
   async getById(id: string): Promise<User> {
     const response = await api.get(`/users/${id}`);
-    return response.data;
+    return response.data.data;
   },
 
   // Créer un nouvel utilisateur
   async create(user: Omit<User, 'id'>): Promise<User> {
     const response = await api.post('/users', user);
-    return response.data;
+    return response.data.data;
   },
 
   // Mettre à jour un utilisateur
   async update(id: string, user: Partial<User>): Promise<User> {
     const response = await api.put(`/users/${id}`, user);
-    return response.data;
+    return response.data.data;
   },
 
   // Supprimer un utilisateur
@@ -47,6 +47,6 @@ export const userService = {
   // Activer/désactiver un utilisateur
   async toggleStatus(id: string, status: 'active' | 'inactive'): Promise<User> {
     const response = await api.patch(`/users/${id}/status`, { status });
-    return response.data;
+    return response.data.data;
   }
 };

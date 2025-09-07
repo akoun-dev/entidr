@@ -64,6 +64,64 @@ function runCommand(command, args) {
  */
 const moduleController = {
   /**
+   * Synchronise les modules entre la base et le système de fichiers addons/
+   * - Marque installable=false si le dossier n'existe pas
+   * - Optionnel: `?purgeMissing=true` pour désactiver/désinstaller ou supprimer
+   */
+  async syncModules(req, res) {
+    try {
+      const purgeMissing = String(req.query.purgeMissing || '').toLowerCase() === 'true';
+
+      const entries = fs.existsSync(ADDONS_DIR) ? fs.readdirSync(ADDONS_DIR, { withFileTypes: true }) : [];
+      const fsModules = new Set(entries.filter(e => e.isDirectory()).map(e => e.name));
+
+      const dbModules = await Module.findAll();
+      let updated = 0;
+      let removed = 0;
+
+      for (const m of dbModules) {
+        const exists = fsModules.has(m.name);
+        if (!exists) {
+          if (purgeMissing) {
+            // Stratégie douce par défaut: désactiver + désinstaller
+            m.active = false;
+            m.installed = false;
+            m.installable = false;
+            await m.save();
+            updated++;
+          } else {
+            if (m.installable !== false) {
+              m.installable = false;
+              await m.save();
+              updated++;
+            }
+          }
+        } else {
+          if (m.installable === false) {
+            m.installable = true;
+            await m.save();
+            updated++;
+          }
+        }
+      }
+
+      // Optionnel: purger totalement les entrées DB orphelines si explicitement demandé
+      if (purgeMissing && process.env.MODULES_PURGE_DELETE === 'true') {
+        for (const m of dbModules) {
+          if (!fsModules.has(m.name)) {
+            await m.destroy();
+            removed++;
+          }
+        }
+      }
+
+      return res.status(200).json({ data: { updated, removed }, error: null });
+    } catch (error) {
+      console.error('Erreur lors de la synchronisation des modules:', error);
+      return res.status(500).json({ data: null, error: { message: 'Une erreur est survenue lors de la synchronisation des modules' } });
+    }
+  },
+  /**
    * Récupère tous les modules
    */
   async getAllModules(req, res) {
@@ -138,7 +196,7 @@ const moduleController = {
           };
         });
 
-        return res.status(200).json(normalized);
+        return res.status(200).json({ data: normalized, error: null });
       } catch (findError) {
         console.error('Erreur lors de la récupération des modules:', {
           message: findError.message,
@@ -151,10 +209,7 @@ const moduleController = {
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des modules:', error);
-      return res.status(500).json({
-        message: 'Une erreur est survenue lors de la récupération des modules',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      return res.status(500).json({ data: null, error: { message: 'Une erreur est survenue lors de la récupération des modules' } });
     }
   },
 
@@ -167,9 +222,7 @@ const moduleController = {
       try {
         validateModuleName(name);
       } catch (err) {
-        return res.status(400).json({
-          message: err.message
-        });
+        return res.status(400).json({ data: null, error: { message: err.message } });
       }
 
       const module = await Module.findOne({
@@ -177,9 +230,7 @@ const moduleController = {
       });
 
       if (!module) {
-        return res.status(404).json({
-          message: `Le module ${name} n'existe pas`
-        });
+        return res.status(404).json({ data: null, error: { message: `Le module ${name} n'existe pas` } });
       }
 
       const plain = module.toJSON ? module.toJSON() : module;
@@ -214,13 +265,10 @@ const moduleController = {
         updatedAt: plain.updatedAt
       };
 
-      return res.status(200).json(normalized);
+      return res.status(200).json({ data: normalized, error: null });
     } catch (error) {
       console.error(`Erreur lors de la récupération du module ${req.params.name}:`, error);
-      return res.status(500).json({
-        message: `Une erreur est survenue lors de la récupération du module ${req.params.name}`,
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de la récupération du module ${req.params.name}` } });
     }
   },
 
@@ -235,9 +283,7 @@ const moduleController = {
       try {
         validateModuleName(name);
       } catch (err) {
-        return res.status(400).json({
-          message: err.message
-        });
+        return res.status(400).json({ data: null, error: { message: err.message } });
       }
 
       const module = await Module.findOne({
@@ -245,9 +291,7 @@ const moduleController = {
       });
 
       if (!module) {
-        return res.status(404).json({
-          message: `Le module ${name} n'existe pas`
-        });
+        return res.status(404).json({ data: null, error: { message: `Le module ${name} n'existe pas` } });
       }
 
       // Vérifier les dépendances si on désactive le module
@@ -265,10 +309,7 @@ const moduleController = {
         });
 
         if (dependents.length > 0) {
-          return res.status(400).json({
-            message: `Impossible de désactiver le module ${name} car d'autres modules en dépendent`,
-            dependents: dependents.map(m => m.name)
-          });
+          return res.status(400).json({ data: null, error: { message: `Impossible de désactiver le module ${name} car d'autres modules en dépendent`, dependents: dependents.map(m => m.name) } });
         }
       }
 
@@ -276,16 +317,10 @@ const moduleController = {
       module.active = active;
       await module.save();
 
-      return res.status(200).json({
-        message: `Le module ${name} a été ${active ? 'activé' : 'désactivé'} avec succès`,
-        module
-      });
+      return res.status(200).json({ data: module, error: null });
     } catch (error) {
       console.error(`Erreur lors de la modification du statut du module ${req.params.name}:`, error);
-      return res.status(500).json({
-        message: `Une erreur est survenue lors de la modification du statut du module ${req.params.name}`,
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de la modification du statut du module ${req.params.name}` } });
     }
   },
 
@@ -299,9 +334,7 @@ const moduleController = {
       try {
         modulePath = validateModuleName(name);
       } catch (err) {
-        return res.status(400).json({
-          message: err.message
-        });
+        return res.status(400).json({ data: null, error: { message: err.message } });
       }
 
       const module = await Module.findOne({
@@ -309,22 +342,16 @@ const moduleController = {
       });
 
       if (!module) {
-        return res.status(404).json({
-          message: `Le module ${name} n'existe pas`
-        });
+        return res.status(404).json({ data: null, error: { message: `Le module ${name} n'existe pas` } });
       }
 
       if (module.installed) {
-        return res.status(400).json({
-          message: `Le module ${name} est déjà installé`
-        });
+        return res.status(400).json({ data: null, error: { message: `Le module ${name} est déjà installé` } });
       }
 
       // Vérifier que le dossier du module existe
       if (!fs.existsSync(modulePath)) {
-        return res.status(400).json({
-          message: `Le dossier du module ${name} n'existe pas`
-        });
+        return res.status(400).json({ data: null, error: { message: `Le dossier du module ${name} n'existe pas` } });
       }
 
       // Vérifier les dépendances
@@ -342,10 +369,7 @@ const moduleController = {
       }
 
       if (missingDependencies.length > 0) {
-        return res.status(400).json({
-          message: `Impossible d'installer le module ${name} car certaines dépendances ne sont pas installées`,
-          missingDependencies
-        });
+        return res.status(400).json({ data: null, error: { message: `Impossible d'installer le module ${name} car certaines dépendances ne sont pas installées`, missingDependencies } });
       }
 
       // Exécuter les migrations du module si elles existent
@@ -356,10 +380,7 @@ const moduleController = {
           await runCommand('npx', ['sequelize-cli', 'db:migrate', '--migrations-path', migrationsPath]);
         } catch (error) {
           console.error(`Erreur lors de l'exécution des migrations du module ${name}:`, error);
-          return res.status(500).json({
-            message: `Une erreur est survenue lors de l'exécution des migrations du module ${name}`,
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-          });
+          return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de l'exécution des migrations du module ${name}` } });
         }
       }
 
@@ -371,10 +392,7 @@ const moduleController = {
           await runCommand('npx', ['sequelize-cli', 'db:seed', '--seed-path', seedersPath]);
         } catch (error) {
           console.error(`Erreur lors de l'exécution des seeders du module ${name}:`, error);
-          return res.status(500).json({
-            message: `Une erreur est survenue lors de l'exécution des seeders du module ${name}`,
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-          });
+          return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de l'exécution des seeders du module ${name}` } });
         }
       }
 
@@ -383,16 +401,10 @@ const moduleController = {
       module.installedAt = new Date();
       await module.save();
 
-      return res.status(200).json({
-        message: `Le module ${name} a été installé avec succès`,
-        module
-      });
+      return res.status(200).json({ data: module, error: null });
     } catch (error) {
       console.error(`Erreur lors de l'installation du module ${req.params.name}:`, error);
-      return res.status(500).json({
-        message: `Une erreur est survenue lors de l'installation du module ${req.params.name}`,
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de l'installation du module ${req.params.name}` } });
     }
   },
 
@@ -405,9 +417,7 @@ const moduleController = {
       try {
         validateModuleName(name);
       } catch (err) {
-        return res.status(400).json({
-          message: err.message
-        });
+        return res.status(400).json({ data: null, error: { message: err.message } });
       }
 
       const module = await Module.findOne({
@@ -415,15 +425,11 @@ const moduleController = {
       });
 
       if (!module) {
-        return res.status(404).json({
-          message: `Le module ${name} n'existe pas`
-        });
+        return res.status(404).json({ data: null, error: { message: `Le module ${name} n'existe pas` } });
       }
 
       if (!module.installed) {
-        return res.status(400).json({
-          message: `Le module ${name} n'est pas installé`
-        });
+        return res.status(400).json({ data: null, error: { message: `Le module ${name} n'est pas installé` } });
       }
 
       // Vérifier les dépendances
@@ -440,10 +446,7 @@ const moduleController = {
       });
 
       if (dependents.length > 0) {
-        return res.status(400).json({
-          message: `Impossible de désinstaller le module ${name} car d'autres modules en dépendent`,
-          dependents: dependents.map(m => m.name)
-        });
+        return res.status(400).json({ data: null, error: { message: `Impossible de désinstaller le module ${name} car d'autres modules en dépendent`, dependents: dependents.map(m => m.name) } });
       }
 
       // Mettre à jour le statut du module
@@ -451,16 +454,10 @@ const moduleController = {
       module.active = false;
       await module.save();
 
-      return res.status(200).json({
-        message: `Le module ${name} a été désinstallé avec succès`,
-        module
-      });
+      return res.status(200).json({ data: module, error: null });
     } catch (error) {
       console.error(`Erreur lors de la désinstallation du module ${req.params.name}:`, error);
-      return res.status(500).json({
-        message: `Une erreur est survenue lors de la désinstallation du module ${req.params.name}`,
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      return res.status(500).json({ data: null, error: { message: `Une erreur est survenue lors de la désinstallation du module ${req.params.name}` } });
     }
   }
 };

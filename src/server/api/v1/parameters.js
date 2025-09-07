@@ -12,15 +12,15 @@ const asyncHandler = fn => (req, res, next) => {
 // Routes for parameters
 router.get('/', asyncHandler(async (req, res) => {
   const parameters = await Parameter.findAll();
-  res.json(parameters);
+  res.ok(parameters);
 }));
 
 router.get('/:id', asyncHandler(async (req, res) => {
   const parameter = await Parameter.findByPk(req.params.id);
   if (!parameter) {
-    return res.status(404).json({ message: 'Paramètre non trouvé' });
+    return res.fail(404, 'Paramètre non trouvé');
   }
-  res.json(parameter);
+  res.ok(parameter);
 }));
 
 module.exports = router;

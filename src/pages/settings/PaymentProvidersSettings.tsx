@@ -70,7 +70,7 @@ const PaymentProvidersSettings: React.FC = () => {
 
       try {
         const response = await api.get('/paymentproviders');
-        setProviders(response.data);
+        setProviders(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des fournisseurs de paiement:', err);
         setError('Impossible de charger les fournisseurs de paiement. Veuillez réessayer plus tard.');
@@ -164,7 +164,7 @@ const PaymentProvidersSettings: React.FC = () => {
       });
 
       // Mettre à jour l'état local
-      setProviders([...providers, response.data]);
+      setProviders([...(providers ?? []), response.data?.data].filter(Boolean) as PaymentProvider[]);
 
       // Fermer la boîte de dialogue
       setShowAddDialog(false);
@@ -194,13 +194,13 @@ const PaymentProvidersSettings: React.FC = () => {
       const response = await api.patch(`/paymentproviders/${id}/toggle`);
 
       // Mettre à jour l'état local
-      setProviders(providers.map(provider =>
-        provider.id === id ? { ...provider, isActive: response.data.isActive } : provider
+      setProviders((providers || []).map(provider =>
+        provider.id === id ? { ...provider, isActive: (response.data?.data?.isActive ?? provider.isActive) } : provider
       ));
 
       toast({
-        title: response.data.isActive ? "Fournisseur activé" : "Fournisseur désactivé",
-        description: `Le fournisseur "${response.data.name}" a été ${response.data.isActive ? 'activé' : 'désactivé'}.`,
+        title: response.data.data.isActive ? "Fournisseur activé" : "Fournisseur désactivé",
+        description: `Le fournisseur "${response.data.data.name}" a été ${response.data.data.isActive ? 'activé' : 'désactivé'}.`,
         variant: "default",
       });
     } catch (err) {

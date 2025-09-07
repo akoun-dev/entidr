@@ -7,6 +7,9 @@ const moduleController = require('../../controllers/moduleController');
 // Route pour récupérer tous les modules
 router.get('/', moduleController.getAllModules);
 
+// Synchroniser les modules avec le système de fichiers
+router.post('/sync', moduleController.syncModules);
+
 // Route pour récupérer un module par son nom
 router.get('/:name', moduleController.getModuleByName);
 

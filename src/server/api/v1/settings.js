@@ -12,11 +12,21 @@ const {
 } = require('../../controllers/settingsController');
 
 // Routes pour les paramètres
-router.get('/countries', getCountries);
-router.get('/currencies', getCurrencies);
-router.get('/paymentproviders', getPaymentProviders);
-router.get('/workflows', getWorkflows);
-router.get('/company', getCompanySettings);
-router.get('/security-settings', getSecuritySettings);
+// Wrap to enforce { data, error }
+const wrap = (fn) => async (req, res, next) => {
+  try {
+    const result = await fn(req, res);
+    // If controller wrote the response, skip
+    if (res.headersSent) return;
+    res.ok(result);
+  } catch (e) { next(e); }
+};
+
+router.get('/countries', wrap(getCountries));
+router.get('/currencies', wrap(getCurrencies));
+router.get('/paymentproviders', wrap(getPaymentProviders));
+router.get('/workflows', wrap(getWorkflows));
+router.get('/company', wrap(getCompanySettings));
+router.get('/security-settings', wrap(getSecuritySettings));
 
 module.exports = router;

@@ -38,24 +38,24 @@ async function getOrCreateConfig() {
 // GET /sequences - list all sequences
 router.get('/sequences', asyncHandler(async (req, res) => {
   const items = await Sequence.findAll({ order: [['name', 'ASC']] });
-  res.json(items.map(sequenceDto));
+  res.ok(items.map(sequenceDto));
 }));
 
 // POST /sequences/:id/reset - reset a sequence
 router.post('/sequences/:id/reset', asyncHandler(async (req, res) => {
   const s = await Sequence.findByPk(req.params.id);
-  if (!s) return res.status(404).json({ message: 'Séquence introuvable' });
+  if (!s) return res.fail(404, 'Séquence introuvable');
 
   s.nextNumber = 1;
   s.lastReset = new Date();
   await s.save();
-  res.json(sequenceDto(s));
+  res.ok(sequenceDto(s));
 }));
 
 // GET /sequenceconfig - get global config (create default if missing)
 router.get('/sequenceconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreateConfig();
-  res.json({
+  res.ok({
     fiscalYearStart: cfg.fiscalYearStart,
     fiscalYearEnd: cfg.fiscalYearEnd,
     defaultFormat: cfg.defaultFormat,
@@ -76,7 +76,7 @@ router.put('/sequenceconfig', asyncHandler(async (req, res) => {
   if (autoReset !== undefined) cfg.autoReset = !!autoReset;
   if (advancedSettings !== undefined) cfg.advancedSettings = advancedSettings;
   await cfg.save();
-  res.json({
+  res.ok({
     fiscalYearStart: cfg.fiscalYearStart,
     fiscalYearEnd: cfg.fiscalYearEnd,
     defaultFormat: cfg.defaultFormat,
@@ -87,4 +87,3 @@ router.put('/sequenceconfig', asyncHandler(async (req, res) => {
 }));
 
 module.exports = router;
-

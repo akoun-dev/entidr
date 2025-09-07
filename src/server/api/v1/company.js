@@ -10,7 +10,7 @@ router.put('/', companyController.updateCompany);
 
 // GET /api/v1/companies/status - Récupère le statut
 router.get('/status', (req, res) => {
-  res.json({
+  res.ok({
     status: 'active',
     message: 'Company status retrieved successfully'
   });

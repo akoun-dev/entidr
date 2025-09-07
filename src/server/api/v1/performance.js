@@ -15,14 +15,14 @@ async function getOrCreate() {
 // GET /performanceconfig
 router.get('/performanceconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate();
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // PUT /performanceconfig
 router.put('/performanceconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate();
   await cfg.update(req.body || {});
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 module.exports = router;
@@ -76,5 +76,5 @@ function buildMetrics() {
 }
 
 router.get('/performancemetrics', asyncHandler(async (req, res) => {
-  res.json(buildMetrics());
+  res.ok(buildMetrics());
 }));

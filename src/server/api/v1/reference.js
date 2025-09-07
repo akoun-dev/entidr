@@ -9,19 +9,19 @@ const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next
 // Holidays
 router.get('/holidays', asyncHandler(async (req, res) => {
   const items = await Holiday.findAll({ order: [['date', 'ASC']] });
-  res.json(items);
+  res.ok(items);
 }));
 
 // Languages
 router.get('/languages', asyncHandler(async (req, res) => {
   const items = await Language.findAll({ order: [['name', 'ASC']] });
-  res.json(items);
+  res.ok(items);
 }));
 
 // Translations
 router.get('/translations', asyncHandler(async (req, res) => {
   const items = await Translation.findAll({ order: [['key', 'ASC']] });
-  res.json(items);
+  res.ok(items);
 }));
 
 // API Keys (read-only for settings screen)
@@ -32,14 +32,13 @@ router.get('/apikeys', asyncHandler(async (req, res) => {
     ...k.get({ plain: true }),
     key: k.key ? `${k.key.slice(0,4)}****${k.key.slice(-4)}` : ''
   }));
-  res.json(masked);
+  res.ok(masked);
 }));
 
 // Email servers (read-only list)
 router.get('/emailservers', asyncHandler(async (req, res) => {
   const items = await EmailServer.findAll({ order: [['createdAt', 'DESC']] });
-  res.json(items);
+  res.ok(items);
 }));
 
 module.exports = router;
-

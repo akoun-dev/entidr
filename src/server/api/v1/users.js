@@ -29,7 +29,7 @@ router.get('/', asyncHandler(async (req, res) => {
     groups: user.Groups ? user.Groups.map(group => group.name) : []
   }));
 
-  res.json(transformedUsers);
+  res.ok(transformedUsers);
 }));
 
 router.get('/:id', asyncHandler(async (req, res) => {
@@ -38,7 +38,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    return res.fail(404, 'Utilisateur non trouvé');
   }
 
   const transformedUser = {
@@ -53,7 +53,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
     groups: user.Groups ? user.Groups.map(group => group.name) : []
   };
 
-  res.json(transformedUser);
+  res.ok(transformedUser);
 }));
 
 router.post('/', asyncHandler(async (req, res) => {
@@ -61,9 +61,7 @@ router.post('/', asyncHandler(async (req, res) => {
 
   // Basic input checks to avoid opaque DB errors
   if (!username || !email || !password) {
-    return res.status(400).json({
-      message: 'username, email et password sont requis'
-    });
+    return res.fail(400, 'username, email et password sont requis');
   }
 
   try {
@@ -103,20 +101,14 @@ router.post('/', asyncHandler(async (req, res) => {
       groups: createdUser.Groups ? createdUser.Groups.map(group => group.name) : []
     };
 
-    res.status(201).json(transformedUser);
+    res.ok(transformedUser, 201);
   } catch (err) {
     if (err instanceof UniqueConstraintError) {
       // Duplicate username or email
-      return res.status(400).json({
-        message: 'Conflit d\'unicité sur username ou email',
-        errors: err.errors?.map(e => ({ field: e.path, message: e.message }))
-      });
+      return res.fail(400, "Conflit d'unicité sur username ou email", { errors: err.errors?.map(e => ({ field: e.path, message: e.message })) });
     }
     if (err instanceof ValidationError) {
-      return res.status(400).json({
-        message: 'Erreur de validation',
-        errors: err.errors?.map(e => ({ field: e.path, message: e.message }))
-      });
+      return res.fail(400, 'Erreur de validation', { errors: err.errors?.map(e => ({ field: e.path, message: e.message })) });
     }
     throw err;
   }
@@ -127,7 +119,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
 
   const user = await User.findByPk(req.params.id);
   if (!user) {
-    return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    return res.fail(404, 'Utilisateur non trouvé');
   }
 
   if (username) user.username = username;
@@ -167,17 +159,17 @@ router.put('/:id', asyncHandler(async (req, res) => {
     groups: updatedUser.Groups ? updatedUser.Groups.map(group => group.name) : []
   };
 
-  res.json(transformedUser);
+  res.ok(transformedUser);
 }));
 
 router.delete('/:id', asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.params.id);
   if (!user) {
-    return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    return res.fail(404, 'Utilisateur non trouvé');
   }
 
   await user.destroy();
-  res.status(204).end();
+  res.ok(null, 204);
 }));
 
 router.patch('/:id/status', asyncHandler(async (req, res) => {
@@ -185,7 +177,7 @@ router.patch('/:id/status', asyncHandler(async (req, res) => {
 
   const user = await User.findByPk(req.params.id);
   if (!user) {
-    return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    return res.fail(404, 'Utilisateur non trouvé');
   }
 
   user.status = status;
@@ -207,7 +199,7 @@ router.patch('/:id/status', asyncHandler(async (req, res) => {
     groups: updatedUser.Groups ? updatedUser.Groups.map(group => group.name) : []
   };
 
-  res.json(transformedUser);
+  res.ok(transformedUser);
 }));
 
 module.exports = router;

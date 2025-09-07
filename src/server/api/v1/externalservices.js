@@ -25,20 +25,20 @@ function toDto(svc) {
 // Public GET endpoints (no auth) returning raw arrays/objects
 router.get('/', asyncHandler(async (req, res) => {
   const items = await ExternalService.findAll({ order: [['name', 'ASC']] });
-  res.json(items.map(toDto));
+  res.ok(items.map(toDto));
 }));
 
 router.get('/:id', asyncHandler(async (req, res) => {
   const svc = await ExternalService.findByPk(req.params.id);
-  if (!svc) return res.status(404).json({ message: 'Service externe non trouvé' });
-  res.json(toDto(svc));
+  if (!svc) return res.fail(404, 'Service externe non trouvé');
+  res.ok(toDto(svc));
 }));
 
 // Create (protected)
 router.post('/', authenticate, authorize(['admin']), validate(), asyncHandler(async (req, res) => {
   const { name, type, apiKey, isActive, mode } = req.body;
   if (!name || !type || !apiKey) {
-    return res.status(400).json({ message: 'name, type et apiKey sont requis' });
+    return res.fail(400, 'name, type et apiKey sont requis');
   }
   const svc = await ExternalService.create({
     name,
@@ -47,32 +47,32 @@ router.post('/', authenticate, authorize(['admin']), validate(), asyncHandler(as
     isActive: isActive !== undefined ? !!isActive : true,
     mode: mode || 'test'
   });
-  res.status(201).json(toDto(svc));
+  res.ok(toDto(svc), 201);
 }));
 
 // Toggle active (public for settings use)
 router.patch('/:id/toggle', asyncHandler(async (req, res) => {
   const svc = await ExternalService.findByPk(req.params.id);
-  if (!svc) return res.status(404).json({ message: 'Service externe non trouvé' });
+  if (!svc) return res.fail(404, 'Service externe non trouvé');
   svc.isActive = !svc.isActive;
   await svc.save();
-  res.json(toDto(svc));
+  res.ok(toDto(svc));
 }));
 
 // Sync (stub) (public for settings use)
 router.post('/:id/sync', asyncHandler(async (req, res) => {
   const svc = await ExternalService.findByPk(req.params.id);
-  if (!svc) return res.status(404).json({ message: 'Service externe non trouvé' });
+  if (!svc) return res.fail(404, 'Service externe non trouvé');
   svc.lastSyncStatus = 'success';
   svc.lastSyncDate = new Date();
   await svc.save();
-  res.json(toDto(svc));
+  res.ok(toDto(svc));
 }));
 
 // Update (protected)
 router.put('/:id', authenticate, authorize(['admin']), validate(), asyncHandler(async (req, res) => {
   const svc = await ExternalService.findByPk(req.params.id);
-  if (!svc) return res.status(404).json({ message: 'Service externe non trouvé' });
+  if (!svc) return res.fail(404, 'Service externe non trouvé');
   const { name, type, apiKey, isActive, mode } = req.body;
   svc.name = name ?? svc.name;
   svc.type = type ?? svc.type;
@@ -80,15 +80,15 @@ router.put('/:id', authenticate, authorize(['admin']), validate(), asyncHandler(
   if (isActive !== undefined) svc.isActive = !!isActive;
   if (mode) svc.mode = mode;
   await svc.save();
-  res.json(toDto(svc));
+  res.ok(toDto(svc));
 }));
 
 // Delete (protected)
 router.delete('/:id', authenticate, authorize(['admin']), asyncHandler(async (req, res) => {
   const svc = await ExternalService.findByPk(req.params.id);
-  if (!svc) return res.status(404).json({ message: 'Service externe non trouvé' });
+  if (!svc) return res.fail(404, 'Service externe non trouvé');
   await svc.destroy();
-  res.status(204).end();
+  res.ok(null, 204);
 }));
 
 module.exports = router;

@@ -52,7 +52,7 @@ const DocumentLayoutsSettings: React.FC = () => {
 
       try {
         const response = await api.get('/documentlayouts');
-        const mapped = (response.data || []).map((l: any) => ({
+        const mapped = ((response.data && response.data.data) || []).map((l: any) => ({
           id: String(l.id),
           name: l.name,
           type: l.type,
@@ -84,7 +84,7 @@ const DocumentLayoutsSettings: React.FC = () => {
 
       // Mettre à jour l'état local
       setLayouts(layouts.map(layout => {
-        if (layout.type === response.data.type) {
+        if (layout.type === response.data.data.type) {
           return {
             ...layout,
             isDefault: layout.id === id
@@ -95,7 +95,7 @@ const DocumentLayoutsSettings: React.FC = () => {
 
       toast({
         title: "Modèle par défaut",
-        description: `Le modèle "${response.data.name}" a été défini comme modèle par défaut.`,
+        description: `Le modèle "${response.data.data.name}" a été défini comme modèle par défaut.`,
         variant: "default",
       });
     } catch (err) {
@@ -400,7 +400,7 @@ const DocumentLayoutsSettings: React.FC = () => {
                   metadata: JSON.parse(newLayout.metadata)
                 };
                 const resp = await api.post('/documentlayouts', payload);
-                const l = resp.data;
+                const l = resp.data.data;
                 const dto = {
                   id: String(l.id),
                   name: l.name,

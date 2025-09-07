@@ -12,17 +12,17 @@ const notFoundHandler = (req, res, next) => {
 // Handler centralisé pour les erreurs
 const errorHandler = (err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
-  
   logger.error(err.message, {
     stack: err.stack,
     url: req.originalUrl,
     method: req.method
   });
-
-  res.json({
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack
+  res.status(statusCode).json({
+    data: null,
+    error: {
+      message: err.message,
+      stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    }
   });
 };
 

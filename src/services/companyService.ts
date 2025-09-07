@@ -47,8 +47,8 @@ const companyService = {
    */
   async update(data: Company): Promise<Company> {
     try {
-      const response = await axios.put<Company>(`${API_BASE_URL}/company`, data);
-      return response.data;
+      const response = await axios.put<{data: Company}>(`${API_BASE_URL}/company`, data);
+      return response.data.data;
     } catch (error) {
       console.error('Erreur lors de la mise à jour des données de l\'entreprise:', error);
       throw error;

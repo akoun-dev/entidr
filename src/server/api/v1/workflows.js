@@ -55,7 +55,7 @@ router.get('/', asyncHandler(async (req, res) => {
     attributes: ['id', 'name', 'description', 'entityType', 'triggerEvent', 'active'],
     order: [['name', 'ASC']]
   });
-  res.json(items.map(workflowListDto));
+  res.ok(items.map(workflowListDto));
 }));
 
 // GET /workflows/:id - public detail with steps + conditions
@@ -74,9 +74,8 @@ router.get('/:id', asyncHandler(async (req, res) => {
       }]
     }]
   });
-  if (!wf) return res.status(404).json({ message: 'Workflow non trouvé' });
-  res.json(workflowDetailDto(wf));
+  if (!wf) return res.fail(404, 'Workflow non trouvé');
+  res.ok(workflowDetailDto(wf));
 }));
 
 module.exports = router;
-

@@ -15,34 +15,33 @@ async function getOrCreate(model, defaults = {}) {
 // GET /importconfig
 router.get('/importconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(ImportConfig);
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // PUT /importconfig
 router.put('/importconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(ImportConfig);
   await cfg.update(req.body || {});
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // GET /exportconfig
 router.get('/exportconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(ExportConfig);
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // PUT /exportconfig
 router.put('/exportconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(ExportConfig);
   await cfg.update(req.body || {});
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // GET /importexporthistory
 router.get('/importexporthistory', asyncHandler(async (req, res) => {
   const items = await ImportExportHistory.findAll({ order: [['timestamp', 'DESC']] });
-  res.json(items);
+  res.ok(items);
 }));
 
 module.exports = router;
-

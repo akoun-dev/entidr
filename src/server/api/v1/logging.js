@@ -42,7 +42,7 @@ async function ensureDefaults() {
 router.get('/logging-settings', asyncHandler(async (req, res) => {
   await ensureDefaults();
   const rows = await LoggingSetting.findAll({ where: { key: KEYS } });
-  res.json(toConfig(rows));
+  res.ok(toConfig(rows));
 }));
 
 // PATCH /logging-settings
@@ -56,8 +56,7 @@ router.patch('/logging-settings', asyncHandler(async (req, res) => {
     }
   }
   const rows = await LoggingSetting.findAll({ where: { key: KEYS } });
-  res.json(toConfig(rows));
+  res.ok(toConfig(rows));
 }));
 
 module.exports = router;
-

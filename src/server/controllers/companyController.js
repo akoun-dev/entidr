@@ -36,10 +36,7 @@ const getCompany = async (req, res) => {
     console.log('Tables disponibles:', tables);
 
     if (!tables.includes('Companies')) {
-      return res.status(500).json({
-        message: 'Table Companies non trouvée',
-        tables: tables
-      });
+      return res.status(500).json({ data: null, error: { message: 'Table Companies non trouvée', tables } });
     }
 
     // Requête brute de vérification
@@ -71,19 +68,13 @@ const getCompany = async (req, res) => {
         acc[field] = '';
         return acc;
       }, {});
-      return res.json({
-        message: 'Default company data',
-        data: defaultCompany
-      });
+      return res.json({ data: defaultCompany, error: null });
     }
 
-    return res.json({
-      message: 'Company retrieved successfully',
-      data: filteredCompany
-    });
+    return res.json({ data: filteredCompany, error: null });
   } catch (error) {
     logger.error('Error fetching company:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ data: null, error: { message: 'Internal server error' } });
   }
 };
 
@@ -106,28 +97,22 @@ const updateCompany = async (req, res) => {
     // Mettre à jour avec les données filtrées
     await company.update(updateData);
 
-    // Retourner l'objet brut (compatible avec le front actuel)
+    // Retourner l'objet dans un envelope { data }
     const plain = company.get({ plain: true });
-    res.json(plain);
+    res.json({ data: plain, error: null });
   } catch (error) {
     logger.error('Error updating company:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ data: null, error: { message: 'Internal server error' } });
   }
 };
 
 const getStatus = async (req, res) => {
   try {
     // Retourner un statut par défaut puisque la colonne 'active' n'existe pas
-    res.json({
-      status: 'active',
-      message: 'Company status retrieved successfully'
-    });
+    res.json({ data: { status: 'active', message: 'Company status retrieved successfully' }, error: null });
   } catch (error) {
     logger.error('Error getting company status:', error);
-    res.status(500).json({
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(500).json({ data: null, error: { message: 'Internal server error' } });
   }
 };
 

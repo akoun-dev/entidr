@@ -17,21 +17,20 @@ async function getOrCreateCompliance() {
 // GET /complianceconfig - get config
 router.get('/complianceconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreateCompliance();
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // PUT /complianceconfig - update config
 router.put('/complianceconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreateCompliance();
   await cfg.update(req.body || {});
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // GET /consentrecords - list consent records
 router.get('/consentrecords', asyncHandler(async (req, res) => {
   const items = await ConsentRecord.findAll({ order: [['consentDate', 'DESC']] });
-  res.json(items);
+  res.ok(items);
 }));
 
 module.exports = router;
-

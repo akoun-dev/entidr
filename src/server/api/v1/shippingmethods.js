@@ -24,14 +24,14 @@ function toDto(m) {
 // GET /shippingmethods - list
 router.get('/', asyncHandler(async (req, res) => {
   const methods = await ShippingMethod.findAll({ order: [['displayOrder', 'ASC'], ['name', 'ASC']] });
-  res.json(methods.map(toDto));
+  res.ok(methods.map(toDto));
 }));
 
 // POST /shippingmethods - create
 router.post('/', asyncHandler(async (req, res) => {
   const { name, carrier, deliveryTime, price, supportedCountries, isActive, displayOrder } = req.body;
   if (!name || !carrier || !deliveryTime || !price) {
-    return res.status(400).json({ message: 'name, carrier, deliveryTime et price sont requis' });
+    return res.fail(400, 'name, carrier, deliveryTime et price sont requis');
   }
   const method = await ShippingMethod.create({
     name,
@@ -42,25 +42,24 @@ router.post('/', asyncHandler(async (req, res) => {
     isActive: isActive !== undefined ? !!isActive : true,
     displayOrder: displayOrder ?? 0
   });
-  res.status(201).json(toDto(method));
+  res.ok(toDto(method), 201);
 }));
 
 // PATCH /shippingmethods/:id/toggle - toggle active
 router.patch('/:id/toggle', asyncHandler(async (req, res) => {
   const method = await ShippingMethod.findByPk(req.params.id);
-  if (!method) return res.status(404).json({ message: "Méthode d'expédition non trouvée" });
+  if (!method) return res.fail(404, "Méthode d'expédition non trouvée");
   method.isActive = !method.isActive;
   await method.save();
-  res.json(toDto(method));
+  res.ok(toDto(method));
 }));
 
 // DELETE /shippingmethods/:id - delete
 router.delete('/:id', asyncHandler(async (req, res) => {
   const method = await ShippingMethod.findByPk(req.params.id);
-  if (!method) return res.status(404).json({ message: "Méthode d'expédition non trouvée" });
+  if (!method) return res.fail(404, "Méthode d'expédition non trouvée");
   await method.destroy();
-  res.status(204).end();
+  res.ok(null, 204);
 }));
 
 module.exports = router;
-

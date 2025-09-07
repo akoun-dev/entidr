@@ -18,7 +18,7 @@ export const currencyService = {
   // Récupérer toutes les devises
   async getAll(): Promise<Currency[]> {
     const response = await api.get('/currencies');
-    return response.data;
+    return response.data.data;
   },
 
   // Récupérer une devise par son ID

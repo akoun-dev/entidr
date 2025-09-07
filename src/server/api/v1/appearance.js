@@ -15,26 +15,25 @@ async function getOrCreate(model) {
 // Theme config
 router.get('/themeconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(ThemeConfig);
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 router.put('/themeconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(ThemeConfig);
   await cfg.update(req.body || {});
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // Calendar config
 router.get('/calendarconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(CalendarConfig);
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 router.put('/calendarconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreate(CalendarConfig);
   await cfg.update(req.body || {});
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 module.exports = router;
-

@@ -12,15 +12,15 @@ const asyncHandler = fn => (req, res, next) => {
 // Routes for groups
 router.get('/', asyncHandler(async (req, res) => {
   const groups = await Group.findAll();
-  res.json(groups);
+  res.ok(groups);
 }));
 
 router.get('/:id', asyncHandler(async (req, res) => {
   const group = await Group.findByPk(req.params.id);
   if (!group) {
-    return res.status(404).json({ message: 'Groupe non trouvé' });
+    return res.fail(404, 'Groupe non trouvé');
   }
-  res.json(group);
+  res.ok(group);
 }));
 
 module.exports = router;

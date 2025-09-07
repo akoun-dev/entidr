@@ -68,7 +68,7 @@ const UsersSettings: React.FC = () => {
         const usersData = await userService.getAll();
 
         // Transformer les données pour correspondre à notre interface
-        const transformedUsers = usersData.map(user => ({
+        const transformedUsers = (usersData ?? []).map(user => ({
           id: user.id,
           username: user.username,
           firstName: user.firstName,

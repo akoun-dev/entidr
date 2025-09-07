@@ -53,8 +53,8 @@ const ModulesSettings: React.FC = () => {
     const fetchModules = async () => {
       try {
         setLoading(true);
-        const response = await axios.get<Module[]>(`${API_BASE_URL}/modules`);
-        setModules(response.data);
+        const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
+        setModules(response.data.data);
         setError(null);
       } catch (err) {
         console.error('Erreur lors du chargement des modules:', err);
@@ -93,8 +93,8 @@ const ModulesSettings: React.FC = () => {
       });
 
       // Recharger tous les modules pour avoir les données à jour
-      const response = await axios.get<Module[]>(`${API_BASE_URL}/modules`);
-      setModules(response.data);
+      const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
+      setModules(response.data.data);
       setError(null);
 
       // Afficher un message de confirmation
@@ -130,8 +130,8 @@ const ModulesSettings: React.FC = () => {
       await axios.post(`${API_BASE_URL}/modules/${selectedModule.name}/install`);
 
       // Recharger tous les modules pour avoir les données à jour
-      const response = await axios.get<Module[]>(`${API_BASE_URL}/modules`);
-      setModules(response.data);
+      const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
+      setModules(response.data.data);
       setError(null);
 
       // Afficher un message de confirmation
@@ -167,8 +167,8 @@ const ModulesSettings: React.FC = () => {
       await axios.post(`${API_BASE_URL}/modules/${selectedModule.name}/uninstall`);
 
       // Recharger tous les modules pour avoir les données à jour
-      const response = await axios.get<Module[]>(`${API_BASE_URL}/modules`);
-      setModules(response.data);
+      const response = await axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`);
+      setModules(response.data.data);
       setError(null);
 
       // Afficher un message de confirmation
@@ -295,9 +295,9 @@ const ModulesSettings: React.FC = () => {
           variant="outline"
           onClick={() => {
             setLoading(true);
-            axios.get<Module[]>(`${API_BASE_URL}/modules`)
+            axios.get<{data: Module[]}>(`${API_BASE_URL}/modules`)
               .then(response => {
-                setModules(response.data);
+                setModules(response.data.data);
                 setError(null);
                 setLoading(false);
               })

@@ -6,7 +6,7 @@ module.exports = {
     getAllReportTemplates: async (req, res) => {
         try {
             const templates = await ReportTemplate.findAll();
-            res.json(templates);
+            res.ok(templates);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -16,9 +16,9 @@ module.exports = {
         try {
             const template = await ReportTemplate.findByPk(req.params.id);
             if (!template) {
-                return res.status(404).json({ error: 'Report template not found' });
+                return res.fail(404, 'Report template not found');
             }
-            res.json(template);
+            res.ok(template);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -27,7 +27,7 @@ module.exports = {
     createReportTemplate: async (req, res) => {
         try {
             const template = await ReportTemplate.create(req.body);
-            res.status(201).json(template);
+            res.ok(template, 201);
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
@@ -39,10 +39,10 @@ module.exports = {
                 where: { id: req.params.id }
             });
             if (!updated) {
-                return res.status(404).json({ error: 'Report template not found' });
+                return res.fail(404, 'Report template not found');
             }
             const updatedTemplate = await ReportTemplate.findByPk(req.params.id);
-            res.json(updatedTemplate);
+            res.ok(updatedTemplate);
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
@@ -54,9 +54,9 @@ module.exports = {
                 where: { id: req.params.id }
             });
             if (!deleted) {
-                return res.status(404).json({ error: 'Report template not found' });
+                return res.fail(404, 'Report template not found');
             }
-            res.status(204).end();
+            res.ok(null, 204);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

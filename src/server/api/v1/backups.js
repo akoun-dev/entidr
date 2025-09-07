@@ -29,20 +29,20 @@ async function getOrCreateConfig() {
 // GET /backups - list backups
 router.get('/backups', asyncHandler(async (req, res) => {
   const items = await Backup.findAll({ order: [['timestamp', 'DESC']] });
-  res.json(items.map(backupDto));
+  res.ok(items.map(backupDto));
 }));
 
 // GET /backupconfig - get config
 router.get('/backupconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreateConfig();
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 // PUT /backupconfig - update config
 router.put('/backupconfig', asyncHandler(async (req, res) => {
   const cfg = await getOrCreateConfig();
   await cfg.update(req.body || {});
-  res.json(cfg);
+  res.ok(cfg);
 }));
 
 module.exports = router;

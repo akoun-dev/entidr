@@ -101,19 +101,19 @@ const WorkflowSettings: React.FC = () => {
         setError(null);
 
         // Récupérer tous les workflows
-        const response = await axios.get<Workflow[]>('/api/workflows', {
+        const response = await axios.get<{data: Workflow[]}>('/api/workflows', {
           timeout: 5000 // Timeout de 5 secondes
         });
-        const workflowsData: Workflow[] = response.data;
+        const workflowsData: Workflow[] = response.data.data;
 
         // Pour chaque workflow, récupérer ses étapes et conditions
         const workflowsWithDetails = await Promise.all(
           workflowsData.map(async (workflow: any) => {
             try {
-              const detailResponse = await axios.get<Workflow>(`/api/workflows/${workflow.id}`, {
+              const detailResponse = await axios.get<{data: Workflow}>(`/api/workflows/${workflow.id}`, {
                 timeout: 5000 // Timeout de 5 secondes
               });
-              return detailResponse.data;
+              return detailResponse.data.data;
             } catch (err) {
               console.error(`Erreur lors du chargement du workflow ${workflow.id}:`, err);
               return {

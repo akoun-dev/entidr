@@ -26,19 +26,19 @@ export const groupService = {
   // Récupérer un groupe par son ID
   async getById(id: string): Promise<Group> {
     const response = await api.get(`/groups/${id}`);
-    return response.data;
+    return response.data.data;
   },
 
   // Créer un nouveau groupe
   async create(group: Omit<Group, 'id'>): Promise<Group> {
     const response = await api.post('/groups', group);
-    return response.data;
+    return response.data.data;
   },
 
   // Mettre à jour un groupe
   async update(id: string, group: Partial<Group>): Promise<Group> {
     const response = await api.put(`/groups/${id}`, group);
-    return response.data;
+    return response.data.data;
   },
 
   // Supprimer un groupe

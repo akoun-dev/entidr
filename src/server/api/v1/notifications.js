@@ -65,7 +65,7 @@ function asItems(config) {
 // GET /notifications/settings - list projected settings
 router.get('/settings', asyncHandler(async (req, res) => {
   const config = await getOrCreateConfig();
-  res.json(asItems(config));
+  res.ok(asItems(config));
 }));
 
 // PATCH /notifications/settings/:id/toggle - toggle one channel
@@ -82,13 +82,13 @@ router.patch('/settings/:id/toggle', asyncHandler(async (req, res) => {
   };
 
   const field = mapping[id];
-  if (!field) return res.status(400).json({ message: 'Type de paramètre invalide' });
+  if (!field) return res.fail(400, 'Type de paramètre invalide');
 
   config[field] = !config[field];
   await config.save();
 
   const item = asItems(config).find(i => i.id === (id === 'in-app' ? 'inapp' : id));
-  res.json(item);
+  res.ok(item);
 }));
 
 // DELETE /notifications/settings/:id - disable channel (soft delete)
@@ -103,12 +103,11 @@ router.delete('/settings/:id', asyncHandler(async (req, res) => {
     webhook: 'webhookEnabled'
   };
   const field = mapping[id];
-  if (!field) return res.status(400).json({ message: 'Type de paramètre invalide' });
+  if (!field) return res.fail(400, 'Type de paramètre invalide');
 
   config[field] = false;
   await config.save();
-  return res.status(204).end();
+  return res.ok(null, 204);
 }));
 
 module.exports = router;
-

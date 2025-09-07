@@ -72,7 +72,7 @@ const ReportTemplatesSettings: React.FC = () => {
 
       try {
         const response = await api.get('/reporttemplates');
-        setTemplates(response.data);
+        setTemplates(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des modèles de rapports:', err);
         setError('Impossible de charger les modèles de rapports. Veuillez réessayer plus tard.');
@@ -199,7 +199,7 @@ const ReportTemplatesSettings: React.FC = () => {
       });
 
       // Ajouter le nouveau modèle à la liste
-      setTemplates([...templates, response.data]);
+      setTemplates([...(templates ?? []), response.data?.data].filter(Boolean) as ReportTemplate[]);
 
       // Fermer la boîte de dialogue
       setShowNewTemplateDialog(false);
@@ -237,7 +237,7 @@ const ReportTemplatesSettings: React.FC = () => {
       });
 
       // Afficher le résultat de la génération
-      setGeneratedReportUrl(response.data.reportUrl);
+      setGeneratedReportUrl(response.data.data?.reportUrl ?? null);
       setShowGenerateResultDialog(true);
 
       toast({

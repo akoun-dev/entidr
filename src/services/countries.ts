@@ -16,7 +16,7 @@ export const countryService = {
   // Récupérer tous les pays
   async getAll(): Promise<Country[]> {
     const response = await api.get('/countries');
-    return response.data;
+    return response.data.data;
   },
 
   // Récupérer un pays par son ID

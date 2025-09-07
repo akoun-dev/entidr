@@ -35,7 +35,7 @@ const NotificationSettings: React.FC = () => {
 
       try {
         const response = await api.get('/notifications/settings');
-        setSettings(response.data);
+        setSettings(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des paramètres:', err);
         setError('Impossible de charger les paramètres de notification. Veuillez réessayer plus tard.');
@@ -53,13 +53,13 @@ const NotificationSettings: React.FC = () => {
     try {
       const response = await api.patch(`/notifications/settings/${id}/toggle`);
 
-      setSettings(settings.map(setting =>
-        setting.id === id ? { ...setting, isActive: response.data.isActive } : setting
+      setSettings((settings || []).map(setting =>
+        setting.id === id ? { ...setting, isActive: (response.data?.data?.isActive ?? setting.isActive) } : setting
       ));
 
       toast({
         title: "Statut mis à jour",
-        description: `Le paramètre a été ${response.data.isActive ? 'activé' : 'désactivé'}.`,
+        description: `Le paramètre a été ${response.data.data.isActive ? 'activé' : 'désactivé'}.`,
         variant: "default",
       });
     } catch (err) {

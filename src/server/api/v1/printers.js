@@ -27,14 +27,14 @@ function toDto(p) {
 // List printers
 router.get('/', asyncHandler(async (req, res) => {
   const printers = await Printer.findAll({ order: [['name', 'ASC']] });
-  res.json(printers.map(toDto));
+  res.ok(printers.map(toDto));
 }));
 
 // Create printer
 router.post('/', asyncHandler(async (req, res) => {
   const { name, type, connection, address, port, driver, isDefault, status, options, capabilities } = req.body;
   if (!name || !type || !connection) {
-    return res.status(400).json({ message: 'name, type et connection sont requis' });
+    return res.fail(400, 'name, type et connection sont requis');
   }
   const printer = await Printer.create({
     name,
@@ -48,43 +48,42 @@ router.post('/', asyncHandler(async (req, res) => {
     options: options || null,
     capabilities: capabilities || null
   });
-  res.status(201).json(toDto(printer));
+  res.ok(toDto(printer), 201);
 }));
 
 // Set default printer
 router.patch('/:id/setdefault', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const printer = await Printer.findByPk(id);
-  if (!printer) return res.status(404).json({ message: 'Imprimante non trouvée' });
+  if (!printer) return res.fail(404, 'Imprimante non trouvée');
   printer.isDefault = true;
   await printer.save();
-  res.json(toDto(printer));
+  res.ok(toDto(printer));
 }));
 
 // Test print (stub)
 router.post('/:id/test', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const printer = await Printer.findByPk(id);
-  if (!printer) return res.status(404).json({ message: 'Imprimante non trouvée' });
-  res.json({ success: true, message: 'Test d\'impression envoyé', printer: printer.name });
+  if (!printer) return res.fail(404, 'Imprimante non trouvée');
+  res.ok({ success: true, message: "Test d'impression envoyé", printer: printer.name });
 }));
 
 // Delete printer
 router.delete('/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const printer = await Printer.findByPk(id);
-  if (!printer) return res.status(404).json({ message: 'Imprimante non trouvée' });
+  if (!printer) return res.fail(404, 'Imprimante non trouvée');
 
   if (printer.isDefault) {
     const others = await Printer.count({ where: { isDefault: false } });
     if (others > 0) {
-      return res.status(400).json({ message: 'Impossible de supprimer l\'imprimante par défaut' });
+      return res.fail(400, "Impossible de supprimer l'imprimante par défaut");
     }
   }
 
   await printer.destroy();
-  res.status(204).end();
+  res.ok(null, 204);
 }));
 
 module.exports = router;
-

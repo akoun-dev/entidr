@@ -21,20 +21,20 @@ function toDto(df) {
 // GET /dateformats
 router.get('/dateformats', asyncHandler(async (req, res) => {
   const items = await DateFormat.findAll({ order: [['type', 'ASC'], ['name', 'ASC']] });
-  res.json(items.map(toDto));
+  res.ok(items.map(toDto));
 }));
 
 // GET /dateformats/:id
 router.get('/dateformats/:id', asyncHandler(async (req, res) => {
   const item = await DateFormat.findByPk(req.params.id);
-  if (!item) return res.status(404).json({ message: 'Format introuvable' });
-  res.json(toDto(item));
+  if (!item) return res.fail(404, 'Format introuvable');
+  res.ok(toDto(item));
 }));
 
 // POST /dateformats
 router.post('/dateformats', asyncHandler(async (req, res) => {
   const { name, format, description, type, is_default, active } = req.body || {};
-  if (!name || !format) return res.status(400).json({ message: 'name et format sont requis' });
+  if (!name || !format) return res.fail(400, 'name et format sont requis');
   const created = await DateFormat.create({
     name,
     format,
@@ -47,13 +47,13 @@ router.post('/dateformats', asyncHandler(async (req, res) => {
   if (created.is_default) {
     await DateFormat.update({ is_default: false }, { where: { type: created.type, id: { [DateFormat.sequelize.Sequelize.Op.ne]: created.id } } });
   }
-  res.status(201).json(toDto(created));
+  res.ok(toDto(created), 201);
 }));
 
 // PUT /dateformats/:id
 router.put('/dateformats/:id', asyncHandler(async (req, res) => {
   const item = await DateFormat.findByPk(req.params.id);
-  if (!item) return res.status(404).json({ message: 'Format introuvable' });
+  if (!item) return res.fail(404, 'Format introuvable');
   const { name, format, description, type, is_default, active } = req.body || {};
   if (name !== undefined) item.name = name;
   if (format !== undefined) item.format = format;
@@ -65,35 +65,34 @@ router.put('/dateformats/:id', asyncHandler(async (req, res) => {
   if (item.is_default) {
     await DateFormat.update({ is_default: false }, { where: { type: item.type, id: { [DateFormat.sequelize.Sequelize.Op.ne]: item.id } } });
   }
-  res.json(toDto(item));
+  res.ok(toDto(item));
 }));
 
 // DELETE /dateformats/:id
 router.delete('/dateformats/:id', asyncHandler(async (req, res) => {
   const item = await DateFormat.findByPk(req.params.id);
-  if (!item) return res.status(404).json({ message: 'Format introuvable' });
+  if (!item) return res.fail(404, 'Format introuvable');
   await item.destroy();
-  res.status(204).end();
+  res.ok(null, 204);
 }));
 
 // PATCH /dateformats/:id/toggle-status
 router.patch('/dateformats/:id/toggle-status', asyncHandler(async (req, res) => {
   const item = await DateFormat.findByPk(req.params.id);
-  if (!item) return res.status(404).json({ message: 'Format introuvable' });
+  if (!item) return res.fail(404, 'Format introuvable');
   item.active = !item.active;
   await item.save();
-  res.json(toDto(item));
+  res.ok(toDto(item));
 }));
 
 // PATCH /dateformats/:id/set-default
 router.patch('/dateformats/:id/set-default', asyncHandler(async (req, res) => {
   const item = await DateFormat.findByPk(req.params.id);
-  if (!item) return res.status(404).json({ message: 'Format introuvable' });
+  if (!item) return res.fail(404, 'Format introuvable');
   item.is_default = true;
   await item.save();
   await DateFormat.update({ is_default: false }, { where: { type: item.type, id: { [DateFormat.sequelize.Sequelize.Op.ne]: item.id } } });
-  res.json(toDto(item));
+  res.ok(toDto(item));
 }));
 
 module.exports = router;
-

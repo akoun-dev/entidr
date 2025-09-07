@@ -11,10 +11,10 @@ const getCountries = async (req, res) => {
       attributes: ['id', 'name', 'code', 'phone_code'],
       order: [['name', 'ASC']]
     });
-    res.json(countries);
+    res.ok(countries);
   } catch (error) {
     console.error('Error fetching countries:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.fail(500, 'Internal server error');
   }
 };
 
@@ -25,10 +25,10 @@ const getCurrencies = async (req, res) => {
       attributes: ['id', 'name', 'code', 'symbol'],
       order: [['name', 'ASC']]
     });
-    res.json(currencies);
+    res.ok(currencies);
   } catch (error) {
     console.error('Error fetching currencies:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.fail(500, 'Internal server error');
   }
 };
 
@@ -40,10 +40,10 @@ const getPaymentProviders = async (req, res) => {
       where: { isActive: true },
       order: [['name', 'ASC']]
     });
-    res.json(providers);
+    res.ok(providers);
   } catch (error) {
     console.error('Error fetching payment providers:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.fail(500, 'Internal server error');
   }
 };
 
@@ -55,10 +55,10 @@ const getWorkflows = async (req, res) => {
       attributes: ['id', 'name', 'description', 'active'],
       order: [['name', 'ASC']]
     });
-    res.json(workflows);
+    res.ok(workflows);
   } catch (error) {
     console.error('Error fetching workflows:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.fail(500, 'Internal server error');
   }
 };
 
@@ -68,10 +68,10 @@ const getCompanySettings = async (req, res) => {
     const settings = await Company.findOne({
       attributes: ['name', 'address', 'phone', 'email', 'logo']
     });
-    res.json(settings || {});
+    res.ok(settings || {});
   } catch (error) {
     console.error('Error fetching company settings:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.fail(500, 'Internal server error');
   }
 };
 
@@ -89,10 +89,10 @@ const getSecuritySettings = async (req, res) => {
       sessionTimeout: map.sessionTimeout ? Number(map.sessionTimeout) : null
     };
 
-    res.json(payload);
+    res.ok(payload);
   } catch (error) {
     console.error('Error fetching security settings:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.fail(500, 'Internal server error');
   }
 };
 
