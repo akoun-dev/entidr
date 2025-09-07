@@ -55,7 +55,7 @@ const AutomationSettings: React.FC = () => {
 
       try {
         const response = await api.get('/automationrules');
-        setRules(response.data);
+        setRules(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des règles d\'automatisation:', err);
         setError('Impossible de charger les règles d\'automatisation. Veuillez réessayer plus tard.');
@@ -75,14 +75,15 @@ const AutomationSettings: React.FC = () => {
       const response = await api.patch(`/automationrules/${id}/toggle`);
 
       // Mettre à jour l'état local
-      setRules(rules.map(rule =>
-        rule.id === id ? { ...rule, enabled: response.data.enabled } : rule
+      const updated = response.data?.data;
+      setRules((rules || []).map(rule =>
+        rule.id === id ? { ...rule, enabled: (updated?.enabled ?? rule.enabled) } : rule
       ));
 
       toast({
-        title: "Statut mis à jour",
-        description: `La règle a été ${response.data.enabled ? 'activée' : 'désactivée'}.`,
-        variant: "default",
+        title: 'Statut mis à jour',
+        description: `La règle a été ${(updated?.enabled ? 'activée' : 'désactivée')}.`,
+        variant: 'default',
       });
     } catch (err) {
       console.error('Erreur lors de la modification du statut de la règle:', err);
@@ -106,7 +107,7 @@ const AutomationSettings: React.FC = () => {
       await api.delete(`/automationrules/${ruleToDelete.id}`);
 
       // Mettre à jour l'état local
-      setRules(rules.filter(rule => rule.id !== ruleToDelete.id));
+      setRules((rules || []).filter(rule => rule.id !== ruleToDelete.id));
 
       // Fermer la boîte de dialogue
       setShowDeleteDialog(false);

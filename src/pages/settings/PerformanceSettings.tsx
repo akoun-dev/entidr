@@ -100,17 +100,20 @@ const PerformanceSettings: React.FC = () => {
 
         // Récupérer la configuration des performances
         const configResponse = await axios.get(`${API_BASE_URL}/performanceconfig`);
-        setConfig(configResponse.data);
+        const cfg = configResponse.data?.data ?? null;
+        setConfig(cfg);
 
         // Mettre à jour les états locaux
-        setCacheEnabled(configResponse.data.cacheEnabled);
-        setCacheSize(configResponse.data.cacheSize);
-        setPageSize(configResponse.data.defaultPageSize);
-        setQueryOptimization(configResponse.data.queryOptimization);
+        if (cfg) {
+          setCacheEnabled(!!cfg.cacheEnabled);
+          setCacheSize(cfg.cacheSize ?? cacheSize);
+          setPageSize(cfg.defaultPageSize ?? pageSize);
+          setQueryOptimization(!!cfg.queryOptimization);
+        }
 
         // Récupérer les métriques de performance
         const metricsResponse = await axios.get(`${API_BASE_URL}/performancemetrics`);
-        setMetrics(metricsResponse.data);
+        setMetrics(metricsResponse.data?.data ?? null);
 
         setLoading(false);
       } catch (error) {
@@ -125,7 +128,7 @@ const PerformanceSettings: React.FC = () => {
     const intervalId = setInterval(async () => {
       try {
         const metricsResponse = await axios.get(`${API_BASE_URL}/performancemetrics`);
-        setMetrics(metricsResponse.data);
+        setMetrics(metricsResponse.data?.data ?? null);
       } catch (error) {
         console.error('Erreur lors de la mise à jour des métriques:', error);
       }

@@ -44,7 +44,7 @@ const ShippingMethodsSettings: React.FC = () => {
 
       try {
         const response = await api.get('/shippingmethods');
-        setMethods(response.data);
+        setMethods(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des méthodes d\'expédition:', err);
         setError('Impossible de charger les méthodes d\'expédition. Veuillez réessayer plus tard.');
@@ -99,11 +99,11 @@ const ShippingMethodsSettings: React.FC = () => {
         price: newMethod.price,
         supportedCountries: newMethod.supportedCountries,
         isActive: true,
-        displayOrder: methods.length + 1
+        displayOrder: (methods?.length ?? 0) + 1
       });
 
       // Mettre à jour l'état local
-      setMethods([...methods, response.data]);
+      setMethods([...(methods ?? []), response.data?.data].filter(Boolean) as ShippingMethod[]);
 
       // Réinitialiser le formulaire
       setNewMethod({
@@ -139,13 +139,14 @@ const ShippingMethodsSettings: React.FC = () => {
       const response = await api.patch(`/shippingmethods/${id}/toggle`);
 
       // Mettre à jour l'état local
-      setMethods(methods.map(method =>
-        method.id === id ? { ...method, isActive: response.data.isActive } : method
+      const updated = response.data?.data;
+      setMethods((methods || []).map(method =>
+        method.id === id ? { ...method, isActive: (updated?.isActive ?? method.isActive) } : method
       ));
 
       toast({
-        title: response.data.isActive ? "Méthode activée" : "Méthode désactivée",
-        description: `La méthode "${response.data.name}" a été ${response.data.isActive ? 'activée' : 'désactivée'}.`,
+        title: (updated?.isActive ? 'Méthode activée' : 'Méthode désactivée'),
+        description: `La méthode "${updated?.name ?? id}" a été ${(updated?.isActive ? 'activée' : 'désactivée')}.`,
         variant: "default",
       });
     } catch (err) {
@@ -170,7 +171,7 @@ const ShippingMethodsSettings: React.FC = () => {
       await api.delete(`/shippingmethods/${methodToDelete.id}`);
 
       // Mettre à jour l'état local
-      setMethods(methods.filter(method => method.id !== methodToDelete.id));
+      setMethods((methods || []).filter(method => method.id !== methodToDelete.id));
 
       // Fermer la boîte de dialogue
       setShowDeleteDialog(false);

@@ -64,11 +64,11 @@ const SequenceSettings: React.FC = () => {
 
         // Récupérer les séquences
         const sequencesResponse = await axios.get(`${API_BASE_URL}/sequences`);
-        setSequences(sequencesResponse.data);
+        setSequences(sequencesResponse.data?.data ?? []);
 
         // Récupérer la configuration des séquences
         const configResponse = await axios.get(`${API_BASE_URL}/sequenceconfig`);
-        setSequenceConfig(configResponse.data);
+        setSequenceConfig(configResponse.data?.data ?? null);
 
         setLoading(false);
       } catch (error) {
@@ -80,7 +80,7 @@ const SequenceSettings: React.FC = () => {
     fetchData();
   }, []);
 
-  const filteredSequences = sequences.filter(sequence =>
+  const filteredSequences = (sequences || []).filter(sequence =>
     sequence.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sequence.prefix.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -127,8 +127,8 @@ const SequenceSettings: React.FC = () => {
       const response = await axios.post(`${API_BASE_URL}/sequences/${sequenceToReset.id}/reset`);
 
       // Mettre à jour la séquence dans le tableau
-      setSequences(sequences.map(seq =>
-        seq.id === sequenceToReset.id ? response.data : seq
+      setSequences((sequences || []).map(seq =>
+        seq.id === sequenceToReset.id ? (response.data?.data ?? seq) : seq
       ));
 
       toast({

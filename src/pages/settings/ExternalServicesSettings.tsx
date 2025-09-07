@@ -43,7 +43,7 @@ const ExternalServicesSettings: React.FC = () => {
 
       try {
         const response = await api.get('/externalservices');
-        setServices(response.data);
+        setServices(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des services externes:', err);
         setError('Impossible de charger les services externes. Veuillez réessayer plus tard.');
@@ -83,7 +83,7 @@ const ExternalServicesSettings: React.FC = () => {
       });
 
       // Mettre à jour l'état local
-      setServices([...services, response.data]);
+      setServices([...(services ?? []), response.data?.data].filter(Boolean) as ExternalService[]);
 
       // Réinitialiser le formulaire
       setNewService({
@@ -117,13 +117,14 @@ const ExternalServicesSettings: React.FC = () => {
       const response = await api.patch(`/externalservices/${id}/toggle`);
 
       // Mettre à jour l'état local
-      setServices(services.map(service =>
-        service.id === id ? { ...service, isActive: response.data.isActive } : service
+      const updated = response.data?.data;
+      setServices((services || []).map(service =>
+        service.id === id ? { ...service, isActive: (updated?.isActive ?? service.isActive), mode: updated?.mode ?? service.mode } : service
       ));
 
       toast({
-        title: response.data.isActive ? "Service activé" : "Service désactivé",
-        description: `Le service "${response.data.name}" a été ${response.data.isActive ? 'activé' : 'désactivé'}.`,
+        title: (updated?.isActive ? "Service activé" : "Service désactivé"),
+        description: `Le service "${updated?.name ?? id}" a été ${(updated?.isActive ? 'activé' : 'désactivé')}.`,
         variant: "default",
       });
     } catch (err) {
@@ -146,17 +147,18 @@ const ExternalServicesSettings: React.FC = () => {
       const response = await api.post(`/externalservices/${id}/sync`);
 
       // Mettre à jour l'état local
-      setServices(services.map(service =>
+      const updated = response.data?.data;
+      setServices((services || []).map(service =>
         service.id === id ? {
           ...service,
-          lastSyncStatus: response.data.lastSyncStatus,
-          lastSyncDate: response.data.lastSyncDate
+          lastSyncStatus: updated?.lastSyncStatus ?? service.lastSyncStatus,
+          lastSyncDate: updated?.lastSyncDate ?? service.lastSyncDate
         } : service
       ));
 
       toast({
         title: "Synchronisation réussie",
-        description: `Le service "${response.data.name}" a été synchronisé avec succès.`,
+        description: `Le service "${updated?.name ?? id}" a été synchronisé avec succès.`,
         variant: "default",
       });
     } catch (err) {

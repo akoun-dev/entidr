@@ -73,7 +73,7 @@ const ComplianceSettings: React.FC = () => {
 
       try {
         const response = await api.get('/complianceconfig');
-        setComplianceConfig(response.data);
+        setComplianceConfig(response.data?.data ?? complianceConfig);
       } catch (err) {
         console.error('Erreur lors du chargement de la configuration de conformité:', err);
         setError('Impossible de charger la configuration de conformité. Veuillez réessayer plus tard.');
@@ -92,7 +92,7 @@ const ComplianceSettings: React.FC = () => {
 
       try {
         const response = await api.get('/consentrecords');
-        setConsentRecords(response.data);
+        setConsentRecords(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des enregistrements de consentement:', err);
       } finally {
@@ -109,7 +109,7 @@ const ComplianceSettings: React.FC = () => {
 
     try {
       const response = await api.put('/complianceconfig', complianceConfig);
-      setComplianceConfig(response.data);
+      setComplianceConfig(response.data?.data ?? complianceConfig);
 
       toast({
         title: "Configuration sauvegardée",
@@ -128,7 +128,7 @@ const ComplianceSettings: React.FC = () => {
     }
   };
 
-  const filteredConsentRecords = consentRecords.filter(record => {
+  const filteredConsentRecords = (consentRecords || []).filter(record => {
     const term = (searchTerm || '').toLowerCase();
     const userText = (record.user ?? String(record.userId ?? '')).toLowerCase();
     const typeText = (record.consentType ?? '').toLowerCase();

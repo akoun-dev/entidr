@@ -28,6 +28,7 @@ const appearanceRouter = require('./api/v1/appearance');
 const referenceRouter = require('./api/v1/reference');
 const loggingRouter = require('./api/v1/logging');
 const dateFormatsRouter = require('./api/v1/dateformats');
+const calendarIntegrationsRouter = require('./routes/calendarIntegrations');
 
 const { sequelize } = require('../models');
 const logger = require('../utils/logger.server');
@@ -138,6 +139,12 @@ app.use('/api/logging-settings', loggingRouter);
 app.use('/api/v1/logging-settings', loggingRouter);
 app.use('/api/dateformats', dateFormatsRouter);
 app.use('/api/v1/dateformats', dateFormatsRouter);
+
+// Calendar integrations: expose with and without hyphen for compatibility
+app.use('/api/calendar-integrations', calendarIntegrationsRouter);
+app.use('/api/v1/calendar-integrations', calendarIntegrationsRouter);
+app.use('/api/calendarintegrations', calendarIntegrationsRouter);
+app.use('/api/v1/calendarintegrations', calendarIntegrationsRouter);
 
 console.log('Routes montées:');
 console.log('- /api/v1');

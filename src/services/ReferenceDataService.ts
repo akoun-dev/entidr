@@ -10,7 +10,8 @@ class ReferenceDataService {
   async getAll(endpoint: string, params = {}) {
     try {
       const response = await api.get(`/${endpoint}`, { params });
-      return response.data;
+      // Unwrap API envelope { data, error }
+      return (response.data && response.data.data !== undefined) ? response.data.data : response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des données depuis ${endpoint}:`, error);
       throw error;
@@ -20,7 +21,7 @@ class ReferenceDataService {
   async getById(endpoint: string, id: number | string) {
     try {
       const response = await api.get(`/${endpoint}/${id}`);
-      return response.data;
+      return (response.data && response.data.data !== undefined) ? response.data.data : response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des données depuis ${endpoint}/${id}:`, error);
       throw error;
@@ -112,20 +113,22 @@ class ReferenceDataService {
   
   // Fournisseurs de paiement
   async getPaymentProviders(params = {}) {
-    return this.getAll('payment-providers', params);
+    // Compat: API route is /paymentproviders
+    return this.getAll('paymentproviders', params);
   }
   
   async getPaymentProvider(id: number | string) {
-    return this.getById('payment-providers', id);
+    return this.getById('paymentproviders', id);
   }
   
   // Méthodes d'expédition
   async getShippingMethods(params = {}) {
-    return this.getAll('shipping-methods', params);
+    // Compat: API route is /shippingmethods
+    return this.getAll('shippingmethods', params);
   }
   
   async getShippingMethod(id: number | string) {
-    return this.getById('shipping-methods', id);
+    return this.getById('shippingmethods', id);
   }
   
   // Imprimantes

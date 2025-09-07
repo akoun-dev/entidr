@@ -97,7 +97,7 @@ const ImportExportSettings: React.FC = () => {
 
       try {
         const response = await api.get('/importexporthistory');
-        setJobs(response.data);
+        setJobs(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement de l\'historique d\'import/export:', err);
         setError('Impossible de charger l\'historique d\'import/export. Veuillez réessayer plus tard.');
@@ -116,7 +116,7 @@ const ImportExportSettings: React.FC = () => {
 
       try {
         const response = await api.get('/importconfig');
-        setImportConfig(response.data);
+        setImportConfig(response.data?.data ?? importConfig);
       } catch (err) {
         console.error('Erreur lors du chargement de la configuration d\'import:', err);
       } finally {
@@ -134,7 +134,7 @@ const ImportExportSettings: React.FC = () => {
 
       try {
         const response = await api.get('/exportconfig');
-        setExportConfig(response.data);
+        setExportConfig(response.data?.data ?? exportConfig);
       } catch (err) {
         console.error('Erreur lors du chargement de la configuration d\'export:', err);
       } finally {
@@ -151,7 +151,7 @@ const ImportExportSettings: React.FC = () => {
 
     try {
       const response = await api.put('/importconfig', importConfig);
-      setImportConfig(response.data);
+      setImportConfig(response.data?.data ?? importConfig);
 
       toast({
         title: "Configuration sauvegardée",
@@ -176,7 +176,7 @@ const ImportExportSettings: React.FC = () => {
 
     try {
       const response = await api.put('/exportconfig', exportConfig);
-      setExportConfig(response.data);
+      setExportConfig(response.data?.data ?? exportConfig);
 
       toast({
         title: "Configuration sauvegardée",
@@ -195,7 +195,7 @@ const ImportExportSettings: React.FC = () => {
     }
   };
 
-  const filteredJobs = jobs.filter(job =>
+  const filteredJobs = (jobs || []).filter(job =>
     job.dataType.toLowerCase().includes(searchTerm.toLowerCase()) ||
     job.fileFormat.toLowerCase().includes(searchTerm.toLowerCase()) ||
     job.fileName.toLowerCase().includes(searchTerm.toLowerCase())

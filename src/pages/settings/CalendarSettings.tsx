@@ -9,8 +9,7 @@ import { Calendar, Clock, Globe, CalendarDays, CalendarCheck, Plus, Loader2, Ale
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useToast } from '../../components/ui/use-toast';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
-import axios from 'axios';
-import { API_BASE_URL } from '../../config/api';
+import { api } from '../../services';
 
 interface Holiday {
   id: string;
@@ -98,22 +97,36 @@ const CalendarSettings: React.FC = () => {
         setLoading(true);
 
         // Récupérer la configuration du calendrier
-        const configResponse = await axios.get<CalendarConfig>(`${API_BASE_URL}/calendarconfig`);
-        setCalendarConfig(configResponse.data);
-        setTimezone(configResponse.data.timezone);
+        const configResponse = await api.get<CalendarConfig>(`/calendarconfig`);
+        const cfg: any = (configResponse.data as any)?.data ?? configResponse.data;
+        setCalendarConfig(cfg);
+        setTimezone(cfg.timezone);
         setWorkHours({
-          start: configResponse.data.workHoursStart,
-          end: configResponse.data.workHoursEnd
+          start: cfg.workHoursStart,
+          end: cfg.workHoursEnd
         });
-        setWeekStart(configResponse.data.weekStart);
+        setWeekStart(cfg.weekStart);
 
         // Récupérer les jours fériés
-        const holidaysResponse = await axios.get<Holiday[]>(`${API_BASE_URL}/holidays`);
-        setHolidays(holidaysResponse.data);
+        const holidaysResponse = await api.get<Holiday[]>(`/holidays`);
+        const hol: any = (holidaysResponse.data as any)?.data ?? holidaysResponse.data;
+        setHolidays(hol ?? []);
 
         // Récupérer les intégrations de calendrier
-        const integrationsResponse = await axios.get<CalendarIntegration[]>(`${API_BASE_URL}/calendarintegrations`);
-        setIntegrations(integrationsResponse.data);
+        // Cette route n'existe pas en v1; utiliser eventuel routeur dédié si dispo
+        try {
+          // N'interroger les intégrations que si un token est présent (routes généralement protégées)
+          const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+          if (token) {
+            const integrationsResponse = await api.get<CalendarIntegration[]>(`/calendarintegrations`);
+            const integ: any = (integrationsResponse.data as any)?.data ?? integrationsResponse.data;
+            setIntegrations(integ ?? []);
+          } else {
+            setIntegrations([]);
+          }
+        } catch (e) {
+          setIntegrations([]);
+        }
 
         setLoading(false);
       } catch (error) {
@@ -140,7 +153,7 @@ const CalendarSettings: React.FC = () => {
         weekStart
       };
 
-      await axios.put(`${API_BASE_URL}/calendarconfig`, updatedConfig);
+      await api.put(`/calendarconfig`, updatedConfig);
       setCalendarConfig(updatedConfig);
 
       setLoading(false);
@@ -165,8 +178,9 @@ const CalendarSettings: React.FC = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post<Holiday>(`${API_BASE_URL}/holidays`, newHoliday);
-      setHolidays([...holidays, response.data]);
+      const response = await api.post<Holiday>(`/holidays`, newHoliday);
+      const created: any = (response.data as any)?.data ?? response.data;
+      setHolidays([...(holidays ?? []), created].filter(Boolean) as Holiday[]);
 
       // Réinitialiser le formulaire et fermer la boîte de dialogue
       setNewHoliday({

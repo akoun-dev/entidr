@@ -1,4 +1,4 @@
-const CalendarIntegration = require('../../models/calendarIntegration');
+const { CalendarIntegration } = require('../../models');
 const { successResponse, errorResponse } = require('../helpers/response');
 
 class CalendarIntegrationController {

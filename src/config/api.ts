@@ -27,4 +27,16 @@ api.interceptors.request.use(
   }
 );
 
+// Normaliser les réponses enveloppées { data, error } ou { success, data }
+api.interceptors.response.use(
+  (response) => {
+    const payload = response?.data;
+    if (payload && typeof payload === 'object' && 'data' in payload) {
+      return { ...response, data: payload.data } as typeof response;
+    }
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
+
 export { api };

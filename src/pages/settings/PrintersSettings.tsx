@@ -54,7 +54,7 @@ const PrintersSettings: React.FC = () => {
 
       try {
         const response = await api.get('/printers');
-        setPrinters(response.data);
+        setPrinters(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des imprimantes:', err);
         setError('Impossible de charger les imprimantes. Veuillez réessayer plus tard.');
@@ -77,7 +77,7 @@ const PrintersSettings: React.FC = () => {
         address: newPrinter.address,
         port: newPrinter.port,
         driver: newPrinter.driver,
-        isDefault: printers.length === 0,
+        isDefault: (printers?.length ?? 0) === 0,
         status: 'active',
         options: {
           paper_size: 'A4',
@@ -96,7 +96,7 @@ const PrintersSettings: React.FC = () => {
       });
 
       // Ajouter la nouvelle imprimante à la liste
-      setPrinters([...printers, response.data]);
+      setPrinters([...(printers ?? []), response.data?.data].filter(Boolean) as PrinterConfig[]);
 
       // Réinitialiser le formulaire
       setNewPrinter({
@@ -136,7 +136,7 @@ const PrintersSettings: React.FC = () => {
       const response = await api.patch(`/printers/${id}/setdefault`);
 
       // Mettre à jour l'état local
-      setPrinters(printers.map(printer => ({
+      setPrinters((printers || []).map(printer => ({
         ...printer,
         isDefault: printer.id === id
       })));
@@ -167,7 +167,7 @@ const PrintersSettings: React.FC = () => {
       await api.delete(`/printers/${printerToDelete.id}`);
 
       // Mettre à jour l'état local
-      setPrinters(printers.filter(printer => printer.id !== printerToDelete.id));
+      setPrinters((printers || []).filter(printer => printer.id !== printerToDelete.id));
 
       // Fermer la boîte de dialogue
       setShowDeleteDialog(false);

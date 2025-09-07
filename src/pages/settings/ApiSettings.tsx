@@ -45,7 +45,8 @@ const ApiSettings: React.FC = () => {
 
       try {
         const response = await api.get('/apikeys');
-        setApiKeys(response.data);
+        const items = response?.data?.data ?? response?.data;
+        setApiKeys(Array.isArray(items) ? items : []);
       } catch (err) {
         console.error('Erreur lors du chargement des clés API:', err);
         setError('Impossible de charger les clés API. Veuillez réessayer plus tard.');
@@ -61,15 +62,16 @@ const ApiSettings: React.FC = () => {
   const handleToggleKey = async (id: string) => {
     try {
       const response = await api.patch(`/apikeys/${id}/toggle`);
+      const payload = response?.data?.data ?? response?.data;
 
       // Mettre à jour l'état local
       setApiKeys(apiKeys.map(key =>
-        key.id === id ? { ...key, active: response.data.active } : key
+        key.id === id ? { ...key, active: payload?.active } : key
       ));
 
       toast({
         title: "Statut mis à jour",
-        description: `La clé API a été ${response.data.active ? 'activée' : 'désactivée'}.`,
+        description: `La clé API a été ${payload?.active ? 'activée' : 'désactivée'}.`,
         variant: "default",
       });
     } catch (err) {
@@ -96,10 +98,11 @@ const ApiSettings: React.FC = () => {
       });
 
       // Mettre à jour l'état local
-      setApiKeys([...apiKeys, response.data]);
+      const payload = response?.data?.data ?? response?.data;
+      if (payload) setApiKeys([...apiKeys, payload]);
 
       // Afficher la nouvelle clé dans une boîte de dialogue
-      setNewGeneratedKey(response.data.key);
+      setNewGeneratedKey(payload?.key ?? null);
       setShowNewKeyDialog(true);
 
       // Réinitialiser le formulaire
@@ -130,12 +133,11 @@ const ApiSettings: React.FC = () => {
       const response = await api.post(`/apikeys/${id}/regenerate`);
 
       // Mettre à jour l'état local
-      setApiKeys(apiKeys.map(key =>
-        key.id === id ? { ...key, key: response.data.key } : key
-      ));
+      const payload = response?.data?.data ?? response?.data;
+      setApiKeys(apiKeys.map(key => key.id === id ? { ...key, key: payload?.key } : key));
 
       // Afficher la nouvelle clé dans une boîte de dialogue
-      setNewGeneratedKey(response.data.key);
+      setNewGeneratedKey(payload?.key ?? null);
       setShowNewKeyDialog(true);
 
       toast({

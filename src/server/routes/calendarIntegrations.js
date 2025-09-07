@@ -58,7 +58,8 @@ router.post(
  *       401:
  *         description: Non autorisé
  */
-router.get('/', authenticate, CalendarIntegrationController.list);
+// Liste publique pour l'affichage dans les paramètres sans exiger l'authentification
+router.get('/', CalendarIntegrationController.list);
 
 /**
  * @swagger

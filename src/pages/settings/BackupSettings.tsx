@@ -81,7 +81,7 @@ const BackupSettings: React.FC = () => {
 
       try {
         const response = await api.get('/backupconfig');
-        setConfig(response.data);
+        setConfig(response.data?.data ?? config);
       } catch (err) {
         console.error('Erreur lors du chargement de la configuration de sauvegarde:', err);
         setError('Impossible de charger la configuration de sauvegarde. Veuillez réessayer plus tard.');
@@ -101,7 +101,7 @@ const BackupSettings: React.FC = () => {
 
       try {
         const response = await api.get('/backups');
-        setBackups(response.data);
+        setBackups(response.data?.data ?? []);
       } catch (err) {
         console.error('Erreur lors du chargement des sauvegardes:', err);
         setError('Impossible de charger les sauvegardes. Veuillez réessayer plus tard.');
@@ -119,7 +119,7 @@ const BackupSettings: React.FC = () => {
 
     try {
       const response = await api.put('/backupconfig', config);
-      setConfig(response.data);
+      setConfig(response.data?.data ?? config);
 
       toast({
         title: "Configuration sauvegardée",

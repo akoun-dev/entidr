@@ -4,17 +4,23 @@ import type { ApiKey } from '@/types/apiKeys';
 export const apiKeyService = {
   async getAll(): Promise<ApiKey[]> {
     const response = await api.get('/api-keys');
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   async create(keyData: Omit<ApiKey, 'id'>): Promise<ApiKey> {
     const response = await api.post('/api-keys', keyData);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   async update(id: string, keyData: Partial<ApiKey>): Promise<ApiKey> {
     const response = await api.patch(`/api-keys/${id}`, keyData);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   async delete(id: string): Promise<void> {

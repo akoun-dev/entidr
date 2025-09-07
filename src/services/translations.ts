@@ -17,43 +17,57 @@ export const translationService = {
   // Récupérer toutes les traductions
   async getAll(): Promise<Translation[]> {
     const response = await api.get('/translations');
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Récupérer une traduction par son ID
   async getById(id: string): Promise<Translation> {
     const response = await api.get(`/translations/${id}`);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Récupérer les traductions par locale
   async getByLocale(locale: string): Promise<Record<string, Record<string, string>>> {
     const response = await api.get(`/translations/locale/${locale}`);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Récupérer les traductions par clé
   async getByKey(key: string): Promise<Translation[]> {
     const response = await api.get(`/translations/key/${key}`);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Récupérer les traductions par namespace
   async getByNamespace(namespace: string): Promise<Translation[]> {
     const response = await api.get(`/translations/namespace/${namespace}`);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Créer une nouvelle traduction
   async create(translation: Omit<Translation, 'id'>): Promise<Translation> {
     const response = await api.post('/translations', translation);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Mettre à jour une traduction
   async update(id: string, translation: Partial<Translation>): Promise<Translation> {
     const response = await api.put(`/translations/${id}`, translation);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Supprimer une traduction
@@ -64,12 +78,16 @@ export const translationService = {
   // Activer/désactiver une traduction
   async toggleStatus(id: string): Promise<Translation> {
     const response = await api.patch(`/translations/${id}/toggle-status`);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   },
 
   // Définir une traduction comme traduction par défaut
   async setDefault(id: string): Promise<Translation> {
     const response = await api.patch(`/translations/${id}/set-default`);
-    return response.data;
+    return (response.data && response.data.data !== undefined)
+      ? response.data.data
+      : response.data;
   }
 };
