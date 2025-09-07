@@ -81,24 +81,26 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
     };
   }, []);
 
-  if (isLoading) {
-    return <Fallback />;
-  }
-
-  if (loadError) {
-    return <div style={{ padding: 20 }}>{loadError}</div>;
-  }
-
-  if (!hasModules) {
-    return <div style={{ padding: 20 }}>Aucun module disponible</div>;
-  }
-
+  // Ne jamais bloquer l'application de base: toujours rendre {children}
   return (
     <>
       {children}
-      <Suspense fallback={<Fallback />}>
-        {React.isValidElement(modules) ? modules : null}
-      </Suspense>
+
+      {/* Informations non bloquantes */}
+      {isLoading && <Fallback />}
+      {loadError && (
+        <div style={{ padding: 20, color: '#b91c1c' }}>{loadError}</div>
+      )}
+      {!isLoading && !loadError && !hasModules && (
+        <div style={{ padding: 12, color: '#6b7280' }}>Aucun module disponible</div>
+      )}
+
+      {/* Rendu des modules si présents */}
+      {!isLoading && !loadError && hasModules && (
+        <Suspense fallback={<Fallback />}>
+          {modules}
+        </Suspense>
+      )}
     </>
   );
 };
