@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../../../../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../src/components/ui/card';
 import { FileText, Upload, Download, Plus, Search, Filter } from 'lucide-react';
-// Navigation is handled by HrLayout; no need to import HrDashboardMenu here
+import { HrLayout } from '../components';
 import { documentService } from '../../services';
 import { useNavigate } from 'react-router-dom';
 import type { HrDocument } from '../../services/document.service';
@@ -28,28 +28,32 @@ const DocumentsView: React.FC = () => {
   }, []);
 
   return (
-    <>
-    <div className="container mx-auto px-4 py-6">
-      {/* En-tête avec actions */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Documents RH</h1>
-          <p className="text-muted-foreground mt-1">Gestion des documents et fichiers RH</p>
+    <HrLayout>
+      <div>
+        {/* En-tête avec actions */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mt-4">
+            <div className="h-6 w-1.5 bg-amber-500 rounded-full"></div>
+            <FileText className="h-6 w-6 text-amber-500" />
+            <h1 className="text-2xl font-bold">Documents RH</h1>
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-4 gap-4">
+            <p className="text-muted-foreground">
+              Gestion des documents et fichiers RH
+            </p>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Download size={16} />
+                Exporter
+              </Button>
+              <Button size="sm" className="flex items-center gap-2">
+                <Upload size={16} />
+                Importer
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Download size={16} />
-            Exporter
-          </Button>
-          <Button size="sm" className="flex items-center gap-2">
-            <Upload size={16} />
-            Importer
-          </Button>
-        </div>
-      </div>
-      
-      {/* Menu de navigation géré par HrLayout pour cohérence */}
-      
+
       {/* Barre de recherche et filtres */}
       <Card className="mb-8">
         <CardContent className="p-4">
@@ -81,7 +85,7 @@ const DocumentsView: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Liste des documents */}
       <Card>
         <CardHeader>
@@ -135,9 +139,9 @@ const DocumentsView: React.FC = () => {
       </Card>
     </div>
 
-    {/* Dialog removed: using dedicated views for create/edit */}
-    </>
-  );
+  {/* Dialog removed: using dedicated views for create/edit */}
+  </HrLayout>
+);
 };
 
 export default DocumentsView;

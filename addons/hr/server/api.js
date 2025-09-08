@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { HrEmployee, HrDepartment, HrContract, HrDocument, HrTask, HrWorkflow, HrSignatureRequest, sequelize } = require('../../../src/models');
+const { HrEmployee, HrDepartment, HrContract, HrDocument, HrTask, HrWorkflow, HrSignatureRequest, HrRole, HrPermission, sequelize } = require('../../../src/models');
 // Optional role-based guard (non-breaking if auth not enabled)
 function allow(roles = []) {
   return (req, res, next) => {
@@ -392,6 +392,155 @@ router.delete('/hr/documents/:id', asyncHandler(async (req, res) => {
   res.ok(null, 204);
 }));
 module.exports = router;
+// ---------------- Security: Roles & Permissions ----------------
+// Roles
+router.get('/hr/security/roles', allow(['hr','admin','manager']), asyncHandler(async (req, res) => {
+  const items = await tryQuery(() => HrRole.findAll({ order: [['createdAt','DESC']] }));
+  // Normalize permissions to array
+  const mapped = items.map(r => ({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    permissions: Array.isArray(r.permissions) ? r.permissions : [],
+    active: !!r.active,
+    created_at: r.createdAt,
+    updated_at: r.updatedAt,
+  }));
+  res.ok(mapped);
+}));
+
+router.get('/hr/security/roles/:id', allow(['hr','admin','manager']), asyncHandler(async (req, res) => {
+  const r = await tryQuery(() => HrRole.findByPk(req.params.id));
+  if (!r) return res.fail(404, 'Rôle introuvable');
+  res.ok({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    permissions: Array.isArray(r.permissions) ? r.permissions : [],
+    active: !!r.active,
+    created_at: r.createdAt,
+    updated_at: r.updatedAt,
+  });
+}));
+
+router.post('/hr/security/roles', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const p = req.body || {};
+  if (!p.name) return res.fail(400, 'name requis');
+  const created = await HrRole.create({
+    name: p.name,
+    description: p.description || null,
+    permissions: Array.isArray(p.permissions) ? p.permissions : (p.permissions ? [String(p.permissions)] : []),
+    active: p.active !== undefined ? !!p.active : true,
+  });
+  res.ok(created, 201);
+}));
+
+router.put('/hr/security/roles/:id', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const r = await tryQuery(() => HrRole.findByPk(req.params.id));
+  if (!r) return res.fail(404, 'Rôle introuvable');
+  const p = req.body || {};
+  const nextPerms = Array.isArray(p.permissions)
+    ? p.permissions
+    : (p.permissions !== undefined ? [String(p.permissions)] : undefined);
+  await r.update({
+    name: p.name ?? r.name,
+    description: p.description ?? r.description,
+    permissions: nextPerms ?? r.permissions,
+    active: p.active !== undefined ? !!p.active : r.active,
+  });
+  res.ok(r);
+}));
+
+router.delete('/hr/security/roles/:id', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const r = await tryQuery(() => HrRole.findByPk(req.params.id));
+  if (!r) return res.fail(404, 'Rôle introuvable');
+  await r.destroy();
+  res.ok(null, 204);
+}));
+
+// Assign/remove permissions to/from role
+router.post('/hr/security/roles/:id/permissions', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const r = await tryQuery(() => HrRole.findByPk(req.params.id));
+  if (!r) return res.fail(404, 'Rôle introuvable');
+  const permissionId = req.body?.permission_id;
+  if (!permissionId) return res.fail(400, 'permission_id requis');
+  const perm = await tryQuery(() => HrPermission.findByPk(permissionId));
+  if (!perm) return res.fail(404, 'Permission introuvable');
+  const set = new Set(Array.isArray(r.permissions) ? r.permissions : []);
+  set.add(perm.name);
+  await r.update({ permissions: Array.from(set) });
+  res.ok(r);
+}));
+
+router.delete('/hr/security/roles/:roleId/permissions/:permissionId', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const r = await tryQuery(() => HrRole.findByPk(req.params.roleId));
+  if (!r) return res.fail(404, 'Rôle introuvable');
+  const perm = await tryQuery(() => HrPermission.findByPk(req.params.permissionId));
+  if (!perm) return res.fail(404, 'Permission introuvable');
+  const list = (Array.isArray(r.permissions) ? r.permissions : []).filter(x => x !== perm.name);
+  await r.update({ permissions: list });
+  res.ok(r);
+}));
+
+// Permissions
+router.get('/hr/security/permissions', allow(['hr','admin','manager']), asyncHandler(async (req, res) => {
+  const items = await tryQuery(() => HrPermission.findAll({ order: [['createdAt','DESC']] }));
+  res.ok(items.map(p => ({
+    id: p.id,
+    name: p.name,
+    resource: p.resource,
+    action: p.action,
+    description: p.description,
+    created_at: p.createdAt,
+    updated_at: p.updatedAt,
+  })));
+}));
+
+router.get('/hr/security/permissions/:id', allow(['hr','admin','manager']), asyncHandler(async (req, res) => {
+  const p = await tryQuery(() => HrPermission.findByPk(req.params.id));
+  if (!p) return res.fail(404, 'Permission introuvable');
+  res.ok({
+    id: p.id,
+    name: p.name,
+    resource: p.resource,
+    action: p.action,
+    description: p.description,
+    created_at: p.createdAt,
+    updated_at: p.updatedAt,
+  });
+}));
+
+router.post('/hr/security/permissions', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const b = req.body || {};
+  if (!b.name || !b.resource || !b.action) return res.fail(400, 'name, resource, action requis');
+  const created = await HrPermission.create({
+    name: b.name,
+    resource: b.resource,
+    action: b.action,
+    description: b.description || null,
+  });
+  res.ok(created, 201);
+}));
+
+router.put('/hr/security/permissions/:id', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const p = await tryQuery(() => HrPermission.findByPk(req.params.id));
+  if (!p) return res.fail(404, 'Permission introuvable');
+  const b = req.body || {};
+  await p.update({
+    name: b.name ?? p.name,
+    resource: b.resource ?? p.resource,
+    action: b.action ?? p.action,
+    description: b.description ?? p.description,
+  });
+  res.ok(p);
+}));
+
+router.delete('/hr/security/permissions/:id', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const p = await tryQuery(() => HrPermission.findByPk(req.params.id));
+  if (!p) return res.fail(404, 'Permission introuvable');
+  await p.destroy();
+  res.ok(null, 204);
+}));
 // ---------------- On/Offboarding Tasks ----------------
 router.get('/hr/onboarding/tasks', asyncHandler(async (req, res) => {
   const where = { kind: 'onboarding' };

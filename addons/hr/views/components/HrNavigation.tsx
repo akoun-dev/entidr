@@ -1,7 +1,17 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Users, Building2, FileText, LayoutDashboard } from 'lucide-react';
+import {
+  Users,
+  Building2,
+  FileText,
+  LayoutDashboard,
+  UserCheck,
+  UserX,
+  Workflow,
+  Shield,
+  PenTool
+} from 'lucide-react';
 
 /**
  * Composant de navigation pour le module RH
@@ -14,7 +24,12 @@ export const HrNavigation: React.FC = () => {
     { to: "/hr/employees", icon: <Users className="h-4 w-4" aria-hidden="true" />, label: "Employés" },
     { to: "/hr/departments", icon: <Building2 className="h-4 w-4" aria-hidden="true" />, label: "Départements" },
     { to: "/hr/contracts", icon: <FileText className="h-4 w-4" aria-hidden="true" />, label: "Contrats" },
-    { to: "/hr/documents", icon: <FileText className="h-4 w-4" aria-hidden="true" />, label: "Documents" }
+    { to: "/hr/documents", icon: <FileText className="h-4 w-4" aria-hidden="true" />, label: "Documents" },
+    { to: "/hr/onboarding", icon: <UserCheck className="h-4 w-4" aria-hidden="true" />, label: "Onboarding" },
+    { to: "/hr/offboarding", icon: <UserX className="h-4 w-4" aria-hidden="true" />, label: "Offboarding" },
+    { to: "/hr/workflows", icon: <Workflow className="h-4 w-4" aria-hidden="true" />, label: "Workflows" },
+    { to: "/hr/security", icon: <Shield className="h-4 w-4" aria-hidden="true" />, label: "Sécurité & Rôles" },
+    { to: "/hr/signatures", icon: <PenTool className="h-4 w-4" aria-hidden="true" />, label: "Signatures" }
   ];
 
   // Style commun pour les liens

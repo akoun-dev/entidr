@@ -15,6 +15,12 @@ import {
   DocumentDetailView,
   OnboardingView,
   OffboardingView,
+  WorkflowsView,
+  WorkflowFormView,
+  SignaturesView,
+  SecurityView,
+  RoleFormView,
+  PermissionFormView,
 } from './views/pages';
 const manifest: AddonManifest = {
   // Métadonnées de base
@@ -163,6 +169,73 @@ const manifest: AddonManifest = {
       protected: true,
       title: 'Offboarding',
       icon: 'UsersIcon'
+    },
+    // Workflows
+    {
+      path: '/hr/workflows',
+      component: WorkflowsView,
+      protected: true,
+      title: 'Workflows',
+      icon: 'Workflow'
+    },
+    {
+      path: '/hr/workflows/new',
+      component: WorkflowFormView,
+      protected: true,
+      title: 'Nouveau workflow',
+      icon: 'PlusIcon'
+    },
+    {
+      path: '/hr/workflows/edit/:id',
+      component: WorkflowFormView,
+      protected: true,
+      title: 'Modifier workflow',
+      icon: 'PencilIcon'
+    },
+    // Signatures
+    {
+      path: '/hr/signatures',
+      component: SignaturesView,
+      protected: true,
+      title: 'Signatures',
+      icon: 'PenTool'
+    },
+    // Sécurité & Rôles
+    {
+      path: '/hr/security',
+      component: SecurityView,
+      protected: true,
+      title: 'Sécurité & Rôles',
+      icon: 'Shield'
+    },
+    // Formulaires Sécurité
+    {
+      path: '/hr/security/roles/new',
+      component: RoleFormView,
+      protected: true,
+      title: 'Nouveau rôle',
+      icon: 'PlusIcon'
+    },
+    {
+      path: '/hr/security/roles/edit/:id',
+      component: RoleFormView,
+      protected: true,
+      title: 'Modifier rôle',
+      icon: 'PencilIcon'
+    },
+    {
+      path: '/hr/security/permissions/new',
+      component: PermissionFormView,
+      protected: true,
+      title: 'Nouvelle permission',
+      icon: 'PlusIcon'
+    },
+    {
+      path: '/hr/security/permissions/edit/:id',
+      component: PermissionFormView,
+      protected: true,
+      title: 'Modifier permission',
+      icon: 'PencilIcon'
     }
   ],
 

@@ -5,6 +5,7 @@ import type { HrSignatureRequest } from '../../services/signature.service';
 import { Button } from '../../../../src/components/ui/button';
 import { Input } from '../../../../src/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../src/components/ui/card';
+import { PenTool } from 'lucide-react';
 
 const SignaturesView: React.FC = () => {
   const [items, setItems] = useState<HrSignatureRequest[]>([]);
@@ -28,16 +29,23 @@ const SignaturesView: React.FC = () => {
 
   return (
     <HrLayout>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
+      <div>
+        {/* En-tête avec actions */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mt-4">
+            <div className="h-6 w-1.5 bg-amber-500 rounded-full"></div>
+            <PenTool className="h-6 w-6 text-amber-500" />
             <h1 className="text-2xl font-bold">Signatures électroniques</h1>
-            <p className="text-muted-foreground">Demandes de signature pour les documents RH</p>
           </div>
-          <div className="flex gap-2">
-            <Input placeholder="Document ID" className="w-40" value={docId} onChange={e => setDocId(e.target.value)} />
-            <Input placeholder="Employé ID (optionnel)" className="w-56" value={empId} onChange={e => setEmpId(e.target.value)} />
-            <Button onClick={requestSignature}>Demander une signature</Button>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-4 gap-4">
+            <p className="text-muted-foreground">
+              Signature électronique des documents RH (contrats, attestations)
+            </p>
+            <div className="flex gap-2">
+              <Input placeholder="Document ID" className="w-40" value={docId} onChange={e => setDocId(e.target.value)} />
+              <Input placeholder="Employé ID (optionnel)" className="w-56" value={empId} onChange={e => setEmpId(e.target.value)} />
+              <Button onClick={requestSignature}>Demander une signature</Button>
+            </div>
           </div>
         </div>
         <Card>

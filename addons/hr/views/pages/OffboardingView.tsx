@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../../src/compon
 import { Popover, PopoverTrigger, PopoverContent } from '../../../../src/components/ui/popover';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '../../../../src/components/ui/command';
 import type { Employee } from '../../models/types';
+import { UserX } from 'lucide-react';
 
 const OffboardingView: React.FC = () => {
   const [tasks, setTasks] = useState<HrTask[]>([]);
@@ -27,10 +28,18 @@ const OffboardingView: React.FC = () => {
 
   return (
     <HrLayout>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div>
+        {/* En-tête avec actions */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mt-4">
+            <div className="h-6 w-1.5 bg-amber-500 rounded-full"></div>
+            <UserX className="h-6 w-6 text-amber-500" />
             <h1 className="text-2xl font-bold">Offboarding</h1>
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-4 gap-4">
+            <p className="text-muted-foreground">
+              Procédure de sortie (restitution matériel, documents de fin de contrat)
+            </p>
             <Popover open={empOpen} onOpenChange={setEmpOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="h-9">

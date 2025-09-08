@@ -32,7 +32,13 @@ import {
   ContractFormView,
   ContractDetailView,
   DocumentFormView,
-  DocumentDetailView
+  DocumentDetailView,
+  WorkflowsView,
+  WorkflowFormView,
+  SignaturesView,
+  SecurityView,
+  RoleFormView,
+  PermissionFormView
 } from './views/pages';
 
 export const Components = {
@@ -49,6 +55,12 @@ export const Components = {
   ContractDetailView,
   DocumentFormView,
   DocumentDetailView,
+  WorkflowsView,
+  WorkflowFormView,
+  SignaturesView,
+  SecurityView,
+  RoleFormView,
+  PermissionFormView,
 };
 
 // Fonctions d'initialisation et de nettoyage

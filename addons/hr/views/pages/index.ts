@@ -22,6 +22,9 @@ import WorkflowFormView from './WorkflowFormView';
 import SignaturesView from './SignaturesView';
 import OnboardingView from './OnboardingView';
 import OffboardingView from './OffboardingView';
+import SecurityView from './SecurityView';
+import RoleFormView from './RoleFormView';
+import PermissionFormView from './PermissionFormView';
 
 export {
   HrDashboardView,
@@ -46,5 +49,8 @@ export {
   OffboardingView,
   WorkflowsView,
   WorkflowFormView,
-  SignaturesView
+  SignaturesView,
+  SecurityView,
+  RoleFormView,
+  PermissionFormView
 };

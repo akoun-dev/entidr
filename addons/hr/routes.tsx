@@ -19,7 +19,10 @@ import {
   OffboardingView,
   WorkflowsView,
   WorkflowFormView,
-  SignaturesView
+  SignaturesView,
+  SecurityView,
+  RoleFormView,
+  PermissionFormView
 } from './views/pages';
 
 /**
@@ -58,12 +61,21 @@ const routes = (
     {/* Onboarding / Offboarding */}
     <Route path="hr/onboarding" element={<OnboardingView />} />
     <Route path="hr/offboarding" element={<OffboardingView />} />
+
     {/* Workflows */}
     <Route path="hr/workflows" element={<WorkflowsView />} />
     <Route path="hr/workflows/new" element={<WorkflowFormView />} />
     <Route path="hr/workflows/edit/:id" element={<WorkflowFormView />} />
+    
     {/* Signatures */}
     <Route path="hr/signatures" element={<SignaturesView />} />
+
+    {/* Sécurité */}
+    <Route path="hr/security" element={<SecurityView />} />
+    <Route path="hr/security/roles/new" element={<RoleFormView />} />
+    <Route path="hr/security/roles/edit/:id" element={<RoleFormView />} />
+    <Route path="hr/security/permissions/new" element={<PermissionFormView />} />
+    <Route path="hr/security/permissions/edit/:id" element={<PermissionFormView />} />
   </>
 );
 
