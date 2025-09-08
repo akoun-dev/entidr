@@ -270,6 +270,9 @@ const ContractsView: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editing ? 'Modifier un contrat' : 'Nouveau contrat'}</DialogTitle>
+            <DialogDescription>
+              {editing ? 'Mettez à jour les informations du contrat.' : 'Remplissez les informations pour créer un contrat.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>

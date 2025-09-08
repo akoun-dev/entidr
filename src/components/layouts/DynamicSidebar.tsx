@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { getIconComponent } from '../../lib/iconUtils';
@@ -23,8 +23,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
   const [rootMenus, setRootMenus] = useState<MenuDefinition[]>([]);
   const [childMenus, setChildMenus] = useState<Record<string, MenuDefinition[]>>({});
 
-  // Charger les menus au démarrage
-  useEffect(() => {
+  const recomputeMenus = useCallback(() => {
     const allMenus = AddonManager.getAllMenus();
 
     // Trier les menus par séquence
@@ -74,6 +73,19 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ isOpen, onToggle
 
     setOpenSections(initialOpenSections);
   }, [location.pathname]);
+
+  // Charger et recalculer les menus au démarrage et à chaque changement de route
+  useEffect(() => {
+    recomputeMenus();
+  }, [recomputeMenus]);
+
+  // Réagir au chargement dynamique des modules (postModuleLoad)
+  useEffect(() => {
+    const onPostLoad = () => recomputeMenus();
+    try {
+      AddonManager.registerHook('postModuleLoad', onPostLoad);
+    } catch {}
+  }, [recomputeMenus]);
 
   // Vérifier si un menu est actif
   const isMenuActive = (route?: string) => {

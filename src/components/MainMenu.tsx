@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import AddonManager from '../core/AddonManager';
 import { MenuDefinition } from '../types/addon';
@@ -10,8 +10,20 @@ import * as LucideIcons from 'lucide-react';
  */
 const MainMenu: React.FC = () => {
   const addonManager = AddonManager.getInstance();
-  const allMenus = addonManager.getAllMenus();
+  const [allMenus, setAllMenus] = useState<MenuDefinition[]>(addonManager.getAllMenus());
   const location = useLocation();
+
+  // Keep menus in sync with dynamic addon loading
+  useEffect(() => {
+    // Initial load (in case addons register after first render)
+    setAllMenus(addonManager.getAllMenus());
+
+    // Update when modules finish loading
+    const onPostLoad = () => setAllMenus(addonManager.getAllMenus());
+    try {
+      addonManager.registerHook('postModuleLoad', onPostLoad);
+    } catch {}
+  }, [addonManager]);
 
   // Filtrer les menus racines (sans parent)
   const rootMenus = allMenus.filter(menu => !menu.parent);
