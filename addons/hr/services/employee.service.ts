@@ -13,8 +13,13 @@ class EmployeeService {
    * @returns Liste des employés
    */
   async getAllEmployees(options: SearchOptions = {}): Promise<Employee[]> {
-    const res = await api.get<Employee[]>('/hr/employees', { params: options as any });
-    return (res.data as any) ?? [];
+    try {
+      const res = await api.get<Employee[]>('/hr/employees', { params: options as any });
+      return (res.data as any) ?? [];
+    } catch (e: any) {
+      console.error('[employeeService] getAllEmployees error', e?.message || e);
+      throw new Error('Impossible de charger les employés');
+    }
   }
 
   /**
@@ -23,8 +28,13 @@ class EmployeeService {
    * @returns L'employé ou null s'il n'existe pas
    */
   async getEmployeeById(id: number): Promise<Employee | null> {
-    const res = await api.get<Employee>(`/hr/employees/${id}`);
-    return (res.data as any) ?? null;
+    try {
+      const res = await api.get<Employee>(`/hr/employees/${id}`);
+      return (res.data as any) ?? null;
+    } catch (e: any) {
+      console.error('[employeeService] getEmployeeById error', id, e?.message || e);
+      throw new Error("Employé introuvable");
+    }
   }
 
   /**
@@ -48,8 +58,13 @@ class EmployeeService {
       notes: (employee as any).notes,
       active: (employee as any).is_active ?? (employee as any).active ?? true
     };
-    const res = await api.post<Employee>('/hr/employees', payload);
-    return res.data as any;
+    try {
+      const res = await api.post<Employee>('/hr/employees', payload);
+      return res.data as any;
+    } catch (e: any) {
+      console.error('[employeeService] createEmployee error', payload, e?.message || e);
+      throw new Error("Impossible de créer l'employé");
+    }
   }
 
   /**
@@ -74,8 +89,13 @@ class EmployeeService {
       notes: (employee as any).notes,
       active: (employee as any).is_active ?? (employee as any).active
     };
-    const res = await api.put<Employee>(`/hr/employees/${id}`, payload);
-    return res.data as any;
+    try {
+      const res = await api.put<Employee>(`/hr/employees/${id}`, payload);
+      return res.data as any;
+    } catch (e: any) {
+      console.error('[employeeService] updateEmployee error', id, e?.message || e);
+      throw new Error("Impossible de mettre à jour l'employé");
+    }
   }
 
   /**
@@ -84,10 +104,14 @@ class EmployeeService {
    * @returns true si supprimé avec succès
    */
   async deleteEmployee(id: number): Promise<boolean> {
-    await api.delete(`/hr/employees/${id}`);
-    return true;
+    try {
+      await api.delete(`/hr/employees/${id}`);
+      return true;
+    } catch (e: any) {
+      console.error('[employeeService] deleteEmployee error', id, e?.message || e);
+      throw new Error("Impossible de supprimer l'employé");
+    }
   }
 }
 
 export default new EmployeeService();
-

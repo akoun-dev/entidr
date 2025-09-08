@@ -1,4 +1,5 @@
 import { api } from '../../../src/config/api';
+import { TTLCache } from './utils/cache';
 
 export interface HrWorkflow {
   id: number;
@@ -11,26 +12,59 @@ export interface HrWorkflow {
 }
 
 export const workflowService = {
+  _cache: new TTLCache<HrWorkflow[]>(),
   async list(): Promise<HrWorkflow[]> {
-    const res = await api.get<HrWorkflow[]>('/hr/workflows');
-    return (res.data as any) ?? [];
+    try {
+      const cacheKey = 'workflows:list';
+      const cached = this._cache.get(cacheKey);
+      if (cached) return cached;
+      const res = await api.get<HrWorkflow[]>('/hr/workflows');
+      const items = (res.data as any) ?? [];
+      this._cache.set(cacheKey, items);
+      return items;
+    } catch (e: any) {
+      console.error('[workflowService] list error', e?.message || e);
+      throw new Error('Impossible de charger les workflows');
+    }
   },
   async getById(id: number|string): Promise<HrWorkflow> {
-    const res = await api.get<HrWorkflow>(`/hr/workflows/${id}`);
-    return res.data as any;
+    try {
+      const res = await api.get<HrWorkflow>(`/hr/workflows/${id}`);
+      return res.data as any;
+    } catch (e: any) {
+      console.error('[workflowService] getById error', id, e?.message || e);
+      throw new Error('Workflow introuvable');
+    }
   },
   async create(payload: Partial<HrWorkflow>): Promise<HrWorkflow> {
-    const res = await api.post<HrWorkflow>('/hr/workflows', payload);
-    return res.data as any;
+    try {
+      const res = await api.post<HrWorkflow>('/hr/workflows', payload);
+      this._cache.clear('workflows:');
+      return res.data as any;
+    } catch (e: any) {
+      console.error('[workflowService] create error', payload, e?.message || e);
+      throw new Error('Impossible de créer le workflow');
+    }
   },
   async update(id: number|string, payload: Partial<HrWorkflow>): Promise<HrWorkflow> {
-    const res = await api.put<HrWorkflow>(`/hr/workflows/${id}`, payload);
-    return res.data as any;
+    try {
+      const res = await api.put<HrWorkflow>(`/hr/workflows/${id}`, payload);
+      this._cache.clear('workflows:');
+      return res.data as any;
+    } catch (e: any) {
+      console.error('[workflowService] update error', id, e?.message || e);
+      throw new Error('Impossible de mettre à jour le workflow');
+    }
   },
   async remove(id: number|string): Promise<void> {
-    await api.delete(`/hr/workflows/${id}`);
+    try {
+      await api.delete(`/hr/workflows/${id}`);
+      this._cache.clear('workflows:');
+    } catch (e: any) {
+      console.error('[workflowService] remove error', id, e?.message || e);
+      throw new Error('Impossible de supprimer le workflow');
+    }
   }
 };
 
 export default workflowService;
-

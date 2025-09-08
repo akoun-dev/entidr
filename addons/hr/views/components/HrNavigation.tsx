@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation, Link } from 'react-router-dom';
 import {
   Users,
   Building2,
@@ -10,14 +10,25 @@ import {
   UserX,
   Workflow,
   Shield,
-  PenTool
+  PenTool,
+  Settings
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup
+} from '../../../../src/components/ui/dropdown-menu';
 
 /**
  * Composant de navigation pour le module RH
  * Design basé sur le menu du tableau de bord HR
  */
 export const HrNavigation: React.FC = () => {
+  const location = useLocation();
   // Définition des liens du menu
   const menuLinks = [
     { to: "/hr", icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />, label: "Tableau de bord", end: true },
@@ -25,10 +36,11 @@ export const HrNavigation: React.FC = () => {
     { to: "/hr/departments", icon: <Building2 className="h-4 w-4" aria-hidden="true" />, label: "Départements" },
     { to: "/hr/contracts", icon: <FileText className="h-4 w-4" aria-hidden="true" />, label: "Contrats" },
     { to: "/hr/documents", icon: <FileText className="h-4 w-4" aria-hidden="true" />, label: "Documents" },
-    { to: "/hr/onboarding", icon: <UserCheck className="h-4 w-4" aria-hidden="true" />, label: "Onboarding" },
-    { to: "/hr/offboarding", icon: <UserX className="h-4 w-4" aria-hidden="true" />, label: "Offboarding" },
-    { to: "/hr/workflows", icon: <Workflow className="h-4 w-4" aria-hidden="true" />, label: "Workflows" },
-    { to: "/hr/security", icon: <Shield className="h-4 w-4" aria-hidden="true" />, label: "Sécurité & Rôles" },
+    // Les éléments ci-dessous seront regroupés sous Paramètres
+    // { to: "/hr/onboarding", icon: <UserCheck className="h-4 w-4" aria-hidden="true" />, label: "Onboarding" },
+    // { to: "/hr/offboarding", icon: <UserX className="h-4 w-4" aria-hidden="true" />, label: "Offboarding" },
+    // { to: "/hr/workflows", icon: <Workflow className="h-4 w-4" aria-hidden="true" />, label: "Workflows" },
+    // { to: "/hr/security", icon: <Shield className="h-4 w-4" aria-hidden="true" />, label: "Sécurité & Rôles" },
     { to: "/hr/signatures", icon: <PenTool className="h-4 w-4" aria-hidden="true" />, label: "Signatures" }
   ];
 
@@ -39,6 +51,16 @@ export const HrNavigation: React.FC = () => {
     const inactive = 'text-muted-foreground hover:text-foreground hover:bg-muted/50';
     return `${base} ${isActive ? active : inactive}`;
   };
+
+  // Group "Paramètres" dropdown items
+  const settingsItems = [
+    { to: "/hr/onboarding", icon: <UserCheck className="h-4 w-4" aria-hidden="true" />, label: "Onboarding" },
+    { to: "/hr/offboarding", icon: <UserX className="h-4 w-4" aria-hidden="true" />, label: "Offboarding" },
+    { to: "/hr/workflows", icon: <Workflow className="h-4 w-4" aria-hidden="true" />, label: "Workflows" },
+    { to: "/hr/security", icon: <Shield className="h-4 w-4" aria-hidden="true" />, label: "Sécurité & Rôles" },
+  ];
+
+  const isSettingsActive = settingsItems.some(item => location.pathname.startsWith(item.to));
 
   return (
     <div className="mb-4 overflow-x-auto">
@@ -54,6 +76,29 @@ export const HrNavigation: React.FC = () => {
             <span>{link.label}</span>
           </NavLink>
         ))}
+        {/* Dropdown Paramètres */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={getLinkClassName(isSettingsActive)}>
+              <span className="mr-2"><Settings className="h-4 w-4" aria-hidden="true" /></span>
+              <span>Paramètres</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuLabel>Paramètres RH</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {settingsItems.map((item, idx) => (
+                <DropdownMenuItem key={idx} asChild>
+                  <Link to={item.to} className="flex items-center gap-2">
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
     </div>
   );

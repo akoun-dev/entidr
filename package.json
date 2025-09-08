@@ -17,7 +17,7 @@
     "lint": "eslint .",
     "test": "npx vitest",
     "test:unit": "node --test tests/engine.test.js tests/editor.test.js tests/connectors.test.js",
-    "test:api": "jest tests/api",
+    "test:api": "jest -c tests/jest.api.config.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "preview": "vite preview",
