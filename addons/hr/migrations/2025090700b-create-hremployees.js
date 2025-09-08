@@ -17,8 +17,8 @@ module.exports = {
       hire_date: { type: Sequelize.DATEONLY, allowNull: true },
       notes: { type: Sequelize.TEXT, allowNull: true },
       active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     });
     await queryInterface.addIndex('HrEmployees', ['department_id']);
     await queryInterface.addIndex('HrEmployees', ['parent_id']);

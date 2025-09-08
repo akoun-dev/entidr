@@ -1,2 +1,3 @@
 pour chaque module on doit pouvoir definir, le role pour chaque utilisateur sur l'ERP
+(Implémenté via UserModuleRoles, voir docs/module-roles.md)
 pour chaque utilisateur, definir un types: utilisateur interne, portail et publique

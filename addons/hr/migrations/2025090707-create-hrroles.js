@@ -8,8 +8,8 @@ module.exports = {
       description: { type: Sequelize.TEXT, allowNull: true },
       permissions: { type: Sequelize.JSON, allowNull: true },
       active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     });
     await queryInterface.addIndex('HrRoles', ['active']);
   },

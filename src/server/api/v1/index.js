@@ -36,6 +36,7 @@ const apikeys = require('./apikeys');
 const logging = require('./logging');
 const dateformats = require('./dateformats');
 const updates = require('./updates');
+const moduleRoles = require('./moduleRoles');
 const { mountModuleApis } = require('../../utils/moduleApiLoader');
 
 router.use('/users', users);
@@ -73,6 +74,7 @@ router.use('/', reference);
 router.use('/', logging);
 router.use('/', dateformats);
 router.use('/', updates);
+router.use('/', moduleRoles);
 
 // Dynamic module API routers from addons/<module>/server/api.js
 mountModuleApis(router);

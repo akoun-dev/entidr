@@ -12,8 +12,8 @@ module.exports = {
       wage: { type: Sequelize.FLOAT, allowNull: true },
       state: { type: Sequelize.ENUM('draft','running','expired','cancelled'), allowNull: false, defaultValue: 'running' },
       notes: { type: Sequelize.TEXT, allowNull: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     });
     await queryInterface.addIndex('HrContracts', ['employee_id']);
     await queryInterface.addIndex('HrContracts', ['state']);

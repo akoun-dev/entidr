@@ -13,8 +13,8 @@ module.exports = {
       status: { type: Sequelize.ENUM('pending','in_progress','done'), allowNull: false, defaultValue: 'pending' },
       completed_by: { type: Sequelize.INTEGER, allowNull: true },
       completed_at: { type: Sequelize.DATE, allowNull: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     });
     await queryInterface.addIndex('HrTasks', ['employee_id']);
     await queryInterface.addIndex('HrTasks', ['kind']);

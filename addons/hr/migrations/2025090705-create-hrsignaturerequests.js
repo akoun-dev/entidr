@@ -11,8 +11,8 @@ module.exports = {
       token: { type: Sequelize.STRING, allowNull: true },
       signed_at: { type: Sequelize.DATE, allowNull: true },
       metadata: { type: Sequelize.JSON, allowNull: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     });
     await queryInterface.addIndex('HrSignatureRequests', ['document_id']);
     await queryInterface.addIndex('HrSignatureRequests', ['employee_id']);

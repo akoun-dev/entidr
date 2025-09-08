@@ -10,8 +10,8 @@ module.exports = {
       file_url: { type: Sequelize.STRING, allowNull: false },
       mime_type: { type: Sequelize.STRING, allowNull: true },
       size_bytes: { type: Sequelize.INTEGER, allowNull: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     });
     await queryInterface.addIndex('HrDocuments', ['employee_id']);
     await queryInterface.addIndex('HrDocuments', ['type']);

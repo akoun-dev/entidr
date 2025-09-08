@@ -7,8 +7,8 @@ module.exports = {
       name: { type: Sequelize.STRING, allowNull: false, unique: true },
       manager_id: { type: Sequelize.INTEGER, allowNull: true },
       active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
     });
     await queryInterface.addIndex('HrDepartments', ['name']);
   },
