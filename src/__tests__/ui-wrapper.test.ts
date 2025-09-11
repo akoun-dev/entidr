@@ -5,7 +5,7 @@ import { withRadixWrapper } from '@/components/ui/utils';
 describe('withRadixWrapper', () => {
   it('should render component with base classes', () => {
     const Button = withRadixWrapper('button', 'px-4 py-2 bg-blue-500');
-    render(<Button>Test Button</Button>);
+    render(React.createElement(Button, null, 'Test Button'));
 
     const button = screen.getByRole('button');
     expect(button).toHaveClass('px-4 py-2 bg-blue-500');
@@ -14,7 +14,7 @@ describe('withRadixWrapper', () => {
 
   it('should merge className props', () => {
     const Button = withRadixWrapper('button', 'base-class');
-    render(<Button className="additional-class">Test</Button>);
+    render(React.createElement(Button, { className: 'additional-class' }, 'Test'));
 
     expect(screen.getByRole('button')).toHaveClass('base-class additional-class');
   });
@@ -23,12 +23,12 @@ describe('withRadixWrapper', () => {
     const Button = withRadixWrapper('button', '');
     const ref = React.createRef<HTMLButtonElement>();
 
-    render(<Button ref={ref}>Test</Button>);
+    render(React.createElement(Button, { ref: ref }, 'Test'));
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });
 
   it('should preserve displayName', () => {
-    const TestComponent = () => <div />;
+    const TestComponent = () => React.createElement('div');
     TestComponent.displayName = 'TestComponent';
 
     const Wrapped = withRadixWrapper(TestComponent, '');

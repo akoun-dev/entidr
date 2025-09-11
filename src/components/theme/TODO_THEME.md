@@ -98,25 +98,39 @@
   - [x] Créer les sélecteurs de thème (ThemeSelector, SimpleThemeSelector, CompactThemeSelector)
   - [x] Créer un exemple d'utilisation complet (ThemeExample)
   - [x] Configurer l'export des composants et types
-  - [ ] Tester le système de thème
-- [x] 9.3 Mode sombre/clair (partiel - implémentation de base)
+  - [x] Tester le système de thème
+- [x] 9.3 Mode sombre/clair (COMPLÈT - avec accessibilité optimisée)
   - [x] Analyser les besoins pour le mode sombre
   - [x] Créer les palettes de couleurs pour chaque mode
   - [x] Implémenter la détection automatique du mode
   - [x] Créer le sélecteur de mode (light/dark/auto)
-  - [ ] Ajouter les transitions douces entre les modes
-  - [ ] Implémenter la persistance du mode choisi
-  - [ ] Créer les composants adaptatifs pour chaque mode
-  - [ ] Tester l'accessibilité en mode sombre
-- [ ] 9.2 Options de personnalisation
+  - [x] Ajouter les transitions douces entre les modes
+  - [x] Implémenter la persistance du mode choisi
+  - [x] Créer les composants adaptatifs pour chaque mode
+  - [x] Tester l'accessibilité en mode sombre
+  - [x] Créer le composant AccessibilityTester pour les tests
+  - [x] Optimiser le contraste WCAG AA (4.5:1 minimum)
+  - [x] Réduire la fatigue oculaire (-5% à -10% luminosité)
+  - [x] Utiliser des couleurs chaudes pour le texte en mode sombre
+  - [x] Adapter les polices (taille ≥16px, hauteur 1.5)
+  - [x] Documenter le système (README.md complet)
+- [x] 9.4 Intégration et tests (PARTIEL - système de base complété)
+  - [x] Intégrer le système de thème avec les composants existants
+  - [x] Créer des exemples d'utilisation
+  - [x] Créer la documentation du système de thème
+  - [ ] Implémenter les tests unitaires
+  - [ ] Ajouter les storybooks pour les composants thématiques
+  - [ ] Tester la performance du système de thème
+  - [ ] Vérifier la compatibilité navigateur
+  - [ ] 9.2 Options de personnalisation
   - [ ] 9.2.1 Couleurs
-    - [ ] Définir la palette de couleurs principale
-    - [ ] Créer le système de couleurs sémantiques
-    - [ ] Implémenter les variables CSS pour les couleurs
-    - [ ] Créer le sélecteur de couleurs
-    - [ ] Ajouter la génération de variations de couleurs
-    - [ ] Implémenter l'accessibilité des couleurs (contraste)
-    - [ ] Créer les presets de couleurs prédéfinis
+    - [x] Définir la palette de couleurs principale
+    - [x] Créer le système de couleurs sémantiques
+    - [x] Implémenter les variables CSS pour les couleurs
+    - [x] Créer le sélecteur de couleurs
+    - [x] Ajouter la génération de variations de couleurs
+    - [x] Implémenter l'accessibilité des couleurs (contraste)
+    - [x] Créer les presets de couleurs prédéfinis
   - [ ] 9.2.2 Polices
     - [ ] Définir les familles de polices principales
     - [ ] Créer le système de tailles de police

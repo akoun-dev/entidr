@@ -1,6 +1,7 @@
-const test = require('node:test');
-const assert = require('node:assert');
+import { describe, it, expect } from 'vitest';
 
-test('editor placeholder', () => {
-  assert.ok(Array.isArray([]));
+describe('editor placeholder', () => {
+  it('should validate array', () => {
+    expect(Array.isArray([])).toBe(true);
+  });
 });

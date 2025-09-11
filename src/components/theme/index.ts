@@ -12,8 +12,36 @@ export {
   AdaptiveContainer
 } from './AdaptiveComponents';
 
+// Export des composants de personnalisation des couleurs
+export {
+  ColorSelector,
+  ColorSelectorProps
+} from './ColorSelector';
+
+export {
+  ColorCustomizationPanel,
+  ColorCustomizationPanelProps
+} from './ColorCustomizationPanel';
+
 // Export du composant de test d'accessibilité
 export { AccessibilityTester } from './AccessibilityTester';
+
+// Export des composants de variables CSS
+export {
+  CSSVariablesDisplay,
+  CSSVariablesDisplayProps
+} from './CSSVariablesDisplay';
+
+// Export des utilitaires de variables CSS
+export {
+  generateCSSVariables,
+  updateCSSVariablesInDOM,
+  removeCSSVariablesFromDOM,
+  getCSSVariableValue,
+  setCSSVariableValue,
+  observeCSSVariables,
+  type CSSVariablesOptions
+} from './cssVariablesGenerator';
 
 // Export des types
 export type {

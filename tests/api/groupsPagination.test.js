@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../../src/server/app');
+const { app } = require('../../src/server/index');
 const { Group, User } = require('../../models');
 
 describe('Groups Pagination', () => {
@@ -10,7 +10,7 @@ describe('Groups Pagination', () => {
       { name: 'Group 2', active: true },
       { name: 'Group 3', active: true },
       { name: 'Group 4', active: true },
-      { name: 'Group 5', active: true }
+      { name: 'Group 5', active: true },
     ]);
   });
 
