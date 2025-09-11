@@ -25,8 +25,19 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'HrDepartment',
     tableName: 'HrDepartments',
+    hooks: {
+      async afterUpdate(dept) {
+        const models = sequelize.models;
+        if (dept.changed('manager_id')) {
+          const managerId = dept.manager_id;
+          // Flag new manager as department manager
+          if (managerId) {
+            try { await models.HrEmployee.update({ is_department_manager: true }, { where: { id: managerId } }); } catch {}
+          }
+        }
+      }
+    }
   });
 
   return HrDepartment;
 };
-

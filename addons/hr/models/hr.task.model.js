@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
 
   HrTask.init({
     employee_id: { type: DataTypes.INTEGER, allowNull: true },
+    workflow_id: { type: DataTypes.INTEGER, allowNull: true },
     kind: { type: DataTypes.ENUM('onboarding', 'offboarding'), allowNull: false },
     title: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT, allowNull: true },
@@ -28,4 +29,3 @@ module.exports = (sequelize, DataTypes) => {
 
   return HrTask;
 };
-

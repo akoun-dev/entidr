@@ -1,11 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { departments } from '../data/departments';
-import { managers } from '../data/managers';
-import { employmentTypes } from '../data/employmentTypes';
 import { useToast } from '../../../src/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { employeeService } from '../services';
+import { employeeService, departmentService, metaService } from '../services';
 
 /**
  * Hook pour gérer l'état et les actions du formulaire d'employé
@@ -141,6 +138,41 @@ export const useEmployeeForm = (employeeId?: string) => {
     if (employeeId) loadEmployeeData(employeeId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [employeeId]);
+
+  // Dynamic option lists
+  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
+  const [managers, setManagers] = useState<{ id: string; name: string }[]>([]);
+  const [employmentTypes, setEmploymentTypes] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const loadRefs = async () => {
+      try {
+        const [deps, emps] = await Promise.all([
+          departmentService.getAll(),
+          employeeService.getAllEmployees()
+        ]);
+        setDepartments((deps || []).map((d: any) => ({ id: String(d.id), name: d.name })));
+        setManagers((emps || []).map((e: any) => ({ id: String(e.id), name: e.name })));
+      } catch (e) {
+        console.error('[useEmployeeForm] Failed loading departments/managers', e);
+      }
+      try {
+        const types = await metaService.getEmploymentTypes();
+        if (Array.isArray(types) && types.length) setEmploymentTypes(types);
+        else {
+          // Fallback: derive from current employees
+          try {
+            const emps = await employeeService.getAllEmployees();
+            const uniq = Array.from(new Set((emps || []).map((e: any) => (e as any).employment_type).filter(Boolean)));
+            setEmploymentTypes(uniq.map(v => ({ id: String(v), name: String(v) })));
+          } catch {}
+        }
+      } catch (e) {
+        console.error('[useEmployeeForm] Failed loading employment types', e);
+      }
+    };
+    loadRefs();
+  }, []);
 
   return {
     employee,

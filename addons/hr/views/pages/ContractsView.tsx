@@ -42,7 +42,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '../../../../src/components/ui/dialog';
 import {
   DropdownMenu,
@@ -54,7 +55,7 @@ import {
 } from '../../../../src/components/ui/dropdown-menu';
 import { Badge } from '../../../../src/components/ui/badge';
 import { Contract } from '../../models/types';
-import { contractService } from '../../services';
+import { contractService, metaService } from '../../services';
 import { Skeleton } from '../../../../src/components/ui/skeleton';
 
 /**
@@ -78,6 +79,7 @@ const ContractsView: React.FC = () => {
     wage: '',
     state: 'running'
   });
+  const [contractTypes, setContractTypes] = useState<{ id: string; name: string }[]>([]);
 
   // Charger les contrats depuis l'API réelle
   useEffect(() => {
@@ -93,6 +95,13 @@ const ContractsView: React.FC = () => {
       }
     };
     fetchContracts();
+  }, []);
+
+  useEffect(() => {
+    const fetchTypes = async () => {
+      try { setContractTypes(await metaService.getContractTypes()); } catch {}
+    };
+    fetchTypes();
   }, []);
 
   // Filtrer les contrats en fonction de la recherche et des filtres
@@ -205,15 +214,15 @@ const ContractsView: React.FC = () => {
                 <DropdownMenuItem onClick={() => setActiveFilter(null)}>
                   Tous
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setActiveFilter('CDI')}>
-                  CDI
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setActiveFilter('CDD')}>
-                  CDD
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setActiveFilter('Stage')}>
-                  Stage
-                </DropdownMenuItem>
+                {contractTypes.length === 0 ? (
+                  <DropdownMenuItem disabled>Aucun type disponible</DropdownMenuItem>
+                ) : (
+                  contractTypes.map(t => (
+                    <DropdownMenuItem key={t.id} onClick={() => setActiveFilter(t.name)}>
+                      {t.name}
+                    </DropdownMenuItem>
+                  ))
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -285,7 +294,12 @@ const ContractsView: React.FC = () => {
             </div>
             <div>
               <Label className="text-sm">Type</Label>
-              <Input value={form.contract_type} onChange={e => setForm({ ...form, contract_type: e.target.value })} />
+              <Input list="contract-types-list" value={form.contract_type} onChange={e => setForm({ ...form, contract_type: e.target.value })} />
+              <datalist id="contract-types-list">
+                {contractTypes.map(t => (
+                  <option key={t.id} value={t.name} />
+                ))}
+              </datalist>
             </div>
             <div>
               <Label className="text-sm">Début</Label>

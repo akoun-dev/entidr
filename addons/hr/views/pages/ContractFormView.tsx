@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../../src/compon
 import { Button } from '../../../../src/components/ui/button';
 import { Input } from '../../../../src/components/ui/input';
 import { Textarea } from '../../../../src/components/ui/textarea';
-import { contractService, employeeService } from '../../services';
+import { contractService, employeeService, metaService } from '../../services';
 import { Employee } from '../../models/types';
 import { Popover, PopoverTrigger, PopoverContent } from '../../../../src/components/ui/popover';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '../../../../src/components/ui/command';
@@ -28,6 +28,7 @@ const ContractFormView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [empOpen, setEmpOpen] = useState(false);
+  const [contractTypes, setContractTypes] = useState<{ id: string; name: string }[]>([]);
   const selectedEmployee = employees.find(e => String(e.id) === form.employee_id);
 
   useEffect(() => {
@@ -55,6 +56,13 @@ const ContractFormView: React.FC = () => {
       try { setEmployees(await employeeService.getAllEmployees()); } catch (e) { console.error(e); }
     };
     fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    const fetchTypes = async () => {
+      try { setContractTypes(await metaService.getContractTypes()); } catch (e) { console.error(e); }
+    };
+    fetchTypes();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -128,7 +136,12 @@ const ContractFormView: React.FC = () => {
             </div>
             <div>
               <label className="text-sm">Type</label>
-              <Input name="contract_type" value={form.contract_type} onChange={handleChange} />
+              <Input list="contract-types" name="contract_type" value={form.contract_type} onChange={handleChange} />
+              <datalist id="contract-types">
+                {contractTypes.map(t => (
+                  <option key={t.id} value={t.name} />
+                ))}
+              </datalist>
             </div>
             <div>
               <label className="text-sm">Début</label>

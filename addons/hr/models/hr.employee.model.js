@@ -18,6 +18,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'parent_id',
         as: 'reports'
       });
+      if (models.HrTeam) {
+        HrEmployee.belongsTo(models.HrTeam, {
+          foreignKey: 'team_id',
+          as: 'team'
+        });
+      }
     }
   }
 
@@ -34,13 +40,31 @@ module.exports = (sequelize, DataTypes) => {
     employment_type: { type: DataTypes.STRING, allowNull: true },
     hire_date: { type: DataTypes.DATEONLY, allowNull: true },
     notes: { type: DataTypes.TEXT, allowNull: true },
+    team_id: { type: DataTypes.INTEGER, allowNull: true },
+    is_department_manager: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
   }, {
     sequelize,
     modelName: 'HrEmployee',
     tableName: 'HrEmployees',
+    hooks: {
+      async beforeSave(emp) {
+        const models = sequelize.models;
+        if (emp.is_department_manager && emp.department_id) {
+          const dept = await models.HrDepartment.findByPk(emp.department_id);
+          if (dept && dept.manager_id && dept.manager_id !== emp.id) {
+            throw new Error('Incohérence: un responsable de département doit correspondre au manager du département');
+          }
+        }
+        if (emp.changed && emp.changed('department_id') && emp.department_id && !emp.parent_id) {
+          const dept = await models.HrDepartment.findByPk(emp.department_id);
+          if (dept && dept.manager_id) {
+            emp.parent_id = dept.manager_id;
+          }
+        }
+      }
+    }
   });
 
   return HrEmployee;
 };
-

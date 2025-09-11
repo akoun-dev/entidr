@@ -2,7 +2,9 @@
 
 const express = require('express');
 const router = express.Router();
-const { HrEmployee, HrDepartment, HrContract, HrDocument, HrTask, HrWorkflow, HrSignatureRequest, HrRole, HrPermission, sequelize } = require('../../../src/models');
+const { HrEmployee, HrDepartment, HrContract, HrDocument, HrTask, HrWorkflow, HrSignatureRequest, HrRole, HrPermission, HrTeam, HrEmployeeRole, HrCompliance, sequelize } = require('../../../src/models');
+const makeAuthorize = require('./middlewares/authorization');
+const authorize = makeAuthorize({ HrEmployeeRole, HrRole });
 // Optional role-based guard (non-breaking if auth not enabled)
 function allow(roles = []) {
   return (req, res, next) => {
@@ -317,6 +319,164 @@ router.put('/hr/contracts/:id', asyncHandler(async (req, res) => {
 router.delete('/hr/contracts/:id', asyncHandler(async (req, res) => {
   const item = await tryQuery(() => HrContract.findByPk(req.params.id));
   if (!item) return res.fail(404, 'Contrat introuvable');
+  await item.destroy();
+  res.ok(null, 204);
+}));
+
+// Execute workflow (very simple engine)
+router.post('/hr/workflows/:id/execute', authorize('hr.workflows', 'execute'), asyncHandler(async (req, res) => {
+  const wf = await tryQuery(() => HrWorkflow.findByPk(req.params.id));
+  if (!wf) return res.fail(404, 'Workflow introuvable');
+  if (!wf.active) return res.fail(400, "Le workflow n'est pas actif");
+  const cfg = wf.config || {};
+  const steps = Array.isArray(cfg.steps) ? cfg.steps : [];
+  for (const step of steps) {
+    if (!step || !step.type) continue;
+    if (step.type === 'task') {
+      await HrTask.create({
+        employee_id: wf.target_employee_id || null,
+        workflow_id: wf.id,
+        kind: step.taskType || 'onboarding',
+        title: step.title || 'Tâche',
+        description: step.description || null,
+        assignee_role: step.assigneeRole || 'hr',
+        due_date: step.dueDate || null,
+        status: 'pending'
+      });
+    }
+    // Other step types could be implemented here (notification, approval...)
+  }
+  res.ok({ executed: steps.length });
+}));
+
+// ---------------- Meta (dynamic lists) ----------------
+// Distinct contract types from existing contracts
+router.get('/hr/meta/contract-types', asyncHandler(async (req, res) => {
+  const { Op, fn, col } = require('sequelize');
+  const rows = await tryQuery(() => HrContract.findAll({
+    attributes: [[fn('DISTINCT', col('contract_type')), 'contract_type']],
+    where: { contract_type: { [Op.ne]: null } },
+    order: [[col('contract_type'), 'ASC']]
+  }));
+  const list = rows
+    .map(r => String(r.get('contract_type') || '').trim())
+    .filter(Boolean)
+    .map(v => ({ id: v, name: v }));
+  res.ok(list);
+}));
+
+// Distinct employment types from existing employees
+router.get('/hr/meta/employment-types', asyncHandler(async (req, res) => {
+  const { Op, fn, col } = require('sequelize');
+  const rows = await tryQuery(() => HrEmployee.findAll({
+    attributes: [[fn('DISTINCT', col('employment_type')), 'employment_type']],
+    where: { employment_type: { [Op.ne]: null } },
+    order: [[col('employment_type'), 'ASC']]
+  }));
+  const list = rows
+    .map(r => String(r.get('employment_type') || '').trim())
+    .filter(Boolean)
+    .map(v => ({ id: v, name: v }));
+  res.ok(list);
+}));
+
+// ---------------- Teams ----------------
+router.get('/hr/teams', asyncHandler(async (req, res) => {
+  const rows = await tryQuery(() => HrTeam.findAll({ order: [['name','ASC']] }));
+  res.ok(rows.map(r => ({ id: r.id, name: r.name, department_id: r.department_id, leader_id: r.leader_id, active: !!r.active, created_at: r.createdAt, updated_at: r.updatedAt })));
+}));
+router.post('/hr/teams', authorize('hr.teams','write'), asyncHandler(async (req, res) => {
+  const b = req.body || {};
+  if (!b.name || !b.department_id) return res.fail(400, 'name et department_id requis');
+  const created = await HrTeam.create({ name: b.name, department_id: b.department_id, leader_id: b.leader_id || null, active: b.active !== undefined ? !!b.active : true });
+  res.ok(created, 201);
+}));
+router.put('/hr/teams/:id', authorize('hr.teams','write'), asyncHandler(async (req, res) => {
+  const t = await tryQuery(() => HrTeam.findByPk(req.params.id));
+  if (!t) return res.fail(404, 'Équipe introuvable');
+  const b = req.body || {};
+  await t.update({ name: b.name ?? t.name, department_id: b.department_id ?? t.department_id, leader_id: b.leader_id ?? t.leader_id, active: b.active !== undefined ? !!b.active : t.active });
+  res.ok(t);
+}));
+router.delete('/hr/teams/:id', authorize('hr.teams','write'), asyncHandler(async (req, res) => {
+  const t = await tryQuery(() => HrTeam.findByPk(req.params.id));
+  if (!t) return res.fail(404, 'Équipe introuvable');
+  await t.destroy();
+  res.ok(null, 204);
+}));
+
+// ---------------- Compliance ----------------
+router.get('/hr/compliance', asyncHandler(async (req, res) => {
+  const rows = await tryQuery(() => HrCompliance.findAll({ order: [['createdAt','DESC']] }));
+  res.ok(rows.map(c => ({
+    id: c.id,
+    employee_id: c.employee_id,
+    requirement_type: c.requirement_type,
+    requirement_name: c.requirement_name,
+    description: c.description,
+    document_id: c.document_id,
+    due_date: c.due_date,
+    completed_date: c.completed_date,
+    status: c.status,
+    notes: c.notes,
+    created_at: c.createdAt,
+    updated_at: c.updatedAt
+  })));
+}));
+router.post('/hr/compliance', authorize('hr.compliance','write'), asyncHandler(async (req, res) => {
+  const b = req.body || {};
+  if (!b.employee_id || !b.requirement_type || !b.requirement_name) return res.fail(400, 'employee_id, requirement_type, requirement_name requis');
+  const created = await HrCompliance.create({
+    employee_id: b.employee_id,
+    requirement_type: b.requirement_type,
+    requirement_name: b.requirement_name,
+    description: b.description || null,
+    document_id: b.document_id || null,
+    due_date: b.due_date || null,
+    completed_date: b.completed_date || null,
+    status: b.status || 'pending',
+    notes: b.notes || null
+  });
+  res.ok(created, 201);
+}));
+router.put('/hr/compliance/:id', authorize('hr.compliance','write'), asyncHandler(async (req, res) => {
+  const item = await tryQuery(() => HrCompliance.findByPk(req.params.id));
+  if (!item) return res.fail(404, 'Élément de conformité introuvable');
+  const b = req.body || {};
+  await item.update({
+    employee_id: b.employee_id ?? item.employee_id,
+    requirement_type: b.requirement_type ?? item.requirement_type,
+    requirement_name: b.requirement_name ?? item.requirement_name,
+    description: b.description ?? item.description,
+    document_id: b.document_id ?? item.document_id,
+    due_date: b.due_date ?? item.due_date,
+    completed_date: b.completed_date ?? item.completed_date,
+    status: b.status ?? item.status,
+    notes: b.notes ?? item.notes,
+  });
+  res.ok(item);
+}));
+router.delete('/hr/compliance/:id', authorize('hr.compliance','write'), asyncHandler(async (req, res) => {
+  const item = await tryQuery(() => HrCompliance.findByPk(req.params.id));
+  if (!item) return res.fail(404, 'Élément de conformité introuvable');
+  await item.destroy();
+  res.ok(null, 204);
+}));
+
+// ---------------- Employee ↔ Roles assignments ----------------
+router.get('/hr/security/employee-roles/:employeeId', allow(['hr','admin','manager']), asyncHandler(async (req, res) => {
+  const list = await tryQuery(() => HrEmployeeRole.findAll({ where: { employee_id: req.params.employeeId }, include: [{ model: HrRole, as: 'role' }] }));
+  res.ok(list.map(r => ({ id: r.id, employee_id: r.employee_id, role_id: r.role_id, role_name: r.role?.name, assigned_at: r.assigned_at, assigned_by: r.assigned_by })));
+}));
+router.post('/hr/security/employee-roles', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const b = req.body || {};
+  if (!b.employee_id || !b.role_id) return res.fail(400, 'employee_id et role_id requis');
+  const created = await HrEmployeeRole.create({ employee_id: b.employee_id, role_id: b.role_id, assigned_by: req.user?.id || null });
+  res.ok(created, 201);
+}));
+router.delete('/hr/security/employee-roles/:id', allow(['hr','admin']), asyncHandler(async (req, res) => {
+  const item = await tryQuery(() => HrEmployeeRole.findByPk(req.params.id));
+  if (!item) return res.fail(404, 'Affectation introuvable');
   await item.destroy();
   res.ok(null, 204);
 }));

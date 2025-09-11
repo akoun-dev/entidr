@@ -6,5 +6,6 @@ import taskService from './task.service';
 import signatureService from './signature.service';
 import workflowService from './workflow.service';
 import securityService from './security.service';
+import metaService from './meta.service';
 
-export { employeeService, departmentService, contractService, documentService, taskService, signatureService, workflowService, securityService };
+export { employeeService, departmentService, contractService, documentService, taskService, signatureService, workflowService, securityService, metaService };
