@@ -131,14 +131,27 @@
     - [x] Ajouter la génération de variations de couleurs
     - [x] Implémenter l'accessibilité des couleurs (contraste)
     - [x] Créer les presets de couleurs prédéfinis
-  - [ ] 9.2.2 Polices
-    - [ ] Définir les familles de polices principales
-    - [ ] Créer le système de tailles de police
-    - [ ] Implémenter les variables CSS pour les polices
-    - [ ] Créer le sélecteur de polices
-    - [ ] Ajouter la gestion des poids de police
-    - [ ] Implémenter le chargement asynchrone des polices
-    - [ ] Créer les presets de polices prédéfinis
+  - [x] 9.2.2 Polices (COMPLÈT - système de personnalisation avancé implémenté)
+    - [x] Définir les familles de polices principales (4 presets : Moderne, Classique, Technique, Élégant)
+    - [x] Créer le système de tailles de police (échelle xs à 8xl avec 13 tailles standard)
+    - [x] Implémenter les variables CSS pour les polices (intégration avec FontConfig)
+    - [x] Créer le sélecteur de polices (FontSelector avec 3 onglets : Basique, Avancé, Présélections)
+    - [x] Ajouter la gestion des poids de police (9 poids : thin à black)
+    - [x] Implémenter le chargement asynchrone des polices (FontLoaderService avec Google Fonts)
+    - [x] Créer les presets de polices prédéfinis (4 presets complets avec configurations optimisées)
+    - [x] Ajouter le calcul de lisibilité (score 0-100 avec recommandations)
+    - [x] Implémenter la validation des familles de polices
+    - [x] Créer le panneau de personnalisation complet (FontCustomizationPanel)
+    - [x] Ajouter l'import/export des configurations (JSON)
+    - [x] Implémenter l'aperçu en temps réel
+    - [x] Ajouter la gestion des hauteurs de ligne (5 niveaux : none à loose)
+    - [x] Implémenter l'espacement des lettres (6 niveaux : tighter à widest)
+    - [x] Créer les utilitaires de conversion (FontInfo ↔ CSS)
+    - [x] Ajouter l'adaptation pour le mode sombre
+    - [x] Implémenter le système de chargement avec cache et erreurs
+    - [x] Créer le composant AsyncFontLoader avec fallbacks
+    - [x] Ajouter le hook useFontLoader pour une intégration facile
+    - [x] Documenter le système avec exemples d'utilisation
   - [ ] 9.2.3 Espacement
     - [ ] Définir le système d'espacement (spacing scale)
     - [ ] Créer les variables CSS pour l'espacement

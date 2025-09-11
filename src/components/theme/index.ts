@@ -1,67 +1,61 @@
-// Export des hooks principaux
-export { useTheme } from './useTheme';
-export { useAdaptiveTheme } from './AdaptiveComponents';
+/**
+ * Exportations du système de thème - Personnalisation des polices
+ */
 
-// Export des composants adaptatifs
+// Types et interfaces
+export type * from './types';
+
+// Utilitaires de polices
 export {
-  AdaptiveCard,
-  AdaptiveBadge,
-  AdaptiveButton,
-  AdaptiveAlert,
-  AdaptiveText,
-  AdaptiveContainer
-} from './AdaptiveComponents';
+  FONT_PRESETS,
+  FONT_SIZE_SCALE,
+  LINE_HEIGHT_SCALE,
+  FONT_WEIGHTS,
+  LETTER_SPACING_SCALE,
+  generateFontVariations,
+  createSemanticFontConfig,
+  adaptFontsForDarkMode,
+  validateFontFamily,
+  normalizeFontInfo,
+  fontInfoToCSS,
+  calculateFontReadability,
+  listFontPresets,
+  getFontPreset,
+  applyFontPreset
+} from './fontUtils';
 
-// Export des composants de personnalisation des couleurs
-export {
-  ColorSelector,
-  ColorSelectorProps
-} from './ColorSelector';
-
-export {
-  ColorCustomizationPanel,
-  ColorCustomizationPanelProps
-} from './ColorCustomizationPanel';
-
-// Export du composant de test d'accessibilité
-export { AccessibilityTester } from './AccessibilityTester';
-
-// Export des composants de variables CSS
-export {
-  CSSVariablesDisplay,
-  CSSVariablesDisplayProps
-} from './CSSVariablesDisplay';
-
-// Export des utilitaires de variables CSS
-export {
-  generateCSSVariables,
-  updateCSSVariablesInDOM,
-  removeCSSVariablesFromDOM,
-  getCSSVariableValue,
-  setCSSVariableValue,
-  observeCSSVariables,
-  type CSSVariablesOptions
-} from './cssVariablesGenerator';
-
-// Export des types
 export type {
-  ThemeType,
-  ThemeState,
-  ThemeConfig,
-  ColorPalette,
-  FontConfig,
-  SpacingConfig,
-  BorderConfig,
-  ShadowConfig,
-  AnimationConfig,
-  BreakpointConfig
-} from './types';
+  FontInfo,
+  FontVariations,
+  FontPreset
+} from './fontUtils';
 
-// Export du hook par défaut
-export { useTheme as default } from './useTheme';
+// Composants de sélection de polices
+export { FontSelector } from './FontSelector';
+export type { FontSelectorProps } from './FontSelector';
 
-// Export des utilitaires
-export { ThemeProvider } from './ThemeProvider';
+// Service de chargement de polices
+export {
+  FontLoaderService,
+  AsyncFontLoader,
+  useFontLoader
+} from './fontLoader';
 
-// Export du CSS de transitions
-import './theme-transitions.css';
+export type {
+  FontLoaderOptions,
+  FontLoadState,
+  FontLoadResult
+} from './fontLoader';
+
+// Panneau de personnalisation des polices
+export { FontCustomizationPanel } from './FontCustomizationPanel';
+export type { FontCustomizationPanelProps } from './FontCustomizationPanel';
+
+// Note: Les exportations suivantes seront disponibles lorsque les modules correspondants seront implémentés
+// - Hook de thème (useTheme)
+// - Provider de thème (ThemeProvider)
+// - Sélecteur de thème (ThemeSelector)
+// - Panneau de personnalisation complet (CustomizationPanel)
+// - Utilitaires CSS (cssUtils)
+// - Configurations par défaut (defaults)
+// - Validation de thème (validation)
