@@ -7,6 +7,7 @@ import {
   EntidrViewSort
 } from '../types/entidr-view';
 import { entidrViewService } from '../services/EntidrViewService';
+import { useDebouncedCallback } from './useDebouncedCallback';
 
 /**
  * Hook pour gérer l'état d'une vue
@@ -246,7 +247,7 @@ export function useViewState(
         ...prev,
         loading: false,
         selectedItem: undefined,
-        selectedItems: prev.selectedItems.filter(i => i !== item),
+        selectedItems: (prev.selectedItems || []).filter(i => i !== item),
       }));
 
       // Rafraîchir les données
@@ -260,13 +261,28 @@ export function useViewState(
     }
   }, [refreshData]);
 
+  // Créer une version débounce de la mise à jour de recherche
+  const debouncedSetSearch = useDebouncedCallback(
+    (query: string, field: string = '') => {
+      setState(prev => ({
+        ...prev,
+        search: { query, field, active: query.length > 0 },
+      }));
+    },
+    300 // 300ms de délai
+  );
+
   // Mettre à jour la recherche
   const setSearch = useCallback((query: string, field: string = '') => {
+    // Mettre à jour immédiatement pour l'interface utilisateur
     setState(prev => ({
       ...prev,
-      search: { query, field, active: query.length > 0 },
+      search: { ...prev.search, query, field },
     }));
-  }, []);
+
+    // Lancer la recherche débounce
+    debouncedSetSearch(query, field);
+  }, [debouncedSetSearch]);
 
   // Basculer l'état développé/réduit
   const toggleExpanded = useCallback(() => {

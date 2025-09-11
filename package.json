@@ -58,6 +58,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@tanstack/query-core": "5.85.3",
     "@tanstack/react-query": "5.85.3",
+    "@tanstack/react-virtual": "^3.13.12",
     "@types/chokidar": "^1.7.5",
     "@types/ioredis": "^4.28.10",
     "@types/kafkajs": "^1.8.2",

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BaseFilter, FilterProps } from './FilterBuilder';
 import { FilterConfig, FilterOperator } from './FilterTypes';
+import { DebouncedInput } from '../optimization/DebouncedInput';
 
 /**
  * Props spécifiques au TextFilter
@@ -38,9 +39,16 @@ export class TextFilter extends BaseFilter<TextFilterProps> {
   /**
    * Gérer le changement de valeur
    */
-  protected handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    const value = event.target.value;
+  protected handleChange = (value: string): void => {
     this.props.onChange?.(value);
+    this.validate(value);
+  };
+
+  /**
+   * Gérer le changement immédiat (pour l'indicateur de chargement)
+   */
+  protected handleImmediateChange = (value: string): void => {
+    // Mettre à jour l'état local si nécessaire pour l'indicateur de chargement
     this.validate(value);
   };
 
@@ -48,30 +56,33 @@ export class TextFilter extends BaseFilter<TextFilterProps> {
    * Rendre le filtre
    */
   protected renderFilter = (): React.ReactNode => {
-    const { config, value = '', placeholder, maxLength, minLength, pattern, multiline, disabled } = this.props;
-
-    const commonProps = {
-      value,
-      onChange: this.handleChange,
-      placeholder: placeholder || config.placeholder || 'Entrez une valeur...',
+    const {
+      config,
+      value = '',
+      placeholder,
       maxLength,
       minLength,
       pattern,
-      disabled: disabled || config.disabled,
-      className: 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-    };
+      multiline,
+      disabled
+    } = this.props;
 
-    if (multiline) {
-      return (
-        <textarea
-          {...commonProps}
-          rows={3}
-          className={`${commonProps.className} resize-vertical`}
-        />
-      );
-    }
-
-    return <input type="text" {...commonProps} />;
+    return (
+      <DebouncedInput
+        value={value}
+        onChange={this.handleChange}
+        onImmediateChange={this.handleImmediateChange}
+        placeholder={placeholder || config.placeholder || 'Entrez une valeur...'}
+        maxLength={maxLength}
+        minLength={minLength}
+        pattern={pattern}
+        multiline={multiline}
+        disabled={disabled || config.disabled}
+        debounceDelay={300}
+        showLoadingIndicator={true}
+        className="w-full"
+      />
+    );
   };
 
   /**
