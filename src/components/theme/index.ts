@@ -51,6 +51,35 @@ export type {
 export { FontCustomizationPanel } from './FontCustomizationPanel';
 export type { FontCustomizationPanelProps } from './FontCustomizationPanel';
 
+// Utilitaires d'espacement
+export {
+  SPACING_SCALE,
+  BREAKPOINTS,
+  SPACING_PRESETS,
+  generateSpacingScale,
+  calculateFluidSpacing,
+  generateSpacingVariables,
+  generateSpacingUtilities,
+  parseSpacingValue,
+  validateSpacingValue,
+  getSpacingRecommendations,
+  createSpacingConfig
+} from './spacingUtils';
+
+export type {
+  SpacingOptions,
+  SpacingPreset,
+  SpacingInfo
+} from './spacingUtils';
+
+// Composants de sélection d'espacement
+export { SpacingSelector } from './SpacingSelector';
+export type { SpacingSelectorProps } from './SpacingSelector';
+
+// Panneau de personnalisation de l'espacement
+export { SpacingCustomizationPanel } from './SpacingCustomizationPanel';
+export type { SpacingCustomizationPanelProps } from './SpacingCustomizationPanel';
+
 // Note: Les exportations suivantes seront disponibles lorsque les modules correspondants seront implémentés
 // - Hook de thème (useTheme)
 // - Provider de thème (ThemeProvider)
