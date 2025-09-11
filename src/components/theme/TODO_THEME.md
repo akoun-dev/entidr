@@ -58,24 +58,24 @@
 - [ ] Implémenter les animations d'ombres
 - [ ] Créer les presets d'ombres prédéfinis
 
-### 9.3 Créer le mode sombre/clair
-- [ ] Analyser les besoins pour le mode sombre
-- [ ] Créer les palettes de couleurs pour chaque mode
-- [ ] Implémenter la détection automatique du mode
-- [ ] Créer le sélecteur de mode (light/dark/auto)
-- [ ] Ajouter les transitions douces entre les modes
-- [ ] Implémenter la persistance du mode choisi
-- [ ] Créer les composants adaptatifs pour chaque mode
-- [ ] Tester l'accessibilité en mode sombre
+### 9.3 Créer le mode sombre/clair (COMPLÈT - avec accessibilité optimisée)
+- [x] Analyser les besoins pour le mode sombre
+- [x] Créer les palettes de couleurs pour chaque mode
+- [x] Implémenter la détection automatique du mode
+- [x] Créer le sélecteur de mode (light/dark/auto)
+- [x] Ajouter les transitions douces entre les modes
+- [x] Implémenter la persistance du mode choisi
+- [x] Créer les composants adaptatifs pour chaque mode
+- [x] Tester l'accessibilité en mode sombre
 
-### 9.4 Intégration et Tests
-- [ ] Intégrer le système de thème avec les composants existants
-- [ ] Créer des exemples d'utilisation
-- [ ] Implémenter les tests unitaires
-- [ ] Créer la documentation du système de thème
-- [ ] Ajouter les storybooks pour les composants thématiques
-- [ ] Tester la performance du système de thème
-- [ ] Vérifier la compatibilité navigateur
+### 9.4 Intégration et Tests (COMPLÈT - système d'intégration avancé implémenté)
+- [x] Intégrer le système de thème avec les composants existants
+- [x] Créer des exemples d'utilisation
+- [x] Implémenter les tests unitaires
+- [x] Créer la documentation du système de thème
+- [x] Ajouter les storybooks pour les composants thématiques
+- [x] Tester la performance du système de thème
+- [x] Vérifier la compatibilité navigateur
 
 ### 9.5 Fonctionnalités Avancées
 - [ ] Créer le système de thèmes personnalisés
@@ -114,14 +114,14 @@
   - [x] Utiliser des couleurs chaudes pour le texte en mode sombre
   - [x] Adapter les polices (taille ≥16px, hauteur 1.5)
   - [x] Documenter le système (README.md complet)
-- [x] 9.4 Intégration et tests (PARTIEL - système de base complété)
+- [x] 9.4 Intégration et tests (COMPLÈT - système d'intégration avancé implémenté)
   - [x] Intégrer le système de thème avec les composants existants
   - [x] Créer des exemples d'utilisation
+  - [x] Implémenter les tests unitaires
   - [x] Créer la documentation du système de thème
-  - [ ] Implémenter les tests unitaires
-  - [ ] Ajouter les storybooks pour les composants thématiques
-  - [ ] Tester la performance du système de thème
-  - [ ] Vérifier la compatibilité navigateur
+  - [x] Ajouter les storybooks pour les composants thématiques
+  - [x] Tester la performance du système de thème
+  - [x] Vérifier la compatibilité navigateur
   - [ ] 9.2 Options de personnalisation
   - [ ] 9.2.1 Couleurs
     - [x] Définir la palette de couleurs principale
@@ -160,39 +160,39 @@
     - [x] Ajouter la gestion des breakpoints responsive - Support de 5 breakpoints (sm, md, lg, xl, 2xl)
     - [x] Implémenter l'espacement fluide (fluid spacing) - Calcul adaptatif entre breakpoints
     - [x] Créer les presets d'espacement prédéfinis - 4 presets : Compact, Confortable, Spacieux, Fluide
-  - [ ] 9.2.4 Bordures
-    - [ ] Définir le système de bordures
-    - [ ] Créer les variables CSS pour les bordures
-    - [ ] Implémenter les utilitaires de bordures
-    - [ ] Créer le sélecteur de style de bordures
-    - [ ] Ajouter la gestion des rayons de bordure
-    - [ ] Implémenter les animations de bordures
-    - [ ] Créer les presets de bordures prédéfinis
-  - [ ] 9.2.5 Ombres
-    - [ ] Définir le système d'ombres
-    - [ ] Créer les variables CSS pour les ombres
-    - [ ] Implémenter les utilitaires d'ombres
-    - [ ] Créer le sélecteur d'ombres
-    - [ ] Ajouter la gestion des ombres colorées
-    - [ ] Implémenter les animations d'ombres
-    - [ ] Créer les presets d'ombres prédéfinis
-- [ ] 9.3 Mode sombre/clair
-  - [ ] Analyser les besoins pour le mode sombre
-  - [ ] Créer les palettes de couleurs pour chaque mode
-  - [ ] Implémenter la détection automatique du mode
-  - [ ] Créer le sélecteur de mode (light/dark/auto)
-  - [ ] Ajouter les transitions douces entre les modes
-  - [ ] Implémenter la persistance du mode choisi
-  - [ ] Créer les composants adaptatifs pour chaque mode
-  - [ ] Tester l'accessibilité en mode sombre
-- [ ] 9.4 Intégration et tests
-  - [ ] Intégrer le système de thème avec les composants existants
-  - [ ] Créer des exemples d'utilisation
-  - [ ] Implémenter les tests unitaires
-  - [ ] Créer la documentation du système de thème
-  - [ ] Ajouter les storybooks pour les composants thématiques
-  - [ ] Tester la performance du système de thème
-  - [ ] Vérifier la compatibilité navigateur
+  - [x] 9.2.4 Bordures (COMPLÈT - système de personnalisation avancé implémenté)
+    - [x] Définir le système de bordures - Échelle complète avec 13 largeurs standard
+    - [x] Créer les variables CSS pour les bordures - Génération automatique avec préfixes personnalisables
+    - [x] Implémenter les utilitaires de bordures - Classes CSS complètes pour border-width, border-style, border-radius
+    - [x] Créer le sélecteur de style de bordures - Interface avec 6 onglets : Présélections, Largeurs, Styles, Rayons, Aperçu, Avancé
+    - [x] Ajouter la gestion des rayons de bordure - Support de 9 rayons standard (none à full)
+    - [x] Implémenter les animations de bordures - 3 animations : pulse, glow, slide avec vitesse configurable
+    - [x] Créer les presets de bordures prédéfinis - 4 presets : Minimal, Standard, Audacieux, Moderne
+  - [x] 9.2.5 Ombres (COMPLÈT - système de personnalisation avancé implémenté)
+    - [x] Définir le système d'ombres - Échelle complète avec 9 ombres standard (none à 3xl)
+    - [x] Créer les variables CSS pour les ombres - Génération automatique avec préfixes personnalisables
+    - [x] Implémenter les utilitaires d'ombres - Classes CSS complètes pour box-shadow
+    - [x] Créer le sélecteur d'ombres - Interface avec 5 onglets : Présélections, Ombres, Ombres colorées, Aperçu, Avancé
+    - [x] Ajouter la gestion des ombres colorées - Support de 6 ombres colorées sémantiques (primary, secondary, success, warning, error, info)
+    - [x] Implémenter les animations d'ombres - 3 animations : float, pulse, glow avec vitesse configurable
+    - [x] Créer les presets d'ombres prédéfinis - 4 presets : Minimal, Standard, Dramatique, Moderne
+- [x] 9.3 Mode sombre/clair (COMPLÈT - avec accessibilité optimisée)
+  - [x] Analyser les besoins pour le mode sombre
+  - [x] Créer les palettes de couleurs pour chaque mode
+  - [x] Implémenter la détection automatique du mode
+  - [x] Créer le sélecteur de mode (light/dark/auto)
+  - [x] Ajouter les transitions douces entre les modes
+  - [x] Implémenter la persistance du mode choisi
+  - [x] Créer les composants adaptatifs pour chaque mode
+  - [x] Tester l'accessibilité en mode sombre
+- [x] 9.4 Intégration et tests (COMPLÈT - système d'intégration avancé implémenté)
+  - [x] Intégrer le système de thème avec les composants existants
+  - [x] Créer des exemples d'utilisation
+  - [x] Implémenter les tests unitaires
+  - [x] Créer la documentation du système de thème
+  - [x] Ajouter les storybooks pour les composants thématiques
+  - [x] Tester la performance du système de thème
+  - [x] Vérifier la compatibilité navigateur
 - [ ] 9.5 Fonctionnalités avancées
   - [ ] Créer le système de thèmes personnalisés
   - [ ] Implémenter l'export/import des configurations de thème
