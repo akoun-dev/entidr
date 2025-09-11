@@ -141,6 +141,10 @@ export type { ShadowCustomizationPanelProps } from './ShadowCustomizationPanel';
 export { ThemeIntegrationTests } from './ThemeIntegrationTests';
 export { ThemeUsageExamples } from './ThemeUsageExamples';
 
+// Fonctionnalités avancées
+export { CustomThemeManager } from './CustomThemeManager';
+export { DynamicThemeSystem } from './DynamicThemeSystem';
+
 // Note: Les exportations suivantes seront disponibles lorsque les modules correspondants seront implémentés
 // - Panneau de personnalisation complet (CustomizationPanel)
 // - Utilitaires CSS (cssUtils)
