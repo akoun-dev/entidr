@@ -1,0 +1,218 @@
+/* Transitions douces entre les thèmes */
+
+/* Classe pour les transitions de thème */
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition-property: background-color, color, border-color, box-shadow, opacity, transform !important;
+  transition-duration: 300ms !important;
+  transition-timing-function: ease-in-out !important;
+}
+
+/* Transitions spécifiques pour les propriétés CSS */
+:root {
+  --theme-transition-duration: 300ms;
+  --theme-transition-timing: ease-in-out;
+}
+
+/* Transitions pour les couleurs de fond */
+[data-theme] {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing),
+              box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les composants spécifiques */
+[data-theme] .card,
+[data-theme] .surface,
+[data-theme] .dialog {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing),
+              box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les éléments interactifs */
+[data-theme] button,
+[data-theme] .button,
+[data-theme] input,
+[data-theme] select,
+[data-theme] textarea {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing),
+              box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les liens */
+[data-theme] a,
+[data-theme] .link {
+  transition: color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les badges */
+[data-theme] .badge,
+[data-theme] .tag {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les alertes */
+[data-theme] .alert,
+[data-theme] .notification {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing),
+              box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les modales et overlays */
+[data-theme] .modal,
+[data-theme] .overlay,
+[data-theme] .popover {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing),
+              box-shadow var(--theme-transition-duration) var(--theme-transition-timing),
+              opacity var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les tooltips */
+[data-theme] .tooltip,
+[data-theme] .hint {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing),
+              opacity var(--theme-transition-duration) var(--theme-transition-timing),
+              transform var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les progress bars */
+[data-theme] .progress-bar,
+[data-theme] .progress {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les tables */
+[data-theme] table,
+[data-theme] .table {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+[data-theme] th,
+[data-theme] td {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les listes */
+[data-theme] .list-item,
+[data-theme] .menu-item {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les avatars */
+[data-theme] .avatar {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les icônes */
+[data-theme] .icon {
+  transition: color var(--theme-transition-duration) var(--theme-transition-timing),
+              opacity var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les séparateurs */
+[data-theme] .divider,
+[data-theme] .separator {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing),
+              border-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les ombres */
+[data-theme] .shadow,
+[data-theme] .elevated {
+  transition: box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les gradients */
+[data-theme] .gradient {
+  transition: background var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Animation spéciale pour le changement de thème */
+@keyframes themeChangePulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Appliquer l'animation pendant le changement de thème */
+.theme-transitioning body {
+  animation: themeChangePulse 300ms ease-in-out;
+}
+
+/* Réduire les animations si l'utilisateur préfère */
+@media (prefers-reduced-motion: reduce) {
+  .theme-transitioning *,
+  .theme-transitioning *::before,
+  .theme-transitioning *::after {
+    transition-duration: 0.01ms !important;
+  }
+
+  [data-theme] {
+    transition-duration: 0.01ms !important;
+  }
+
+  .theme-transitioning body {
+    animation: none;
+  }
+}
+
+/* Amélioration de l'accessibilité pour le mode sombre */
+[data-theme="dark"] {
+  /* Réduire la luminosité globale pour moins de fatigue oculaire */
+  filter: brightness(0.95) contrast(1.05);
+}
+
+/* Transition pour le filtre de mode sombre */
+[data-theme] {
+  transition: filter var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Gestion du focus pendant les transitions */
+.theme-transitioning *:focus {
+  outline-offset: 2px;
+  transition: outline-color var(--theme-transition-duration) var(--theme-transition-timing),
+              outline-offset var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Transitions pour les états hover et active */
+.theme-transitioning button:hover,
+.theme-transitioning .button:hover,
+.theme-transitioning a:hover,
+.theme-transitioning .link:hover {
+  transition-duration: 150ms !important;
+}
+
+.theme-transitioning button:active,
+.theme-transitioning .button:active,
+.theme-transitioning a:active,
+.theme-transitioning .link:active {
+  transition-duration: 75ms !important;
+}

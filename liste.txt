@@ -1,0 +1,43 @@
+# Focus Chain List for Task 1757551121521
+
+<!-- Edit this markdown file to update your focus chain focusChain list -->
+<!-- Use the format: - [ ] for incomplete items and - [x] for completed items -->
+
+- [ ] Définir l'interface EntidrAddonManifest complète
+- [ ] Créer un système de gestion des dépendances entre modules
+- [ ] Implémenter l'installation automatique des dépendances
+- [ ] Ajouter le support des catégories de modules
+- [ ] Créer un système de configuration des modules
+- [ ] Définir l'interface EntidrModel complète
+- [ ] Créer un système de champs avancé
+- [ ] Implémenter les relations many2one, one2many, many2many
+- [ ] Ajouter le support des méthodes métier et des hooks
+- [ ] Créer un système de contraintes SQL
+- [ ] Créer les interfaces de sécurité
+- [ ] Implémenter le système de groupes et permissions
+- [ ] Créer un système de règles d'accès aux enregistrements
+- [ ] Ajouter le middleware de sécurité
+- [ ] Intégrer la sécurité dans l'ORM
+- [ ] Définir l'interface EntidrViewDefinition complète
+- [ ] Créer le composant EntidrViewRenderer
+- [ ] Implémenter le sélecteur de vues
+- [ ] Créer les composants de vue individuels
+- [ ] Ajouter le support des filtres et groupes
+- [ ] Définir l'interface EntidrDashboardConfig
+- [ ] Créer le composant EntidrDashboardBuilder
+- [ ] Implémenter les widgets de dashboard
+- [ ] Ajouter le système de layout
+- [ ] Créer l'éditeur de dashboard
+- [ ] Créer le manifeste et modèles du module CRM
+- [ ] Implémenter les vues et API CRM
+- [ ] Créer le manifeste et modèles du module Ventes
+- [ ] Implémenter les vues et API Ventes
+- [ ] Créer le manifeste et modèles du module Comptabilité
+- [ ] Implémenter les vues et API Comptabilité
+- [ ] Définir les interfaces de workflow
+- [ ] Créer le moteur de workflow
+- [ ] Implémenter le designer visuel
+- [ ] Ajouter le support des états et transitions
+- [ ] Créer le système d'automatisation
+
+<!-- Save this file and the focusChain list will be updated in the task -->
