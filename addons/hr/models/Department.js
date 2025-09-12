@@ -1,119 +1,108 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../../../src/models').sequelize;
 
-const departmentSchema = new mongoose.Schema({
+const Department = sequelize.define('Department', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   name: {
-    type: String,
-    required: true,
-    trim: true,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true
   },
   code: {
-    type: String,
-    required: true,
-    trim: true,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true
   },
   description: {
-    type: String,
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   manager_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Employee',
-    default: null
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Employees',
+      key: 'id'
+    }
   },
   parent_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Department',
-    default: null
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Departments',
+      key: 'id'
+    }
   },
   active: {
-    type: Boolean,
-    default: true
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   },
   created_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   updated_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 }, {
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+  tableName: 'hr_departments',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at'
 });
 
-// Virtual pour obtenir les sous-départements
-departmentSchema.virtual('sub_departments', {
-  ref: 'Department',
-  localField: '_id',
-  foreignField: 'parent_id'
-});
-
-// Virtual pour obtenir les employés du département
-departmentSchema.virtual('employees', {
-  ref: 'Employee',
-  localField: '_id',
-  foreignField: 'department_id'
-});
-
-// Virtual pour obtenir le département parent
-departmentSchema.virtual('parent_department', {
-  ref: 'Department',
-  localField: 'parent_id',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Virtual pour obtenir le manager
-departmentSchema.virtual('manager', {
-  ref: 'Employee',
-  localField: 'manager_id',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Méthode statique pour obtenir les départements de premier niveau
-departmentSchema.statics.getRootDepartments = async function() {
-  return this.find({ parent_id: null, active: true })
-    .populate('manager')
-    .sort({ name: 1 });
+// Méthodes statiques
+Department.getRootDepartments = async function() {
+  return this.findAll({
+    where: { parent_id: null, active: true },
+    include: ['manager'],
+    order: [['name', 'ASC']]
+  });
 };
 
-// Méthode statique pour obtenir tous les départements dans une structure hiérarchique
-departmentSchema.statics.getDepartmentHierarchy = async function() {
-  const departments = await this.find({ active: true })
-    .populate('manager')
-    .sort({ name: 1 });
+Department.getDepartmentHierarchy = async function() {
+  const departments = await this.findAll({
+    where: { active: true },
+    include: ['manager'],
+    order: [['name', 'ASC']]
+  });
 
   // Créer une carte des départements par ID
   const departmentMap = {};
   departments.forEach(dept => {
-    departmentMap[dept._id] = { ...dept.toObject(), children: [] };
+    departmentMap[dept.id] = { ...dept.toJSON(), children: [] };
   });
 
   // Construire la hiérarchie
   const hierarchy = [];
   departments.forEach(dept => {
     if (dept.parent_id && departmentMap[dept.parent_id]) {
-      departmentMap[dept.parent_id].children.push(departmentMap[dept._id]);
+      departmentMap[dept.parent_id].children.push(departmentMap[dept.id]);
     } else {
-      hierarchy.push(departmentMap[dept._id]);
+      hierarchy.push(departmentMap[dept.id]);
     }
   });
 
   return hierarchy;
 };
 
-// Méthode statique pour obtenir le chemin complet d'un département
-departmentSchema.statics.getDepartmentPath = async function(departmentId) {
+Department.getDepartmentPath = async function(departmentId) {
   const path = [];
-  let currentDepartment = await this.findById(departmentId).populate('parent_department');
+  let currentDepartment = await this.findByPk(departmentId, {
+    include: ['parent_department']
+  });
 
   while (currentDepartment) {
     path.unshift(currentDepartment);
     if (currentDepartment.parent_department) {
-      currentDepartment = await this.findById(currentDepartment.parent_department._id).populate('parent_department');
+      currentDepartment = await this.findByPk(currentDepartment.parent_department.id, {
+        include: ['parent_department']
+      });
     } else {
       currentDepartment = null;
     }
@@ -122,64 +111,60 @@ departmentSchema.statics.getDepartmentPath = async function(departmentId) {
   return path;
 };
 
-// Méthode pour obtenir le nombre d'employés dans le département et ses sous-départements
-departmentSchema.methods.getEmployeeCount = async function() {
-  const Employee = mongoose.model('Employee');
+// Méthodes d'instance
+Department.prototype.getEmployeeCount = async function() {
+  const Employee = require('./Employee');
 
   // Obtenir tous les sous-départements de manière récursive
   const getAllSubDepartments = async (deptId, subDepts = []) => {
-    const directSubs = await this.constructor.find({ parent_id: deptId, active: true });
-    subDepts.push(...directSubs.map(sub => sub._id));
+    const directSubs = await Department.findAll({
+      where: { parent_id: deptId, active: true }
+    });
+    subDepts.push(...directSubs.map(sub => sub.id));
 
     for (const sub of directSubs) {
-      await getAllSubDepartments(sub._id, subDepts);
+      await getAllSubDepartments(sub.id, subDepts);
     }
 
     return subDepts;
   };
 
-  const subDepartmentIds = await getAllSubDepartments(this._id);
-  const allDepartmentIds = [this._id, ...subDepartmentIds];
+  const subDepartmentIds = await getAllSubDepartments(this.id);
+  const allDepartmentIds = [this.id, ...subDepartmentIds];
 
-  return Employee.countDocuments({
-    department_id: { $in: allDepartmentIds },
-    active: true
+  return Employee.count({
+    where: {
+      department_id: { [require('sequelize').Op.in]: allDepartmentIds },
+      active: true
+    }
   });
 };
 
-// Middleware pour s'assurer qu'un département ne peut pas être son propre parent
-departmentSchema.pre('save', function(next) {
-  if (this.parent_id) {
-    // Vérifier si le parent_id est égal à l'ID du document
-    if (this.parent_id.equals(this._id)) {
-      return next(new Error('Un département ne peut pas être son propre parent'));
+// Validation pour éviter les boucles dans la hiérarchie
+Department.beforeValidate(async (department) => {
+  if (department.parent_id) {
+    // Vérifier si le parent_id est égal à l'ID du département
+    if (department.parent_id === department.id) {
+      throw new Error('Un département ne peut pas être son propre parent');
     }
 
     // Vérifier si le parent_id crée une boucle dans la hiérarchie
     const checkForLoop = async (deptId, parentId) => {
       if (!parentId) return false;
 
-      if (parentId.equals(deptId)) return true;
+      if (parentId === deptId) return true;
 
-      const parent = await this.constructor.findById(parentId);
+      const parent = await Department.findByPk(parentId);
       if (!parent) return false;
 
       return checkForLoop(deptId, parent.parent_id);
     };
 
-    checkForLoop(this._id, this.parent_id)
-      .then(hasLoop => {
-        if (hasLoop) {
-          return next(new Error('La hiérarchie des départements ne peut pas contenir de boucles'));
-        }
-        next();
-      })
-      .catch(next);
-  } else {
-    next();
+    const hasLoop = await checkForLoop(department.id, department.parent_id);
+    if (hasLoop) {
+      throw new Error('La hiérarchie des départements ne peut pas contenir de boucles');
+    }
   }
 });
-
-const Department = mongoose.model('Department', departmentSchema);
 
 module.exports = Department;

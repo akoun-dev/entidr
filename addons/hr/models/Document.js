@@ -1,106 +1,112 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../../../src/models').sequelize;
 
-const documentSchema = new mongoose.Schema({
+const Document = sequelize.define('Document', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   employee_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Employee',
-    required: true
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Employees',
+      key: 'id'
+    }
   },
   name: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false
   },
   type: {
-    type: String,
-    required: true,
-    enum: [
+    type: DataTypes.ENUM(
       'id_card', 'passport', 'cv', 'diploma', 'certificate',
       'contract', 'pay_slip', 'medical_certificate', 'insurance',
       'tax_document', 'other'
-    ],
-    trim: true
+    ),
+    allowNull: false
   },
   description: {
-    type: String,
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   file_url: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false
   },
   file_name: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false
   },
   mime_type: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false
   },
   size_bytes: {
-    type: Number,
-    required: true,
-    min: 0
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    validate: {
+      min: 0
+    }
   },
   expiry_date: {
-    type: Date,
+    type: DataTypes.DATE,
+    allowNull: true,
     validate: {
-      validator: function(value) {
-        // La date d'expiration doit être postérieure à la date actuelle si elle est définie
-        return !value || value > new Date();
-      },
-      message: 'La date d\'expiration doit être postérieure à la date actuelle'
+      isFuture(value) {
+        if (value && value <= new Date()) {
+          throw new Error('La date d\'expiration doit être postérieure à la date actuelle');
+        }
+      }
     }
   },
   status: {
-    type: String,
-    required: true,
-    enum: ['draft', 'pending', 'approved', 'rejected', 'expired'],
-    default: 'draft'
+    type: DataTypes.ENUM('draft', 'pending', 'approved', 'rejected', 'expired'),
+    defaultValue: 'draft'
   },
   notes: {
-    type: String,
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   created_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   updated_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 }, {
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+  tableName: 'hr_documents',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  hooks: {
+    beforeSave: (document) => {
+      // Mettre à jour le statut du document en fonction de la date actuelle
+      const today = new Date();
+      if (document.status !== 'expired' && document.expiry_date && today > document.expiry_date) {
+        document.status = 'expired';
+      }
+    }
+  }
 });
 
-// Virtual pour obtenir l'employé
-documentSchema.virtual('employee', {
-  ref: 'Employee',
-  localField: 'employee_id',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Virtual pour vérifier si le document est expiré
-documentSchema.virtual('is_expired').get(function() {
+// Méthodes d'instance
+Document.prototype.isExpired = function() {
   if (!this.expiry_date) return false;
   return new Date() > this.expiry_date;
-});
+};
 
-// Virtual pour obtenir le temps restant avant l'expiration en jours
-documentSchema.virtual('days_until_expiry').get(function() {
+Document.prototype.getDaysUntilExpiry = function() {
   if (!this.expiry_date) return null;
   const today = new Date();
   const diffTime = this.expiry_date - today;
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-});
+};
 
-// Virtual pour obtenir la taille du fichier en format lisible
-documentSchema.virtual('size_readable').get(function() {
+Document.prototype.getSizeReadable = function() {
   const bytes = this.size_bytes;
 
   if (bytes === 0) return '0 Bytes';
@@ -110,48 +116,9 @@ documentSchema.virtual('size_readable').get(function() {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-});
-
-// Méthode statique pour obtenir les documents d'un employé
-documentSchema.statics.getDocumentsByEmployee = async function(employeeId) {
-  return this.find({ employee_id: employeeId })
-    .populate('employee_id')
-    .sort({ created_at: -1 });
 };
 
-// Méthode statique pour obtenir les documents par type
-documentSchema.statics.getDocumentsByType = async function(type) {
-  return this.find({ type })
-    .populate('employee_id')
-    .sort({ created_at: -1 });
-};
-
-// Méthode statique pour obtenir les documents par statut
-documentSchema.statics.getDocumentsByStatus = async function(status) {
-  return this.find({ status })
-    .populate('employee_id')
-    .sort({ created_at: -1 });
-};
-
-// Méthode statique pour obtenir les documents expirant bientôt
-documentSchema.statics.getExpiringDocuments = async function(days = 30) {
-  const today = new Date();
-  const futureDate = new Date();
-  futureDate.setDate(today.getDate() + days);
-
-  return this.find({
-    expiry_date: {
-      $gte: today,
-      $lte: futureDate
-    },
-    status: { $ne: 'expired' }
-  })
-    .populate('employee_id')
-    .sort({ expiry_date: 1 });
-};
-
-// Méthode pour mettre à jour le statut du document en fonction de la date actuelle
-documentSchema.methods.updateStatus = async function() {
+Document.prototype.updateStatus = async function() {
   const today = new Date();
 
   if (this.status !== 'expired' && this.expiry_date && today > this.expiry_date) {
@@ -162,19 +129,46 @@ documentSchema.methods.updateStatus = async function() {
   return this;
 };
 
-// Middleware pour mettre à jour le statut du document lors de la sauvegarde
-documentSchema.pre('save', function(next) {
+// Méthodes statiques
+Document.getDocumentsByEmployee = async function(employeeId) {
+  return this.findAll({
+    where: { employee_id: employeeId },
+    include: ['employee'],
+    order: [['created_at', 'DESC']]
+  });
+};
+
+Document.getDocumentsByType = async function(type) {
+  return this.findAll({
+    where: { type },
+    include: ['employee'],
+    order: [['created_at', 'DESC']]
+  });
+};
+
+Document.getDocumentsByStatus = async function(status) {
+  return this.findAll({
+    where: { status },
+    include: ['employee'],
+    order: [['created_at', 'DESC']]
+  });
+};
+
+Document.getExpiringDocuments = async function(days = 30) {
   const today = new Date();
+  const futureDate = new Date();
+  futureDate.setDate(today.getDate() + days);
 
-  if (this.isModified('expiry_date') || this.isModified('status')) {
-    if (this.status !== 'expired' && this.expiry_date && today > this.expiry_date) {
-      this.status = 'expired';
-    }
-  }
-
-  next();
-});
-
-const Document = mongoose.model('Document', documentSchema);
+  return this.findAll({
+    where: {
+      expiry_date: {
+        [require('sequelize').Op.between]: [today, futureDate]
+      },
+      status: { [require('sequelize').Op.ne]: 'expired' }
+    },
+    include: ['employee'],
+    order: [['expiry_date', 'ASC']]
+  });
+};
 
 module.exports = Document;

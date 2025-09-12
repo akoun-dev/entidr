@@ -1,123 +1,125 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../../../src/models').sequelize;
 
-const employeeSchema = new mongoose.Schema({
-  first_name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  last_name: {
-    type: String,
-    required: true,
-    trim: true
+const Employee = sequelize.define('Employee', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
   },
   name: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  first_name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  last_name: {
+    type: DataTypes.STRING,
+    allowNull: false
   },
   email: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    trim: true,
-    lowercase: true
+    validate: {
+      isEmail: true
+    }
   },
   phone: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   job_title: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   department_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Department',
-    required: true
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Departments',
+      key: 'id'
+    }
   },
   manager_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Employee',
-    default: null
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Employees',
+      key: 'id'
+    }
   },
   hire_date: {
-    type: Date,
-    required: true
+    type: DataTypes.DATE,
+    allowNull: true
   },
   salary: {
-    type: Number,
-    default: 0
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0
   },
   address: {
-    street: { type: String, trim: true },
-    city: { type: String, trim: true },
-    state: { type: String, trim: true },
-    postal_code: { type: String, trim: true },
-    country: { type: String, trim: true }
+    type: DataTypes.TEXT,
+    allowNull: true
   },
-  emergency_contact: {
-    name: { type: String, trim: true },
-    relationship: { type: String, trim: true },
-    phone: { type: String, trim: true }
+  city: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  postal_code: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  country: {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   birth_date: {
-    type: Date
+    type: DataTypes.DATE,
+    allowNull: true
   },
   gender: {
-    type: String,
-    enum: ['male', 'female', 'other', 'prefer_not_to_say'],
-    default: 'prefer_not_to_say'
+    type: DataTypes.ENUM('male', 'female', 'other', 'prefer_not_to_say'),
+    defaultValue: 'prefer_not_to_say'
   },
   photo_url: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   active: {
-    type: Boolean,
-    default: true
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   },
-  contracts: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Contract'
-  }],
-  documents: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Document'
-  }],
   created_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   updated_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 }, {
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
-});
-
-// Middleware pour générer le nom complet avant la sauvegarde
-employeeSchema.pre('save', function(next) {
-  if (this.isModified('first_name') || this.isModified('last_name')) {
-    this.name = `${this.first_name} ${this.last_name}`;
+  tableName: 'hr_employees',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  hooks: {
+    beforeValidate: (employee) => {
+      if (employee.first_name && employee.last_name) {
+        employee.name = `${employee.first_name} ${employee.last_name}`;
+      }
+    }
   }
-  next();
 });
 
-// Méthode pour comparer les mots de passe
-employeeSchema.methods.comparePassword = async function(candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
+// Méthodes d'instance
+Employee.prototype.getFullName = function() {
+  return `${this.first_name} ${this.last_name}`;
 };
 
-// Méthode pour obtenir le nom complet
-employeeSchema.virtual('full_name').get(function() {
-  return `${this.first_name} ${this.last_name}`;
-});
-
-// Méthode pour obtenir l'âge
-employeeSchema.virtual('age').get(function() {
+Employee.prototype.getAge = function() {
   if (!this.birth_date) return null;
   const today = new Date();
   const birthDate = new Date(this.birth_date);
@@ -129,10 +131,9 @@ employeeSchema.virtual('age').get(function() {
   }
 
   return age;
-});
+};
 
-// Méthode pour obtenir la durée d'emploi
-employeeSchema.virtual('employment_duration').get(function() {
+Employee.prototype.getEmploymentDuration = function() {
   if (!this.hire_date) return null;
   const today = new Date();
   const hireDate = new Date(this.hire_date);
@@ -140,22 +141,23 @@ employeeSchema.virtual('employment_duration').get(function() {
   const months = today.getMonth() - hireDate.getMonth();
 
   return { years, months };
-});
-
-// Méthode statique pour obtenir les employés par département
-employeeSchema.statics.getEmployeesByDepartment = async function(departmentId) {
-  return this.find({ department_id: departmentId, active: true })
-    .populate('department_id')
-    .sort({ last_name: 1, first_name: 1 });
 };
 
-// Méthode statique pour obtenir les subordonnés d'un manager
-employeeSchema.statics.getSubordinates = async function(managerId) {
-  return this.find({ manager_id: managerId, active: true })
-    .populate('department_id')
-    .sort({ last_name: 1, first_name: 1 });
+// Méthodes statiques
+Employee.getEmployeesByDepartment = async function(departmentId) {
+  return this.findAll({
+    where: { department_id: departmentId, active: true },
+    include: ['department'],
+    order: [['last_name', 'ASC'], ['first_name', 'ASC']]
+  });
 };
 
-const Employee = mongoose.model('Employee', employeeSchema);
+Employee.getSubordinates = async function(managerId) {
+  return this.findAll({
+    where: { manager_id: managerId, active: true },
+    include: ['department'],
+    order: [['last_name', 'ASC'], ['first_name', 'ASC']]
+  });
+};
 
 module.exports = Employee;

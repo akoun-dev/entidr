@@ -15,11 +15,11 @@
       "@/*": ["./src/*"]
     },
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "types": ["jest", "node"]
   },
-  "include": ["src"],
+  "include": ["src", "addons"],
   "exclude": ["node_modules"]
 }

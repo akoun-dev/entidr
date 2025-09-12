@@ -1,161 +1,140 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../../../src/models').sequelize;
 
-const contractSchema = new mongoose.Schema({
+const Contract = sequelize.define('Contract', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   employee_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Employee',
-    required: true
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Employees',
+      key: 'id'
+    }
   },
   type: {
-    type: String,
-    required: true,
-    enum: ['cdi', 'cdd', 'stage', 'alternance', 'freelance', 'internship', 'apprenticeship', 'other'],
-    trim: true
+    type: DataTypes.ENUM('cdi', 'cdd', 'stage', 'alternance', 'freelance', 'internship', 'apprenticeship', 'other'),
+    allowNull: false
   },
   reference: {
-    type: String,
-    trim: true,
+    type: DataTypes.STRING,
+    allowNull: true,
     unique: true
   },
   start_date: {
-    type: Date,
-    required: true
+    type: DataTypes.DATE,
+    allowNull: false
   },
   end_date: {
-    type: Date,
+    type: DataTypes.DATE,
+    allowNull: true,
     validate: {
-      validator: function(value) {
-        // La date de fin doit être postérieure à la date de début si elle est définie
-        return !value || value > this.start_date;
-      },
-      message: 'La date de fin doit être postérieure à la date de début'
+      isAfterStart(value) {
+        if (value && value <= this.start_date) {
+          throw new Error('La date de fin doit être postérieure à la date de début');
+        }
+      }
     }
   },
   salary: {
-    type: Number,
-    required: true,
-    min: 0
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0
   },
   currency: {
-    type: String,
-    default: 'EUR',
-    trim: true
+    type: DataTypes.STRING,
+    defaultValue: 'EUR'
   },
   working_hours: {
-    type: Number,
-    default: 35,
-    min: 0
+    type: DataTypes.INTEGER,
+    defaultValue: 35,
+    validate: {
+      min: 0
+    }
   },
   status: {
-    type: String,
-    required: true,
-    enum: ['draft', 'active', 'terminated', 'expired', 'renewed'],
-    default: 'draft'
+    type: DataTypes.ENUM('draft', 'active', 'terminated', 'expired', 'renewed'),
+    defaultValue: 'draft'
   },
   terms: {
-    type: String,
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   file_url: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   file_name: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   mime_type: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   size_bytes: {
-    type: Number,
-    min: 0
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: {
+      min: 0
+    }
   },
   created_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   updated_at: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 }, {
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+  tableName: 'hr_contracts',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  hooks: {
+    beforeValidate: async (contract) => {
+      // Générer une référence automatique si elle n'est pas fournie
+      if (!contract.reference) {
+        const Contract = require('./Contract');
+        const count = await Contract.count();
+        const year = new Date().getFullYear();
+        contract.reference = `CONTR-${year}-${String(count + 1).padStart(4, '0')}`;
+      }
+    },
+    beforeSave: (contract) => {
+      // Mettre à jour le statut du contrat en fonction de la date actuelle
+      const today = new Date();
+      if (contract.status === 'active' && contract.end_date && today > contract.end_date) {
+        contract.status = 'expired';
+      }
+    }
+  }
 });
 
-// Virtual pour obtenir l'employé
-contractSchema.virtual('employee', {
-  ref: 'Employee',
-  localField: 'employee_id',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Virtual pour obtenir la durée du contrat en jours
-contractSchema.virtual('duration_days').get(function() {
+// Méthodes d'instance
+Contract.prototype.getDurationDays = function() {
   if (!this.end_date) return null;
   const diffTime = Math.abs(this.end_date - this.start_date);
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-});
+};
 
-// Virtual pour vérifier si le contrat est expiré
-contractSchema.virtual('is_expired').get(function() {
+Contract.prototype.isExpired = function() {
   if (!this.end_date) return false;
   return new Date() > this.end_date;
-});
+};
 
-// Virtual pour obtenir le temps restant avant l'expiration en jours
-contractSchema.virtual('days_until_expiry').get(function() {
+Contract.prototype.getDaysUntilExpiry = function() {
   if (!this.end_date) return null;
   const today = new Date();
   const diffTime = this.end_date - today;
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-});
-
-// Méthode statique pour obtenir les contrats actifs d'un employé
-contractSchema.statics.getActiveContractsByEmployee = async function(employeeId) {
-  return this.find({
-    employee_id: employeeId,
-    status: 'active'
-  })
-    .populate('employee_id')
-    .sort({ start_date: -1 });
 };
 
-// Méthode statique pour obtenir les contrats expirant bientôt
-contractSchema.statics.getExpiringContracts = async function(days = 30) {
-  const today = new Date();
-  const futureDate = new Date();
-  futureDate.setDate(today.getDate() + days);
-
-  return this.find({
-    end_date: {
-      $gte: today,
-      $lte: futureDate
-    },
-    status: { $ne: 'terminated' }
-  })
-    .populate('employee_id')
-    .sort({ end_date: 1 });
-};
-
-// Méthode statique pour obtenir les contrats par type
-contractSchema.statics.getContractsByType = async function(type) {
-  return this.find({ type })
-    .populate('employee_id')
-    .sort({ start_date: -1 });
-};
-
-// Méthode statique pour obtenir les contrats par statut
-contractSchema.statics.getContractsByStatus = async function(status) {
-  return this.find({ status })
-    .populate('employee_id')
-    .sort({ start_date: -1 });
-};
-
-// Méthode pour mettre à jour le statut du contrat en fonction de la date actuelle
-contractSchema.methods.updateStatus = async function() {
+Contract.prototype.updateStatus = async function() {
   const today = new Date();
 
   if (this.status === 'active' && this.end_date && today > this.end_date) {
@@ -166,30 +145,46 @@ contractSchema.methods.updateStatus = async function() {
   return this;
 };
 
-// Middleware pour générer une référence automatique si elle n'est pas fournie
-contractSchema.pre('save', async function(next) {
-  if (!this.reference) {
-    const Contract = mongoose.model('Contract');
-    const count = await Contract.countDocuments();
-    const year = new Date().getFullYear();
-    this.reference = `CONTR-${year}-${String(count + 1).padStart(4, '0')}`;
-  }
-  next();
-});
+// Méthodes statiques
+Contract.getActiveContractsByEmployee = async function(employeeId) {
+  return this.findAll({
+    where: { employee_id: employeeId, status: 'active' },
+    include: ['employee'],
+    order: [['start_date', 'DESC']]
+  });
+};
 
-// Middleware pour mettre à jour le statut du contrat lors de la sauvegarde
-contractSchema.pre('save', function(next) {
+Contract.getExpiringContracts = async function(days = 30) {
   const today = new Date();
+  const futureDate = new Date();
+  futureDate.setDate(today.getDate() + days);
 
-  if (this.isModified('end_date') || this.isModified('status')) {
-    if (this.status === 'active' && this.end_date && today > this.end_date) {
-      this.status = 'expired';
-    }
-  }
+  return this.findAll({
+    where: {
+      end_date: {
+        [require('sequelize').Op.between]: [today, futureDate]
+      },
+      status: { [require('sequelize').Op.ne]: 'terminated' }
+    },
+    include: ['employee'],
+    order: [['end_date', 'ASC']]
+  });
+};
 
-  next();
-});
+Contract.getContractsByType = async function(type) {
+  return this.findAll({
+    where: { type },
+    include: ['employee'],
+    order: [['start_date', 'DESC']]
+  });
+};
 
-const Contract = mongoose.model('Contract', contractSchema);
+Contract.getContractsByStatus = async function(status) {
+  return this.findAll({
+    where: { status },
+    include: ['employee'],
+    order: [['start_date', 'DESC']]
+  });
+};
 
 module.exports = Contract;

@@ -15,19 +15,8 @@ export default function HRModuleViews() {
 
 // Exporter les composants de vues individuels
 // Ces composants seront utilisés pour rendre les pages spécifiques du module HR
-export const HrDashboardView = () => (
-  <div>
-    <h1>Tableau de bord RH</h1>
-    <p>Tableau de bord du module Ressources Humaines</p>
-  </div>
-);
-
-export const EmployeesView = () => (
-  <div>
-    <h1>Liste des employés</h1>
-    <p>Page de liste des employés</p>
-  </div>
-);
+export { default as HrDashboardView } from './pages/HrDashboardView';
+export { default as EmployeesView } from './pages/EmployeesView';
 
 export const EmployeesKanbanView = () => (
   <div>

@@ -1,6 +1,6 @@
-const Employee = require('../../models/Employee');
-const Department = require('../../models/Department');
+const { Employee, Department, Contract, Document } = require('../../models');
 const { validationResult } = require('express-validator');
+const { Op } = require('sequelize');
 
 /**
  * Obtenir tous les employés
@@ -9,43 +9,43 @@ exports.getAllEmployees = async (req, res) => {
   try {
     const { department_id, active, search, page = 1, limit = 10 } = req.query;
 
-    const query = {};
+    const where = {};
 
     if (department_id) {
-      query.department_id = department_id;
+      where.department_id = department_id;
     }
 
     if (active !== undefined) {
-      query.active = active === 'true';
+      where.active = active === 'true';
     }
 
     if (search) {
-      query.$or = [
-        { first_name: { $regex: search, $options: 'i' } },
-        { last_name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { position: { $regex: search, $options: 'i' } }
+      where[Op.or] = [
+        { first_name: { [Op.like]: `%${search}%` } },
+        { last_name: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { job_title: { [Op.like]: `%${search}%` } }
       ];
     }
 
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    const employees = await Employee.find(query)
-      .populate('department')
-      .skip(skip)
-      .limit(parseInt(limit))
-      .sort({ created_at: -1 });
-
-    const total = await Employee.countDocuments(query);
+    const { count, rows: employees } = await Employee.findAndCountAll({
+      where,
+      include: ['department'],
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+      order: [['created_at', 'DESC']]
+    });
 
     res.status(200).json({
       message: 'Employés récupérés avec succès',
       employees,
       pagination: {
-        total,
+        total: count,
         page: parseInt(page),
         limit: parseInt(limit),
-        pages: Math.ceil(total / limit)
+        pages: Math.ceil(count / limit)
       }
     });
   } catch (error) {
@@ -61,10 +61,13 @@ exports.getEmployeeById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const employee = await Employee.findById(id)
-      .populate('department')
-      .populate('contracts')
-      .populate('documents');
+    const employee = await Employee.findByPk(id, {
+      include: [
+        'department',
+        'contracts',
+        'documents'
+      ]
+    });
 
     if (!employee) {
       return res.status(404).json({ message: 'Employé non trouvé' });
@@ -93,19 +96,22 @@ exports.createEmployee = async (req, res) => {
     const employeeData = req.body;
 
     // Vérifier si l'email existe déjà
-    const existingEmployee = await Employee.findOne({ email: employeeData.email });
+    const existingEmployee = await Employee.findOne({
+      where: { email: employeeData.email }
+    });
+
     if (existingEmployee) {
       return res.status(400).json({ message: 'Un employé avec cet email existe déjà' });
     }
 
-    // Créer le nom complet à partir du prénom et du nom
-    employeeData.name = `${employeeData.first_name} ${employeeData.last_name}`;
+    // Le nom complet sera généré automatiquement par le hook beforeValidate
 
-    const employee = new Employee(employeeData);
-    await employee.save();
+    const employee = await Employee.create(employeeData);
 
     // Récupérer l'employé créé avec les informations complètes
-    const newEmployee = await Employee.findById(employee._id).populate('department');
+    const newEmployee = await Employee.findByPk(employee.id, {
+      include: ['department']
+    });
 
     res.status(201).json({
       message: 'Employé créé avec succès',
@@ -133,8 +139,10 @@ exports.updateEmployee = async (req, res) => {
     // Si l'email est modifié, vérifier qu'il n'existe pas déjà
     if (updateData.email) {
       const existingEmployee = await Employee.findOne({
-        email: updateData.email,
-        _id: { $ne: id }
+        where: {
+          email: updateData.email,
+          id: { [Op.ne]: id }
+        }
       });
 
       if (existingEmployee) {
@@ -142,27 +150,25 @@ exports.updateEmployee = async (req, res) => {
       }
     }
 
-    // Mettre à jour le nom complet si le prénom ou le nom est modifié
-    if (updateData.first_name || updateData.last_name) {
-      const employee = await Employee.findById(id);
-      const firstName = updateData.first_name || employee.first_name;
-      const lastName = updateData.last_name || employee.last_name;
-      updateData.name = `${firstName} ${lastName}`;
-    }
+    // Le nom complet sera généré automatiquement par le hook beforeValidate
 
-    const employee = await Employee.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    ).populate('department');
+    const [affectedRows, [employee]] = await Employee.update(updateData, {
+      where: { id },
+      returning: true
+    });
 
-    if (!employee) {
+    if (affectedRows === 0) {
       return res.status(404).json({ message: 'Employé non trouvé' });
     }
 
+    // Récupérer l'employé mis à jour avec les relations
+    const updatedEmployee = await Employee.findByPk(employee.id, {
+      include: ['department']
+    });
+
     res.status(200).json({
       message: 'Employé mis à jour avec succès',
-      employee
+      employee: updatedEmployee
     });
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'employé:', error);
@@ -177,9 +183,11 @@ exports.deleteEmployee = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const employee = await Employee.findByIdAndDelete(id);
+    const deleted = await Employee.destroy({
+      where: { id }
+    });
 
-    if (!employee) {
+    if (deleted === 0) {
       return res.status(404).json({ message: 'Employé non trouvé' });
     }
 
@@ -199,7 +207,7 @@ exports.toggleEmployeeStatus = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const employee = await Employee.findById(id);
+    const employee = await Employee.findByPk(id);
 
     if (!employee) {
       return res.status(404).json({ message: 'Employé non trouvé' });
@@ -208,7 +216,9 @@ exports.toggleEmployeeStatus = async (req, res) => {
     employee.active = !employee.active;
     await employee.save();
 
-    const updatedEmployee = await Employee.findById(id).populate('department');
+    const updatedEmployee = await Employee.findByPk(id, {
+      include: ['department']
+    });
 
     res.status(200).json({
       message: `Statut de l'employé mis à jour avec succès`,
@@ -227,13 +237,16 @@ exports.getEmployeeContracts = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const employee = await Employee.findById(id);
+    const employee = await Employee.findByPk(id);
 
     if (!employee) {
       return res.status(404).json({ message: 'Employé non trouvé' });
     }
 
-    const contracts = await Contract.find({ employee_id: id }).sort({ created_at: -1 });
+    const contracts = await Contract.findAll({
+      where: { employee_id: id },
+      order: [['created_at', 'DESC']]
+    });
 
     res.status(200).json({
       message: 'Contrats de l\'employé récupérés avec succès',
@@ -252,13 +265,16 @@ exports.getEmployeeDocuments = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const employee = await Employee.findById(id);
+    const employee = await Employee.findByPk(id);
 
     if (!employee) {
       return res.status(404).json({ message: 'Employé non trouvé' });
     }
 
-    const documents = await Document.find({ employee_id: id }).sort({ created_at: -1 });
+    const documents = await Document.findAll({
+      where: { employee_id: id },
+      order: [['created_at', 'DESC']]
+    });
 
     res.status(200).json({
       message: 'Documents de l\'employé récupérés avec succès',
@@ -267,5 +283,28 @@ exports.getEmployeeDocuments = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la récupération des documents de l\'employé:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des documents de l\'employé' });
+  }
+};
+
+/**
+ * Obtenir les subordonnés d'un employé
+ */
+exports.getEmployeeSubordinates = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const subordinates = await Employee.findAll({
+      where: { manager_id: id },
+      include: ['department'],
+      order: [['last_name', 'ASC'], ['first_name', 'ASC']]
+    });
+
+    res.status(200).json({
+      message: 'Subordonnés récupérés avec succès',
+      subordinates
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des subordonnés:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des subordonnés' });
   }
 };
