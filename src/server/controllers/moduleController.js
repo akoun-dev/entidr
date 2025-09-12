@@ -65,12 +65,14 @@ function runCommand(command, args) {
 const moduleController = {
   /**
    * Synchronise les modules entre la base et le système de fichiers addons/
+   * - Met à jour les versions depuis les manifestes
    * - Marque installable=false si le dossier n'existe pas
    * - Optionnel: `?purgeMissing=true` pour désactiver/désinstaller ou supprimer
    */
   async syncModules(req, res) {
     try {
       const purgeMissing = String(req.query.purgeMissing || '').toLowerCase() === 'true';
+      const updateVersions = String(req.query.updateVersions || '').toLowerCase() !== 'false'; // true par défaut
 
       const entries = fs.existsSync(ADDONS_DIR) ? fs.readdirSync(ADDONS_DIR, { withFileTypes: true }) : [];
       const fsModules = new Set(entries.filter(e => e.isDirectory()).map(e => e.name));
@@ -78,6 +80,7 @@ const moduleController = {
       const dbModules = await Module.findAll();
       let updated = 0;
       let removed = 0;
+      let versionUpdates = 0;
 
       for (const m of dbModules) {
         const exists = fsModules.has(m.name);
@@ -102,6 +105,60 @@ const moduleController = {
             await m.save();
             updated++;
           }
+
+          // Synchroniser la version depuis le manifeste si demandé
+          if (updateVersions && exists) {
+            try {
+              const manifestPath = path.join(ADDONS_DIR, m.name, 'manifest.ts');
+              if (fs.existsSync(manifestPath)) {
+                const manifestContent = fs.readFileSync(manifestPath, 'utf8');
+
+                // Extraire la version du manifeste
+                const versionMatch = manifestContent.match(/version:\s*['"]([^'"]+)['"]/);
+                const manifestVersion = versionMatch ? versionMatch[1] : null;
+
+                // Extraire d'autres informations du manifeste
+                const displayNameMatch = manifestContent.match(/displayName:\s*['"]([^'"]+)['"]/);
+                const manifestDisplayName = displayNameMatch ? displayNameMatch[1] : null;
+
+                const summaryMatch = manifestContent.match(/summary:\s*['"]([^'"]+)['"]/);
+                const manifestSummary = summaryMatch ? summaryMatch[1] : null;
+
+                const descriptionMatch = manifestContent.match(/description:\s*['"]([^'"]+)['"]/);
+                const manifestDescription = descriptionMatch ? descriptionMatch[1] : null;
+
+                // Mettre à jour si les informations sont différentes
+                let needsUpdate = false;
+                if (manifestVersion && manifestVersion !== m.version) {
+                  m.version = manifestVersion;
+                  needsUpdate = true;
+                  console.log(`Mise à jour de la version du module ${m.name}: ${m.version} -> ${manifestVersion}`);
+                }
+
+                if (manifestDisplayName && manifestDisplayName !== m.displayName) {
+                  m.displayName = manifestDisplayName;
+                  needsUpdate = true;
+                }
+
+                if (manifestSummary && manifestSummary !== m.summary) {
+                  m.summary = manifestSummary;
+                  needsUpdate = true;
+                }
+
+                if (manifestDescription && manifestDescription !== m.description) {
+                  m.description = manifestDescription;
+                  needsUpdate = true;
+                }
+
+                if (needsUpdate) {
+                  await m.save();
+                  versionUpdates++;
+                }
+              }
+            } catch (manifestError) {
+              console.warn(`Erreur lors de la lecture du manifeste du module ${m.name}:`, manifestError);
+            }
+          }
         }
       }
 
@@ -115,7 +172,15 @@ const moduleController = {
         }
       }
 
-      return res.status(200).json({ data: { updated, removed }, error: null });
+      return res.status(200).json({
+        data: {
+          updated,
+          removed,
+          versionUpdates,
+          message: versionUpdates > 0 ? `${versionUpdates} version(s) de module(s) mise(s) à jour depuis les manifestes` : undefined
+        },
+        error: null
+      });
     } catch (error) {
       console.error('Erreur lors de la synchronisation des modules:', error);
       return res.status(500).json({ data: null, error: { message: 'Une erreur est survenue lors de la synchronisation des modules' } });

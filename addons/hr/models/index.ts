@@ -80,10 +80,10 @@ function defineAssociations() {
   });
 
   // Association Document -> User (créateur)
-  Document.belongsTo(require('../../../src/models').User, {
-    foreignKey: 'created_by',
-    as: 'creator'
-  });
+  // Document.belongsTo(require('../../../src/models').User, {
+  //   foreignKey: 'created_by',
+  //   as: 'creator'
+  // });
 }
 
 export {

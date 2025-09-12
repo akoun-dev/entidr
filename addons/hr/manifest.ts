@@ -1,464 +1,248 @@
 import { AddonManifest } from '../../src/types/addon';
+import hrRoutes from './routes';
 
 export const hrManifest: AddonManifest = {
-  id: 'hr',
-  name: 'Ressources Humaines',
+  name: 'hr',
   version: '2.0.0',
+  displayName: 'Ressources Humaines',
+  summary: 'Gestion des ressources humaines',
   description: 'Module de gestion des ressources humaines avec composants ENTIDR',
-  author: 'ENTIDR Team',
+  isCore: false,
+  application: true,
+  autoInstall: true,
+  installable: true,
+  publication: {
+    status: 'published'
+  },
   dependencies: {},
-  permissions: [
-    'hr.employees.read',
-    'hr.employees.write',
-    'hr.employees.create',
-    'hr.employees.delete',
-    'hr.departments.read',
-    'hr.departments.write',
-    'hr.departments.create',
-    'hr.departments.delete',
-    'hr.contracts.read',
-    'hr.contracts.write',
-    'hr.contracts.create',
-    'hr.contracts.delete',
-    'hr.documents.read',
-    'hr.documents.write',
-    'hr.documents.create',
-    'hr.documents.delete'
-  ],
   models: [
     {
       name: 'Employee',
+      displayName: 'Employé',
       fields: [
-        { name: 'id', type: 'number', primary: true },
-        { name: 'name', type: 'string', required: true },
-        { name: 'first_name', type: 'string', required: true },
-        { name: 'last_name', type: 'string', required: true },
-        { name: 'email', type: 'string', required: true, unique: true },
-        { name: 'phone', type: 'string' },
-        { name: 'job_title', type: 'string' },
-        { name: 'department_id', type: 'number' },
-        { name: 'hire_date', type: 'date' },
-        { name: 'salary', type: 'number' },
-        { name: 'active', type: 'boolean', default: true },
-        { name: 'created_at', type: 'datetime', auto: true },
-        { name: 'updated_at', type: 'datetime', auto: true }
+        { name: 'id', type: 'number', label: 'ID' },
+        { name: 'name', type: 'string', label: 'Nom', required: true },
+        { name: 'first_name', type: 'string', label: 'Prénom', required: true },
+        { name: 'last_name', type: 'string', label: 'Nom de famille', required: true },
+        { name: 'email', type: 'string', label: 'Email', required: true },
+        { name: 'phone', type: 'string', label: 'Téléphone' },
+        { name: 'job_title', type: 'string', label: 'Poste' },
+        { name: 'department_id', type: 'number', label: 'Département' },
+        { name: 'hire_date', type: 'date', label: 'Date d\'embauche' },
+        { name: 'salary', type: 'number', label: 'Salaire' },
+        { name: 'active', type: 'boolean', label: 'Actif', default: true },
+        { name: 'created_at', type: 'datetime', label: 'Créé le' },
+        { name: 'updated_at', type: 'datetime', label: 'Modifié le' }
       ]
     },
     {
       name: 'Department',
+      displayName: 'Département',
       fields: [
-        { name: 'id', type: 'number', primary: true },
-        { name: 'name', type: 'string', required: true },
-        { name: 'description', type: 'text' },
-        { name: 'manager_id', type: 'number' },
-        { name: 'active', type: 'boolean', default: true },
-        { name: 'created_at', type: 'datetime', auto: true },
-        { name: 'updated_at', type: 'datetime', auto: true }
+        { name: 'id', type: 'number', label: 'ID' },
+        { name: 'name', type: 'string', label: 'Nom', required: true },
+        { name: 'description', type: 'string', label: 'Description' },
+        { name: 'manager_id', type: 'number', label: 'Manager' },
+        { name: 'active', type: 'boolean', label: 'Actif', default: true },
+        { name: 'created_at', type: 'datetime', label: 'Créé le' },
+        { name: 'updated_at', type: 'datetime', label: 'Modifié le' }
       ]
     },
     {
       name: 'Contract',
+      displayName: 'Contrat',
       fields: [
-        { name: 'id', type: 'number', primary: true },
-        { name: 'employee_id', type: 'number', required: true },
-        { name: 'type', type: 'string', required: true },
-        { name: 'start_date', type: 'date', required: true },
-        { name: 'end_date', type: 'date' },
-        { name: 'salary', type: 'number' },
-        { name: 'status', type: 'string', default: 'active' },
-        { name: 'created_at', type: 'datetime', auto: true },
-        { name: 'updated_at', type: 'datetime', auto: true }
+        { name: 'id', type: 'number', label: 'ID' },
+        { name: 'employee_id', type: 'number', label: 'Employé', required: true },
+        { name: 'type', type: 'string', label: 'Type', required: true },
+        { name: 'start_date', type: 'date', label: 'Date de début', required: true },
+        { name: 'end_date', type: 'date', label: 'Date de fin' },
+        { name: 'salary', type: 'number', label: 'Salaire' },
+        { name: 'status', type: 'string', label: 'Statut', default: 'active' },
+        { name: 'created_at', type: 'datetime', label: 'Créé le' },
+        { name: 'updated_at', type: 'datetime', label: 'Modifié le' }
       ]
     },
     {
       name: 'Document',
+      displayName: 'Document',
       fields: [
-        { name: 'id', type: 'number', primary: true },
-        { name: 'employee_id', type: 'number' },
-        { name: 'name', type: 'string', required: true },
-        { name: 'type', type: 'string' },
-        { name: 'file_url', type: 'string', required: true },
-        { name: 'mime_type', type: 'string' },
-        { name: 'size_bytes', type: 'number' },
-        { name: 'created_at', type: 'datetime', auto: true },
-        { name: 'updated_at', type: 'datetime', auto: true }
+        { name: 'id', type: 'number', label: 'ID' },
+        { name: 'employee_id', type: 'number', label: 'Employé' },
+        { name: 'name', type: 'string', label: 'Nom', required: true },
+        { name: 'type', type: 'string', label: 'Type' },
+        { name: 'file_url', type: 'string', label: 'URL du fichier', required: true },
+        { name: 'mime_type', type: 'string', label: 'Type MIME' },
+        { name: 'size_bytes', type: 'number', label: 'Taille (octets)' },
+        { name: 'created_at', type: 'datetime', label: 'Créé le' },
+        { name: 'updated_at', type: 'datetime', label: 'Modifié le' }
       ]
-    }
-  ],
-  views: [
-    {
-      id: 'hr-employees-list',
-      name: 'Liste des employés',
-      type: 'LIST',
-      model: 'Employee',
-      fields: ['id', 'name', 'email', 'job_title', 'department_id', 'active', 'created_at']
-    },
-    {
-      id: 'hr-employees-form',
-      name: 'Formulaire employé',
-      type: 'FORM',
-      model: 'Employee',
-      fields: ['name', 'first_name', 'last_name', 'email', 'phone', 'job_title', 'department_id', 'hire_date', 'salary', 'active']
-    },
-    {
-      id: 'hr-employees-kanban',
-      name: 'Kanban employés',
-      type: 'KANBAN',
-      model: 'Employee',
-      fields: ['id', 'name', 'email', 'job_title', 'department_id', 'active'],
-      groupBy: 'department_id'
-    },
-    {
-      id: 'hr-departments-list',
-      name: 'Liste des départements',
-      type: 'LIST',
-      model: 'Department',
-      fields: ['id', 'name', 'description', 'manager_id', 'active', 'created_at']
-    },
-    {
-      id: 'hr-departments-form',
-      name: 'Formulaire département',
-      type: 'FORM',
-      model: 'Department',
-      fields: ['name', 'description', 'manager_id', 'active']
-    },
-    {
-      id: 'hr-departments-kanban',
-      name: 'Kanban départements',
-      type: 'KANBAN',
-      model: 'Department',
-      fields: ['id', 'name', 'description', 'manager_id', 'active'],
-      groupBy: 'active'
-    },
-    {
-      id: 'hr-contracts-list',
-      name: 'Liste des contrats',
-      type: 'LIST',
-      model: 'Contract',
-      fields: ['id', 'employee_id', 'type', 'start_date', 'end_date', 'salary', 'status', 'created_at']
-    },
-    {
-      id: 'hr-contracts-form',
-      name: 'Formulaire contrat',
-      type: 'FORM',
-      model: 'Contract',
-      fields: ['employee_id', 'type', 'start_date', 'end_date', 'salary', 'status']
-    },
-    {
-      id: 'hr-contracts-kanban',
-      name: 'Kanban contrats',
-      type: 'KANBAN',
-      model: 'Contract',
-      fields: ['id', 'employee_id', 'type', 'start_date', 'end_date', 'salary', 'status'],
-      groupBy: 'status'
-    },
-    {
-      id: 'hr-documents-list',
-      name: 'Liste des documents',
-      type: 'LIST',
-      model: 'Document',
-      fields: ['id', 'employee_id', 'name', 'type', 'mime_type', 'size_bytes', 'created_at']
-    },
-    {
-      id: 'hr-documents-form',
-      name: 'Formulaire document',
-      type: 'FORM',
-      model: 'Document',
-      fields: ['employee_id', 'name', 'type', 'file_url']
-    },
-    {
-      id: 'hr-documents-kanban',
-      name: 'Kanban documents',
-      type: 'KANBAN',
-      model: 'Document',
-      fields: ['id', 'employee_id', 'name', 'type', 'mime_type'],
-      groupBy: 'type'
     }
   ],
   menus: [
     {
       id: 'hr-main',
-      label: 'Ressources Humaines',
-      icon: 'users',
-      order: 10,
-      children: [
-        {
-          id: 'hr-dashboard',
-          label: 'Tableau de bord',
-          path: '/hr',
-          icon: 'dashboard'
-        },
-        {
-          id: 'hr-employees',
-          label: 'Employés',
-          path: '/hr/employees',
-          icon: 'user',
-          children: [
-            {
-              id: 'hr-employees-list',
-              label: 'Liste',
-              path: '/hr/employees',
-              icon: 'list'
-            },
-            {
-              id: 'hr-employees-kanban',
-              label: 'Kanban',
-              path: '/hr/employees/kanban',
-              icon: 'grid'
-            }
-          ]
-        },
-        {
-          id: 'hr-departments',
-          label: 'Départements',
-          path: '/hr/departments',
-          icon: 'building',
-          children: [
-            {
-              id: 'hr-departments-list',
-              label: 'Liste',
-              path: '/hr/departments',
-              icon: 'list'
-            },
-            {
-              id: 'hr-departments-kanban',
-              label: 'Kanban',
-              path: '/hr/departments/kanban',
-              icon: 'grid'
-            }
-          ]
-        },
-        {
-          id: 'hr-contracts',
-          label: 'Contrats',
-          path: '/hr/contracts',
-          icon: 'file-text',
-          children: [
-            {
-              id: 'hr-contracts-list',
-              label: 'Liste',
-              path: '/hr/contracts',
-              icon: 'list'
-            },
-            {
-              id: 'hr-contracts-kanban',
-              label: 'Kanban',
-              path: '/hr/contracts/kanban',
-              icon: 'grid'
-            }
-          ]
-        },
-        {
-          id: 'hr-documents',
-          label: 'Documents',
-          path: '/hr/documents',
-          icon: 'file',
-          children: [
-            {
-              id: 'hr-documents-list',
-              label: 'Liste',
-              path: '/hr/documents',
-              icon: 'list'
-            },
-            {
-              id: 'hr-documents-kanban',
-              label: 'Kanban',
-              path: '/hr/documents/kanban',
-              icon: 'grid'
-            }
-          ]
-        }
-      ]
+      name: 'Ressources Humaines',
+      sequence: 10,
+      icon: 'users'
+    },
+    {
+      id: 'hr-dashboard',
+      name: 'Tableau de bord',
+      sequence: 1,
+      route: '/hr',
+      icon: 'dashboard',
+      parent: 'hr-main'
+    },
+    {
+      id: 'hr-employees',
+      name: 'Employés',
+      sequence: 2,
+      icon: 'user',
+      parent: 'hr-main'
+    },
+    {
+      id: 'hr-employees-list',
+      name: 'Liste',
+      sequence: 1,
+      route: '/hr/employees',
+      icon: 'list',
+      parent: 'hr-employees'
+    },
+    {
+      id: 'hr-employees-kanban',
+      name: 'Kanban',
+      sequence: 2,
+      route: '/hr/employees/kanban',
+      icon: 'grid',
+      parent: 'hr-employees'
+    },
+    {
+      id: 'hr-departments',
+      name: 'Départements',
+      sequence: 3,
+      icon: 'building',
+      parent: 'hr-main'
+    },
+    {
+      id: 'hr-departments-list',
+      name: 'Liste',
+      sequence: 1,
+      route: '/hr/departments',
+      icon: 'list',
+      parent: 'hr-departments'
+    },
+    {
+      id: 'hr-departments-kanban',
+      name: 'Kanban',
+      sequence: 2,
+      route: '/hr/departments/kanban',
+      icon: 'grid',
+      parent: 'hr-departments'
+    },
+    {
+      id: 'hr-contracts',
+      name: 'Contrats',
+      sequence: 4,
+      icon: 'file-text',
+      parent: 'hr-main'
+    },
+    {
+      id: 'hr-contracts-list',
+      name: 'Liste',
+      sequence: 1,
+      route: '/hr/contracts',
+      icon: 'list',
+      parent: 'hr-contracts'
+    },
+    {
+      id: 'hr-contracts-kanban',
+      name: 'Kanban',
+      sequence: 2,
+      route: '/hr/contracts/kanban',
+      icon: 'grid',
+      parent: 'hr-contracts'
+    },
+    {
+      id: 'hr-documents',
+      name: 'Documents',
+      sequence: 5,
+      icon: 'file',
+      parent: 'hr-main'
+    },
+    {
+      id: 'hr-documents-list',
+      name: 'Liste',
+      sequence: 1,
+      route: '/hr/documents',
+      icon: 'list',
+      parent: 'hr-documents'
+    },
+    {
+      id: 'hr-documents-kanban',
+      name: 'Kanban',
+      sequence: 2,
+      route: '/hr/documents/kanban',
+      icon: 'grid',
+      parent: 'hr-documents'
     }
   ],
   routes: [
     {
       path: '/hr',
-      component: 'HrDashboardView'
+      component: hrRoutes.HrDashboardView,
+      title: 'Tableau de bord HR',
+      icon: 'dashboard'
     },
     {
       path: '/hr/employees',
-      component: 'EmployeesView'
+      component: hrRoutes.EmployeesView,
+      title: 'Employés',
+      icon: 'users'
     },
     {
       path: '/hr/employees/kanban',
-      component: 'EmployeesKanbanView'
-    },
-    {
-      path: '/hr/employees/new',
-      component: 'EmployeeFormView'
-    },
-    {
-      path: '/hr/employees/:id',
-      component: 'EmployeeDetailView'
-    },
-    {
-      path: '/hr/employees/edit/:id',
-      component: 'EmployeeFormView'
+      component: hrRoutes.EmployeesKanbanView,
+      title: 'Kanban Employés',
+      icon: 'grid'
     },
     {
       path: '/hr/departments',
-      component: 'DepartmentsView'
+      component: hrRoutes.DepartmentsView,
+      title: 'Départements',
+      icon: 'building'
     },
     {
       path: '/hr/departments/kanban',
-      component: 'DepartmentsKanbanView'
-    },
-    {
-      path: '/hr/departments/new',
-      component: 'DepartmentFormView'
-    },
-    {
-      path: '/hr/departments/:id',
-      component: 'DepartmentDetailView'
-    },
-    {
-      path: '/hr/departments/edit/:id',
-      component: 'DepartmentFormView'
+      component: hrRoutes.DepartmentsKanbanView,
+      title: 'Kanban Départements',
+      icon: 'grid'
     },
     {
       path: '/hr/contracts',
-      component: 'ContractsView'
+      component: hrRoutes.ContractsView,
+      title: 'Contrats',
+      icon: 'file-text'
     },
     {
       path: '/hr/contracts/kanban',
-      component: 'ContractsKanbanView'
-    },
-    {
-      path: '/hr/contracts/new',
-      component: 'ContractFormView'
-    },
-    {
-      path: '/hr/contracts/:id',
-      component: 'ContractDetailView'
-    },
-    {
-      path: '/hr/contracts/edit/:id',
-      component: 'ContractFormView'
+      component: hrRoutes.ContractsKanbanView,
+      title: 'Kanban Contrats',
+      icon: 'grid'
     },
     {
       path: '/hr/documents',
-      component: 'DocumentsView'
+      component: hrRoutes.DocumentsView,
+      title: 'Documents',
+      icon: 'file'
     },
     {
       path: '/hr/documents/kanban',
-      component: 'DocumentsKanbanView'
-    },
-    {
-      path: '/hr/documents/new',
-      component: 'DocumentFormView'
-    },
-    {
-      path: '/hr/documents/:id',
-      component: 'DocumentDetailView'
-    },
-    {
-      path: '/hr/documents/edit/:id',
-      component: 'DocumentFormView'
+      component: hrRoutes.DocumentsKanbanView,
+      title: 'Kanban Documents',
+      icon: 'grid'
     }
   ],
-  api: [
-    {
-      method: 'GET',
-      path: '/api/hr/employees',
-      handler: 'EmployeeController.getAll'
-    },
-    {
-      method: 'GET',
-      path: '/api/hr/employees/:id',
-      handler: 'EmployeeController.getById'
-    },
-    {
-      method: 'POST',
-      path: '/api/hr/employees',
-      handler: 'EmployeeController.create'
-    },
-    {
-      method: 'PUT',
-      path: '/api/hr/employees/:id',
-      handler: 'EmployeeController.update'
-    },
-    {
-      method: 'DELETE',
-      path: '/api/hr/employees/:id',
-      handler: 'EmployeeController.delete'
-    },
-    {
-      method: 'GET',
-      path: '/api/hr/departments',
-      handler: 'DepartmentController.getAll'
-    },
-    {
-      method: 'GET',
-      path: '/api/hr/departments/:id',
-      handler: 'DepartmentController.getById'
-    },
-    {
-      method: 'POST',
-      path: '/api/hr/departments',
-      handler: 'DepartmentController.create'
-    },
-    {
-      method: 'PUT',
-      path: '/api/hr/departments/:id',
-      handler: 'DepartmentController.update'
-    },
-    {
-      method: 'DELETE',
-      path: '/api/hr/departments/:id',
-      handler: 'DepartmentController.delete'
-    },
-    {
-      method: 'GET',
-      path: '/api/hr/contracts',
-      handler: 'ContractController.getAll'
-    },
-    {
-      method: 'GET',
-      path: '/api/hr/contracts/:id',
-      handler: 'ContractController.getById'
-    },
-    {
-      method: 'POST',
-      path: '/api/hr/contracts',
-      handler: 'ContractController.create'
-    },
-    {
-      method: 'PUT',
-      path: '/api/hr/contracts/:id',
-      handler: 'ContractController.update'
-    },
-    {
-      method: 'DELETE',
-      path: '/api/hr/contracts/:id',
-      handler: 'ContractController.delete'
-    },
-    {
-      method: 'GET',
-      path: '/api/hr/documents',
-      handler: 'DocumentController.getAll'
-    },
-    {
-      method: 'GET',
-      path: '/api/hr/documents/:id',
-      handler: 'DocumentController.getById'
-    },
-    {
-      method: 'POST',
-      path: '/api/hr/documents',
-      handler: 'DocumentController.create'
-    },
-    {
-      method: 'PUT',
-      path: '/api/hr/documents/:id',
-      handler: 'DocumentController.update'
-    },
-    {
-      method: 'DELETE',
-      path: '/api/hr/documents/:id',
-      handler: 'DocumentController.delete'
-    }
-  ]
 };
 
 export default hrManifest;

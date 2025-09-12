@@ -1,20 +1,12 @@
-// Types
-export * from './types';
-
-// Hooks
-export * from './hooks';
-
-// Contrôleurs
-import hrControllers from './controllers';
-export { hrControllers };
-
-// Routes
+import hrManifest, { hrManifest as manifest } from './manifest';
 import hrRoutes from './routes';
-export { hrRoutes };
 
-// Manifeste
-import hrManifest from './manifest';
-export { hrManifest };
+// Export par défaut du module
+export default {
+  manifest: hrManifest,
+  routes: hrRoutes
+};
 
-// Vues
-export * from './views';
+// Export nommés pour un accès direct
+export { hrManifest as manifest };
+export { hrRoutes as routes };

@@ -7,7 +7,7 @@ import { ThemeProvider } from "./components/theme/ThemeProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AddonLoader from "./components/AddonLoader";
-import AddonManager from "./core/AddonManager";
+import { AddonManager } from "./core/AddonManager";
 import { RouteDefinition } from "./types/addon";
 import SettingsRoutes from "./routes/SettingsRoutes";
 import { debug, error } from "./utils/logger";
@@ -30,15 +30,16 @@ const App = () => {
 // Composant séparé pour les routes qui sera rendu après le chargement des modules
 const AppRoutes = () => {
   const [addonRoutes, setAddonRoutes] = useState<RouteDefinition[]>([]);
+  const addonManager = AddonManager.getInstance();
 
   useEffect(() => {
     const refresh = () => {
-      const routes = AddonManager.getAllRoutes();
+      const routes = addonManager.getAllRoutes();
       debug("Routes chargées:", routes);
       if (routes.length === 0) {
         error("Aucune route n'a été chargée depuis les modules");
       } else {
-        routes.forEach((route, index) => debug(`Route ${index}:`, route));
+        routes.forEach((route: any, index: number) => debug(`Route ${index}:`, route));
       }
       setAddonRoutes(routes as any);
     };
@@ -47,8 +48,12 @@ const AppRoutes = () => {
     refresh();
 
     // Écoute des chargements tardifs de modules
-    AddonManager.registerHook('postModuleLoad', () => refresh());
-  }, []);
+    try {
+      addonManager.registerHook('postModuleLoad', () => refresh());
+    } catch (e) {
+      debug("Erreur lors de l'enregistrement du hook:", e);
+    }
+  }, [addonManager]);
 
   // Afficher les routes dans la console pour le débogage
   debug("Rendu des routes:", addonRoutes);

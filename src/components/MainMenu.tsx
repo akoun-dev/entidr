@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import AddonManager from '../core/AddonManager';
+import { AddonManager } from '../core/AddonManager';
 import { MenuDefinition } from '../types/addon';
 import * as LucideIcons from 'lucide-react';
 
@@ -16,13 +16,21 @@ const MainMenu: React.FC = () => {
   // Keep menus in sync with dynamic addon loading
   useEffect(() => {
     // Initial load (in case addons register after first render)
-    setAllMenus(addonManager.getAllMenus());
+    const menus = addonManager.getAllMenus();
+    console.log("Menus disponibles:", menus);
+    setAllMenus(menus);
 
     // Update when modules finish loading
-    const onPostLoad = () => setAllMenus(addonManager.getAllMenus());
+    const onPostLoad = () => {
+      const menus = addonManager.getAllMenus();
+      console.log("Menus mis à jour:", menus);
+      setAllMenus(menus);
+    };
     try {
       addonManager.registerHook('postModuleLoad', onPostLoad);
-    } catch {}
+    } catch (e) {
+      console.error("Erreur lors de l'enregistrement du hook:", e);
+    }
   }, [addonManager]);
 
   // Filtrer les menus racines (sans parent)
@@ -75,7 +83,48 @@ const MainMenu: React.FC = () => {
             </div>
           )}
 
-          {/* Nous ne montrons plus les sous-menus dans la sidebar */}
+          {/* Afficher les sous-menus */}
+          {getChildMenus(menu.id).map(childMenu => (
+            <div key={childMenu.id} className="ml-4 space-y-1">
+              {childMenu.route ? (
+                <Link
+                  to={childMenu.route}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                    isActive(childMenu.route)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {childMenu.icon && renderIcon(childMenu.icon)}
+                  {childMenu.name}
+                </Link>
+              ) : (
+                <div className="px-3 py-2 text-sm font-medium text-muted-foreground">
+                  {childMenu.icon && renderIcon(childMenu.icon)}
+                  {childMenu.name}
+                </div>
+              )}
+
+              {/* Afficher les sous-sous-menus */}
+              {getChildMenus(childMenu.id).map(subChildMenu => (
+                <div key={subChildMenu.id} className="ml-4">
+                  {subChildMenu.route && (
+                    <Link
+                      to={subChildMenu.route}
+                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                        isActive(subChildMenu.route)
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      {subChildMenu.icon && renderIcon(subChildMenu.icon)}
+                      {subChildMenu.name}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       ))}
     </nav>

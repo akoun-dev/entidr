@@ -35,6 +35,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         "redis-parser",
         "@tanstack/react-query",
         "@tanstack/query-core",
+        "pg-hstore",
       ],
       include: ["react", "react-dom", "react-router-dom"],
       // Astuce: une fois stable, tu peux commenter `force` pour éviter la ré-optimisation systématique

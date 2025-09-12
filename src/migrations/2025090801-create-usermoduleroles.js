@@ -17,8 +17,8 @@ module.exports = {
         user_id: { type: Sequelize.INTEGER, allowNull: false },
         module_name: { type: Sequelize.STRING, allowNull: false },
         role: { type: Sequelize.STRING, allowNull: false },
-        createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
-        updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('datetime', 'now') },
+        createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
+        updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
       });
     } else {
       // Si une ancienne version existe avec colonne `module`, la renommer

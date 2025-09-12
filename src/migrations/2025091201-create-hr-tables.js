@@ -64,7 +64,7 @@ module.exports = {
         allowNull: true
       },
       salary: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.FLOAT,
         allowNull: true,
         defaultValue: 0
       },
@@ -89,7 +89,7 @@ module.exports = {
         allowNull: true
       },
       gender: {
-        type: Sequelize.ENUM('male', 'female', 'other', 'prefer_not_to_say'),
+        type: Sequelize.STRING,
         defaultValue: 'prefer_not_to_say'
       },
       photo_url: {
@@ -189,7 +189,7 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       type: {
-        type: Sequelize.ENUM('cdi', 'cdd', 'stage', 'alternance', 'freelance', 'internship', 'apprenticeship', 'other'),
+        type: Sequelize.STRING,
         allowNull: false
       },
       reference: {
@@ -206,7 +206,7 @@ module.exports = {
         allowNull: true
       },
       salary: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.FLOAT,
         allowNull: false,
         defaultValue: 0
       },
@@ -222,7 +222,7 @@ module.exports = {
         }
       },
       status: {
-        type: Sequelize.ENUM('draft', 'active', 'terminated', 'expired', 'renewed'),
+        type: Sequelize.STRING,
         defaultValue: 'draft'
       },
       terms: {
@@ -283,11 +283,7 @@ module.exports = {
         allowNull: false
       },
       type: {
-        type: Sequelize.ENUM(
-          'id_card', 'passport', 'cv', 'diploma', 'certificate',
-          'contract', 'pay_slip', 'medical_certificate', 'insurance',
-          'tax_document', 'other'
-        ),
+        type: Sequelize.STRING,
         allowNull: false
       },
       description: {
@@ -318,7 +314,7 @@ module.exports = {
         allowNull: true
       },
       status: {
-        type: Sequelize.ENUM('draft', 'pending', 'approved', 'rejected', 'expired'),
+        type: Sequelize.STRING,
         defaultValue: 'draft'
       },
       notes: {

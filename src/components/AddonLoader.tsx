@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState, lazy } from 'react';
-import AddonManager from '../core/AddonManager';
+import { AddonManager } from '../core/AddonManager';
 import { getAllModules } from '../core/ModuleRegistry';
 import moduleService from '../services/moduleService';
 import { Module } from '../types/module';
@@ -17,14 +17,15 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
   const [hasModules, setHasModules] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const addonManager = AddonManager.getInstance();
 
   useEffect(() => {
     const loadAddons = async () => {
       try {
-        AddonManager.registerHook('preModuleLoad', (moduleName: string) =>
+        addonManager.registerHook('preModuleLoad', (moduleName: string) =>
           debug(`Chargement du module ${moduleName} démarré`));
 
-        AddonManager.registerHook('postModuleLoad', (moduleName: string) =>
+        addonManager.registerHook('postModuleLoad', (moduleName: string) =>
           debug(`Module ${moduleName} chargé avec succès`));
 
         let dbModules: Module[] = [];
@@ -35,16 +36,24 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
         }
 
         const registryModules = await getAllModules();
+        console.log("Modules trouvés dans le registre:", registryModules);
+        console.log("Modules trouvés en base de données:", dbModules);
+
         const activeModules = registryModules.filter(addon => {
           const dbModule = dbModules.find(m => m.name === addon.manifest.name);
-          return dbModule ? dbModule.active : true;
+          const isActive = dbModule ? dbModule.active : true;
+          console.log(`Module ${addon.manifest.name}: dbModule=`, dbModule, `isActive=`, isActive);
+          return isActive;
         });
+
+        console.log("Modules actifs après filtrage:", activeModules);
 
         // Enregistrer les manifests des addons actifs pour exposer leurs routes/menus
         activeModules.forEach(addon => {
           try {
-            if (!AddonManager.getAddon(addon.manifest.name)) {
-              AddonManager.registerAddon(addon.manifest);
+            if (!addonManager.getAddon(addon.manifest.name)) {
+              console.log("Enregistrement du module:", addon.manifest.name);
+              addonManager.registerAddon(addon.manifest);
             }
           } catch (e) {
             warn(`Enregistrement du module ${addon.manifest.name} ignoré:`, e);
@@ -52,7 +61,7 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
         });
 
         // Notifier que le chargement des modules est terminé (pour permettre aux routes d'être ré-évaluées)
-        try { AddonManager.triggerHook('postModuleLoad', 'all'); } catch {}
+        try { addonManager.triggerHook('postModuleLoad', 'all'); } catch {}
 
         const lazyModules = activeModules.map(addon => {
           const LazyComponent = lazy(() =>
@@ -80,9 +89,9 @@ const AddonLoader: React.FC<AddonLoaderProps> = ({ children }) => {
     loadAddons();
 
     return () => {
-      AddonManager.cleanup();
+      addonManager.cleanup();
     };
-  }, []);
+  }, [addonManager]);
 
   // Ne jamais bloquer l'application de base: toujours rendre {children}
   return (
