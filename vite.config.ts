@@ -7,6 +7,22 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   const proxyTarget = new URL(apiBaseUrl).origin;
 
   return {
+    root: "./",
+    publicDir: "./public",
+    build: {
+      rollupOptions: {
+        input: "./index.html",
+        output: {
+          manualChunks: (id: string) => {
+            if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) return "react";
+            if (id.includes("node_modules/react-router-dom")) return "router";
+            if (id.includes("node_modules/@radix-ui")) return "ui";
+            if (id.includes("node_modules/lodash") || id.includes("node_modules/axios")) return "vendor";
+            if (id.includes("/addons/") && id.includes("/index.ts")) return "addons";
+          },
+        },
+      },
+    },
     define: {
       "import.meta.env.LOG_LEVEL": JSON.stringify(process.env.LOG_LEVEL || "info"),
       "process.env.NODE_ENV": JSON.stringify(mode),
@@ -23,19 +39,6 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       include: ["react", "react-dom", "react-router-dom"],
       // Astuce: une fois stable, tu peux commenter `force` pour éviter la ré-optimisation systématique
       // force: true,
-    },
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: (id: string) => {
-            if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) return "react";
-            if (id.includes("node_modules/react-router-dom")) return "router";
-            if (id.includes("node_modules/@radix-ui")) return "ui";
-            if (id.includes("node_modules/lodash") || id.includes("node_modules/axios")) return "vendor";
-            if (id.includes("/addons/") && id.includes("/index.ts")) return "addons";
-          },
-        },
-      },
     },
     server: {
       host: "::",

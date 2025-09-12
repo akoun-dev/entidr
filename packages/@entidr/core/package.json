@@ -1,0 +1,29 @@
+{
+  "name": "@entidr/core",
+  "version": "1.0.0",
+  "description": "Core functionality for Entidr ERP framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "entidr",
+    "erp",
+    "core",
+    "framework"
+  ],
+  "author": "Entidr Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.0.0",
+    "sequelize": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.0",
+    "typescript": "^4.9.0",
+    "rimraf": "^4.4.0"
+  }
+}
