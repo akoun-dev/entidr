@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout";
-import { ThemeProvider } from "./components/providers/theme-provider";
+import { ThemeProvider } from "./components/theme/ThemeProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AddonLoader from "./components/AddonLoader";

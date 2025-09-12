@@ -1,281 +1,464 @@
 import { AddonManifest } from '../../src/types/addon';
-import {
-  HrDashboardView,
-  EmployeesView,
-  EmployeeFormView,
-  EmployeeDetailView,
-  DepartmentsView,
-  DepartmentFormView,
-  DepartmentDetailView,
-  DocumentsView,
-  ContractsView,
-  ContractFormView,
-  ContractDetailView,
-  DocumentFormView,
-  DocumentDetailView,
-  OnboardingView,
-  OffboardingView,
-  WorkflowsView,
-  WorkflowFormView,
-  SignaturesView,
-  SecurityView,
-  RoleFormView,
-  PermissionFormView,
-} from './views/pages';
-const manifest: AddonManifest = {
-  // Métadonnées de base
-  name: 'hr',
-  version: '1.0.0',
-  displayName: 'Ressources Humaines',
-  summary: 'Gestion du personnel (noyau central)',
-  description: 'Administration de base des employés: fiches, coordonnées, informations professionnelles, documents, contrats, historique RH et suivi des départs.',
 
-  // Configuration
-  application: true,
-  autoInstall: false,
-  installable: true,
-
-  // Routes définies par l'addon
+export const hrManifest: AddonManifest = {
+  id: 'hr',
+  name: 'Ressources Humaines',
+  version: '2.0.0',
+  description: 'Module de gestion des ressources humaines avec composants ENTIDR',
+  author: 'ENTIDR Team',
+  dependencies: {},
+  permissions: [
+    'hr.employees.read',
+    'hr.employees.write',
+    'hr.employees.create',
+    'hr.employees.delete',
+    'hr.departments.read',
+    'hr.departments.write',
+    'hr.departments.create',
+    'hr.departments.delete',
+    'hr.contracts.read',
+    'hr.contracts.write',
+    'hr.contracts.create',
+    'hr.contracts.delete',
+    'hr.documents.read',
+    'hr.documents.write',
+    'hr.documents.create',
+    'hr.documents.delete'
+  ],
+  models: [
+    {
+      name: 'Employee',
+      fields: [
+        { name: 'id', type: 'number', primary: true },
+        { name: 'name', type: 'string', required: true },
+        { name: 'first_name', type: 'string', required: true },
+        { name: 'last_name', type: 'string', required: true },
+        { name: 'email', type: 'string', required: true, unique: true },
+        { name: 'phone', type: 'string' },
+        { name: 'job_title', type: 'string' },
+        { name: 'department_id', type: 'number' },
+        { name: 'hire_date', type: 'date' },
+        { name: 'salary', type: 'number' },
+        { name: 'active', type: 'boolean', default: true },
+        { name: 'created_at', type: 'datetime', auto: true },
+        { name: 'updated_at', type: 'datetime', auto: true }
+      ]
+    },
+    {
+      name: 'Department',
+      fields: [
+        { name: 'id', type: 'number', primary: true },
+        { name: 'name', type: 'string', required: true },
+        { name: 'description', type: 'text' },
+        { name: 'manager_id', type: 'number' },
+        { name: 'active', type: 'boolean', default: true },
+        { name: 'created_at', type: 'datetime', auto: true },
+        { name: 'updated_at', type: 'datetime', auto: true }
+      ]
+    },
+    {
+      name: 'Contract',
+      fields: [
+        { name: 'id', type: 'number', primary: true },
+        { name: 'employee_id', type: 'number', required: true },
+        { name: 'type', type: 'string', required: true },
+        { name: 'start_date', type: 'date', required: true },
+        { name: 'end_date', type: 'date' },
+        { name: 'salary', type: 'number' },
+        { name: 'status', type: 'string', default: 'active' },
+        { name: 'created_at', type: 'datetime', auto: true },
+        { name: 'updated_at', type: 'datetime', auto: true }
+      ]
+    },
+    {
+      name: 'Document',
+      fields: [
+        { name: 'id', type: 'number', primary: true },
+        { name: 'employee_id', type: 'number' },
+        { name: 'name', type: 'string', required: true },
+        { name: 'type', type: 'string' },
+        { name: 'file_url', type: 'string', required: true },
+        { name: 'mime_type', type: 'string' },
+        { name: 'size_bytes', type: 'number' },
+        { name: 'created_at', type: 'datetime', auto: true },
+        { name: 'updated_at', type: 'datetime', auto: true }
+      ]
+    }
+  ],
+  views: [
+    {
+      id: 'hr-employees-list',
+      name: 'Liste des employés',
+      type: 'LIST',
+      model: 'Employee',
+      fields: ['id', 'name', 'email', 'job_title', 'department_id', 'active', 'created_at']
+    },
+    {
+      id: 'hr-employees-form',
+      name: 'Formulaire employé',
+      type: 'FORM',
+      model: 'Employee',
+      fields: ['name', 'first_name', 'last_name', 'email', 'phone', 'job_title', 'department_id', 'hire_date', 'salary', 'active']
+    },
+    {
+      id: 'hr-employees-kanban',
+      name: 'Kanban employés',
+      type: 'KANBAN',
+      model: 'Employee',
+      fields: ['id', 'name', 'email', 'job_title', 'department_id', 'active'],
+      groupBy: 'department_id'
+    },
+    {
+      id: 'hr-departments-list',
+      name: 'Liste des départements',
+      type: 'LIST',
+      model: 'Department',
+      fields: ['id', 'name', 'description', 'manager_id', 'active', 'created_at']
+    },
+    {
+      id: 'hr-departments-form',
+      name: 'Formulaire département',
+      type: 'FORM',
+      model: 'Department',
+      fields: ['name', 'description', 'manager_id', 'active']
+    },
+    {
+      id: 'hr-departments-kanban',
+      name: 'Kanban départements',
+      type: 'KANBAN',
+      model: 'Department',
+      fields: ['id', 'name', 'description', 'manager_id', 'active'],
+      groupBy: 'active'
+    },
+    {
+      id: 'hr-contracts-list',
+      name: 'Liste des contrats',
+      type: 'LIST',
+      model: 'Contract',
+      fields: ['id', 'employee_id', 'type', 'start_date', 'end_date', 'salary', 'status', 'created_at']
+    },
+    {
+      id: 'hr-contracts-form',
+      name: 'Formulaire contrat',
+      type: 'FORM',
+      model: 'Contract',
+      fields: ['employee_id', 'type', 'start_date', 'end_date', 'salary', 'status']
+    },
+    {
+      id: 'hr-contracts-kanban',
+      name: 'Kanban contrats',
+      type: 'KANBAN',
+      model: 'Contract',
+      fields: ['id', 'employee_id', 'type', 'start_date', 'end_date', 'salary', 'status'],
+      groupBy: 'status'
+    },
+    {
+      id: 'hr-documents-list',
+      name: 'Liste des documents',
+      type: 'LIST',
+      model: 'Document',
+      fields: ['id', 'employee_id', 'name', 'type', 'mime_type', 'size_bytes', 'created_at']
+    },
+    {
+      id: 'hr-documents-form',
+      name: 'Formulaire document',
+      type: 'FORM',
+      model: 'Document',
+      fields: ['employee_id', 'name', 'type', 'file_url']
+    },
+    {
+      id: 'hr-documents-kanban',
+      name: 'Kanban documents',
+      type: 'KANBAN',
+      model: 'Document',
+      fields: ['id', 'employee_id', 'name', 'type', 'mime_type'],
+      groupBy: 'type'
+    }
+  ],
+  menus: [
+    {
+      id: 'hr-main',
+      label: 'Ressources Humaines',
+      icon: 'users',
+      order: 10,
+      children: [
+        {
+          id: 'hr-dashboard',
+          label: 'Tableau de bord',
+          path: '/hr',
+          icon: 'dashboard'
+        },
+        {
+          id: 'hr-employees',
+          label: 'Employés',
+          path: '/hr/employees',
+          icon: 'user',
+          children: [
+            {
+              id: 'hr-employees-list',
+              label: 'Liste',
+              path: '/hr/employees',
+              icon: 'list'
+            },
+            {
+              id: 'hr-employees-kanban',
+              label: 'Kanban',
+              path: '/hr/employees/kanban',
+              icon: 'grid'
+            }
+          ]
+        },
+        {
+          id: 'hr-departments',
+          label: 'Départements',
+          path: '/hr/departments',
+          icon: 'building',
+          children: [
+            {
+              id: 'hr-departments-list',
+              label: 'Liste',
+              path: '/hr/departments',
+              icon: 'list'
+            },
+            {
+              id: 'hr-departments-kanban',
+              label: 'Kanban',
+              path: '/hr/departments/kanban',
+              icon: 'grid'
+            }
+          ]
+        },
+        {
+          id: 'hr-contracts',
+          label: 'Contrats',
+          path: '/hr/contracts',
+          icon: 'file-text',
+          children: [
+            {
+              id: 'hr-contracts-list',
+              label: 'Liste',
+              path: '/hr/contracts',
+              icon: 'list'
+            },
+            {
+              id: 'hr-contracts-kanban',
+              label: 'Kanban',
+              path: '/hr/contracts/kanban',
+              icon: 'grid'
+            }
+          ]
+        },
+        {
+          id: 'hr-documents',
+          label: 'Documents',
+          path: '/hr/documents',
+          icon: 'file',
+          children: [
+            {
+              id: 'hr-documents-list',
+              label: 'Liste',
+              path: '/hr/documents',
+              icon: 'list'
+            },
+            {
+              id: 'hr-documents-kanban',
+              label: 'Kanban',
+              path: '/hr/documents/kanban',
+              icon: 'grid'
+            }
+          ]
+        }
+      ]
+    }
+  ],
   routes: [
     {
       path: '/hr',
-      component: HrDashboardView,
-      protected: true,
-      title: 'Tableau de bord RH',
-      icon: 'LayoutDashboardIcon'
+      component: 'HrDashboardView'
     },
     {
       path: '/hr/employees',
-      component: EmployeesView,
-      protected: true,
-      title: 'Employés',
-      icon: 'UsersIcon'
+      component: 'EmployeesView'
+    },
+    {
+      path: '/hr/employees/kanban',
+      component: 'EmployeesKanbanView'
     },
     {
       path: '/hr/employees/new',
-      component: EmployeeFormView,
-      protected: true,
-      title: 'Nouvel employé',
-      icon: 'PlusIcon'
+      component: 'EmployeeFormView'
     },
     {
       path: '/hr/employees/:id',
-      component: EmployeeDetailView,
-      protected: true,
-      title: 'Détail employé',
-      icon: 'UserIcon'
+      component: 'EmployeeDetailView'
     },
     {
       path: '/hr/employees/edit/:id',
-      component: EmployeeFormView,
-      protected: true,
-      title: 'Modifier employé',
-      icon: 'PencilIcon'
+      component: 'EmployeeFormView'
     },
     {
       path: '/hr/departments',
-      component: DepartmentsView,
-      protected: true,
-      title: 'Départements',
-      icon: 'FolderIcon'
+      component: 'DepartmentsView'
+    },
+    {
+      path: '/hr/departments/kanban',
+      component: 'DepartmentsKanbanView'
     },
     {
       path: '/hr/departments/new',
-      component: DepartmentFormView,
-      protected: true,
-      title: 'Nouveau département',
-      icon: 'PlusIcon'
+      component: 'DepartmentFormView'
     },
     {
       path: '/hr/departments/:id',
-      component: DepartmentDetailView,
-      protected: true,
-      title: 'Détail département',
-      icon: 'FolderIcon'
+      component: 'DepartmentDetailView'
     },
     {
       path: '/hr/departments/edit/:id',
-      component: DepartmentFormView,
-      protected: true,
-      title: 'Modifier département',
-      icon: 'PencilIcon'
+      component: 'DepartmentFormView'
     },
     {
       path: '/hr/contracts',
-      component: ContractsView,
-      protected: true,
-      title: 'Contrats',
-      icon: 'FileTextIcon'
+      component: 'ContractsView'
+    },
+    {
+      path: '/hr/contracts/kanban',
+      component: 'ContractsKanbanView'
     },
     {
       path: '/hr/contracts/new',
-      component: ContractFormView,
-      protected: true,
-      title: 'Nouveau contrat',
-      icon: 'PlusIcon'
+      component: 'ContractFormView'
     },
     {
       path: '/hr/contracts/:id',
-      component: ContractDetailView,
-      protected: true,
-      title: 'Détail contrat',
-      icon: 'FileTextIcon'
+      component: 'ContractDetailView'
     },
     {
       path: '/hr/contracts/edit/:id',
-      component: ContractFormView,
-      protected: true,
-      title: 'Modifier contrat',
-      icon: 'PencilIcon'
+      component: 'ContractFormView'
     },
     {
       path: '/hr/documents',
-      component: DocumentsView,
-      protected: true,
-      title: 'Documents',
-      icon: 'FileTextIcon'
+      component: 'DocumentsView'
+    },
+    {
+      path: '/hr/documents/kanban',
+      component: 'DocumentsKanbanView'
     },
     {
       path: '/hr/documents/new',
-      component: DocumentFormView,
-      protected: true,
-      title: 'Nouveau document',
-      icon: 'PlusIcon'
+      component: 'DocumentFormView'
     },
     {
       path: '/hr/documents/:id',
-      component: DocumentDetailView,
-      protected: true,
-      title: 'Détail document',
-      icon: 'FileTextIcon'
+      component: 'DocumentDetailView'
     },
     {
       path: '/hr/documents/edit/:id',
-      component: DocumentFormView,
-      protected: true,
-      title: 'Modifier document',
-      icon: 'PencilIcon'
-    },
-    {
-      path: '/hr/onboarding',
-      component: OnboardingView,
-      protected: true,
-      title: 'Onboarding',
-      icon: 'UsersIcon'
-    },
-    {
-      path: '/hr/offboarding',
-      component: OffboardingView,
-      protected: true,
-      title: 'Offboarding',
-      icon: 'UsersIcon'
-    },
-    // Workflows
-    {
-      path: '/hr/workflows',
-      component: WorkflowsView,
-      protected: true,
-      title: 'Workflows',
-      icon: 'Workflow'
-    },
-    {
-      path: '/hr/workflows/new',
-      component: WorkflowFormView,
-      protected: true,
-      title: 'Nouveau workflow',
-      icon: 'PlusIcon'
-    },
-    {
-      path: '/hr/workflows/edit/:id',
-      component: WorkflowFormView,
-      protected: true,
-      title: 'Modifier workflow',
-      icon: 'PencilIcon'
-    },
-    // Signatures
-    {
-      path: '/hr/signatures',
-      component: SignaturesView,
-      protected: true,
-      title: 'Signatures',
-      icon: 'PenTool'
-    },
-    // Sécurité & Rôles
-    {
-      path: '/hr/security',
-      component: SecurityView,
-      protected: true,
-      title: 'Sécurité & Rôles',
-      icon: 'Shield'
-    },
-    // Formulaires Sécurité
-    {
-      path: '/hr/security/roles/new',
-      component: RoleFormView,
-      protected: true,
-      title: 'Nouveau rôle',
-      icon: 'PlusIcon'
-    },
-    {
-      path: '/hr/security/roles/edit/:id',
-      component: RoleFormView,
-      protected: true,
-      title: 'Modifier rôle',
-      icon: 'PencilIcon'
-    },
-    {
-      path: '/hr/security/permissions/new',
-      component: PermissionFormView,
-      protected: true,
-      title: 'Nouvelle permission',
-      icon: 'PlusIcon'
-    },
-    {
-      path: '/hr/security/permissions/edit/:id',
-      component: PermissionFormView,
-      protected: true,
-      title: 'Modifier permission',
-      icon: 'PencilIcon'
+      component: 'DocumentFormView'
     }
   ],
-
-  // Modèles de données
-  models: [
+  api: [
     {
-      name: 'hr.employee',
-      displayName: 'Employé',
-      fields: [
-        { name: 'name', type: 'string', required: true, label: 'Nom' },
-        { name: 'job_title', type: 'string', required: false, label: 'Poste' },
-        { name: 'department_id', type: 'many2one', required: false, label: 'Département', relation: 'hr.department' },
-        { name: 'work_email', type: 'string', required: false, label: 'Email professionnel' },
-        { name: 'work_phone', type: 'string', required: false, label: 'Téléphone professionnel' },
-        { name: 'parent_id', type: 'many2one', required: false, label: 'Responsable', relation: 'hr.employee' }
-      ]
+      method: 'GET',
+      path: '/api/hr/employees',
+      handler: 'EmployeeController.getAll'
     },
     {
-      name: 'hr.department',
-      displayName: 'Département',
-      fields: [
-        { name: 'name', type: 'string', required: true, label: 'Nom' },
-        { name: 'manager_id', type: 'many2one', required: false, label: 'Responsable', relation: 'hr.employee' }
-      ]
-    }
-  ],
-
-  // Menus définis par l'addon
-  menus: [
+      method: 'GET',
+      path: '/api/hr/employees/:id',
+      handler: 'EmployeeController.getById'
+    },
     {
-      id: 'menu_hr_root',
-      name: 'Ressources Humaines',
-      sequence: 10,
-      route: '/hr',
-      icon: 'UserIcon'
+      method: 'POST',
+      path: '/api/hr/employees',
+      handler: 'EmployeeController.create'
+    },
+    {
+      method: 'PUT',
+      path: '/api/hr/employees/:id',
+      handler: 'EmployeeController.update'
+    },
+    {
+      method: 'DELETE',
+      path: '/api/hr/employees/:id',
+      handler: 'EmployeeController.delete'
+    },
+    {
+      method: 'GET',
+      path: '/api/hr/departments',
+      handler: 'DepartmentController.getAll'
+    },
+    {
+      method: 'GET',
+      path: '/api/hr/departments/:id',
+      handler: 'DepartmentController.getById'
+    },
+    {
+      method: 'POST',
+      path: '/api/hr/departments',
+      handler: 'DepartmentController.create'
+    },
+    {
+      method: 'PUT',
+      path: '/api/hr/departments/:id',
+      handler: 'DepartmentController.update'
+    },
+    {
+      method: 'DELETE',
+      path: '/api/hr/departments/:id',
+      handler: 'DepartmentController.delete'
+    },
+    {
+      method: 'GET',
+      path: '/api/hr/contracts',
+      handler: 'ContractController.getAll'
+    },
+    {
+      method: 'GET',
+      path: '/api/hr/contracts/:id',
+      handler: 'ContractController.getById'
+    },
+    {
+      method: 'POST',
+      path: '/api/hr/contracts',
+      handler: 'ContractController.create'
+    },
+    {
+      method: 'PUT',
+      path: '/api/hr/contracts/:id',
+      handler: 'ContractController.update'
+    },
+    {
+      method: 'DELETE',
+      path: '/api/hr/contracts/:id',
+      handler: 'ContractController.delete'
+    },
+    {
+      method: 'GET',
+      path: '/api/hr/documents',
+      handler: 'DocumentController.getAll'
+    },
+    {
+      method: 'GET',
+      path: '/api/hr/documents/:id',
+      handler: 'DocumentController.getById'
+    },
+    {
+      method: 'POST',
+      path: '/api/hr/documents',
+      handler: 'DocumentController.create'
+    },
+    {
+      method: 'PUT',
+      path: '/api/hr/documents/:id',
+      handler: 'DocumentController.update'
+    },
+    {
+      method: 'DELETE',
+      path: '/api/hr/documents/:id',
+      handler: 'DocumentController.delete'
     }
-  ],
-
-  // Dépendances
-  dependencies: []
+  ]
 };
 
-export default manifest;
+export default hrManifest;

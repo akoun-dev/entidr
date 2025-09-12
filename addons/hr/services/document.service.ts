@@ -2,8 +2,8 @@ import { api } from '../../../src/config/api';
 
 export interface HrDocument {
   id: number;
-  name: string;
   employee_id?: number;
+  name: string;
   type?: string;
   file_url: string;
   mime_type?: string;
@@ -22,6 +22,7 @@ export const documentService = {
       throw new Error('Impossible de charger les documents');
     }
   },
+
   async getById(id: number | string): Promise<HrDocument> {
     try {
       const res = await api.get<HrDocument>(`/hr/documents/${id}`);
@@ -31,6 +32,7 @@ export const documentService = {
       throw new Error('Document introuvable');
     }
   },
+
   async create(payload: Partial<HrDocument>): Promise<HrDocument> {
     try {
       const res = await api.post<HrDocument>('/hr/documents', payload);
@@ -40,6 +42,7 @@ export const documentService = {
       throw new Error('Impossible de créer le document');
     }
   },
+
   async update(id: number | string, payload: Partial<HrDocument>): Promise<HrDocument> {
     try {
       const res = await api.put<HrDocument>(`/hr/documents/${id}`, payload);
@@ -49,6 +52,7 @@ export const documentService = {
       throw new Error('Impossible de mettre à jour le document');
     }
   },
+
   async remove(id: number | string): Promise<void> {
     try {
       await api.delete(`/hr/documents/${id}`);

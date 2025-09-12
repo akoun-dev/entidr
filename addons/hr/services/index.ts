@@ -1,11 +1,4 @@
-import employeeService from './employee.service';
-import departmentService from './department.service';
-import contractService from './contract.service';
-import documentService from './document.service';
-import taskService from './task.service';
-import signatureService from './signature.service';
-import workflowService from './workflow.service';
-import securityService from './security.service';
-import metaService from './meta.service';
-
-export { employeeService, departmentService, contractService, documentService, taskService, signatureService, workflowService, securityService, metaService };
+export { employeeService, type HrEmployee } from './employee.service';
+export { departmentService, type HrDepartment } from './department.service';
+export { contractService, type HrContract } from './contract.service';
+export { documentService, type HrDocument } from './document.service';
